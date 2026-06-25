@@ -112,7 +112,7 @@ class BacktestConfig:
     gdelt_minimum_request_interval_seconds: float = 5.5
     article_download_concurrency: int = 12
     price_download_concurrency: int = 4
-    event_filter_batch_size: int = 25
+    event_filter_batch_size: int = 50
     asset_world_batch_size: int = 20
     ollama_sentiment_batch_size: int = 1
     finbert_batch_size: int = 32

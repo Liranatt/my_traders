@@ -48,6 +48,19 @@ class BatchedMarketDecisions(BaseModel):
     decisions: list[BatchedMarketDecision]
 
 
+# Lean keep/drop -- no reason essay, so the filter is cheap and batches reliably across thousands
+# of markets (the reason is only useful for the deleted-markets log; we store a fixed label).
+class MarketKeep(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    market_id: str
+    keep: bool
+
+
+class MarketKeeps(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decisions: list[MarketKeep]
+
+
 SYSTEM_PROMPT = """
 You are a strict event filter for a stock-market backtest.
 
@@ -193,8 +206,9 @@ async def classify_markets(
     try:
         response = await ollama.structured(
             system_prompt=SYSTEM_PROMPT
-            + "\nJudge each specific market question independently. Return exactly one "
-            "decision for every supplied market_id.",
+            + "\nMove fast: for each market return only {market_id, keep}. keep=true if it could "
+            "plausibly move US stocks/ETFs, keep=false otherwise. Do not explain. Return exactly "
+            "one decision per supplied market_id.",
             payload={
                 "markets": [
                     {
@@ -202,20 +216,22 @@ async def classify_markets(
                         "event_title": market.event_title,
                         "market_question": market.question,
                         "tags": market.tags,
-                        "created_at": market.created_at,
-                        "end_at": market.end_at,
                     }
                     for market in markets
                 ]
             },
-            response_model=BatchedMarketDecisions,
-            max_tokens=max(250, len(markets) * 150),
+            response_model=MarketKeeps,
+            max_tokens=max(256, len(markets) * 25),
         )
-        # Deduplicate: keep first occurrence of each market_id
+        # Deduplicate: keep first occurrence of each market_id (lean keep -> full decision).
         seen: dict[str, BatchedMarketDecision] = {}
         for item in response.decisions:
             if item.market_id not in seen:
-                seen[item.market_id] = item
+                seen[item.market_id] = BatchedMarketDecision(
+                    market_id=item.market_id,
+                    relevant_to_financial_markets=item.keep,
+                    reason="kept by batch filter" if item.keep else "dropped by batch filter",
+                )
         expected = {market.market_id for market in markets}
         if seen.keys() >= expected:
             return [seen[mid] for mid in expected]

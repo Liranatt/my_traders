@@ -26,22 +26,12 @@ def _largest_enum_size(value: Any) -> int:
     return 0
 
 
-def _has_nested_object_array(value: Any) -> bool:
-    # Gemini's server JSON schema rejects arrays whose items are $ref'd objects (batched
-    # decision/world models). Detect them so those calls use prompt-schema + client validation.
-    if isinstance(value, dict):
-        if value.get("type") == "array" and isinstance(value.get("items"), dict) and "$ref" in value["items"]:
-            return True
-        return any(_has_nested_object_array(item) for item in value.values())
-    if isinstance(value, list):
-        return any(_has_nested_object_array(item) for item in value)
-    return False
-
-
 def _requires_prompt_schema(schema: dict[str, Any]) -> bool:
-    # Gemini rejects the catalog-selection schema when the allowed ticker enum is large, and
-    # rejects nested object arrays (batched decisions / worlds). Use prompt-schema for both.
-    return _largest_enum_size(schema) > 30 or _has_nested_object_array(schema)
+    # Gemini rejects the catalog-selection schema when the allowed ticker enum is large. Single-level
+    # batched models (event/market keep-decisions, the relevance gate) work fine on the server schema;
+    # only the doubly-nested world models need prompt-schema, and those request it explicitly via
+    # prefer_prompt_schema, so this stays a narrow heuristic.
+    return _largest_enum_size(schema) > 30
 
 
 class GeminiClient:
