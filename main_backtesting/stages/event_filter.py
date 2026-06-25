@@ -15,6 +15,10 @@ from database.backtesting.repositories.runs import finish_work, start_work
 from database.backtesting.repository import candidate_events, event_markets
 from LLM.remove_unwanted_markets import SYSTEM_PROMPT as FILTER_PROMPT, classify_markets
 from main_backtesting.models import SourceEvent, SourceMarket
+from main_backtesting.semantic_groups import (
+    SEMANTIC_GROUPING_VERSION,
+    question_allows_long_consideration,
+)
 from main_backtesting.utils import chunks, input_hash
 
 
@@ -90,10 +94,21 @@ async def run_events(self, conn: Any) -> list[SourceEvent]:
 
 async def accepted_markets(self, conn: Any) -> list[SourceMarket]:
     accepted = set(await accepted_market_ids(conn, self.run_id))
-    return [
+    markets = [
         market
         for market in await candidate_markets(self, conn)
         if market.market_id in accepted
+    ]
+    if self.config.semantic_ml_grouping_version != SEMANTIC_GROUPING_VERSION:
+        return markets
+    return [
+        market
+        for market in markets
+        if question_allows_long_consideration(
+            market.question,
+            event_title=market.event_title,
+            tags=market.tags,
+        )
     ]
 
 

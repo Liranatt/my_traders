@@ -160,11 +160,18 @@ async def save_world(
         await conn.executemany(
             f"""
             INSERT INTO {SCHEMA}.historical_asset_world_assets
-                (world_id, symbol, asset_name, asset_class, reason)
-            VALUES ($1,$2,$3,$4,$5)
+                (world_id, symbol, asset_name, asset_class, reason, connection_strength)
+            VALUES ($1,$2,$3,$4,$5,$6)
             """,
             [
-                (world_id, asset.symbol, asset.asset_name, asset.asset_class, asset.reason)
+                (
+                    world_id,
+                    asset.symbol,
+                    asset.asset_name,
+                    asset.asset_class,
+                    asset.reason,
+                    asset.connection_strength,
+                )
                 for asset in assets
             ],
         )

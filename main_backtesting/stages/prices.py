@@ -234,7 +234,11 @@ async def run(self, conn: Any) -> None:
             first_by_event_asset[key] = row
 
         market = markets[row["market_id"]]
-        resolution = "1h" if row["as_of"] >= self.hourly_boundary else "1d"
+        resolution = (
+            "1d"
+            if self.config.asset_price_policy == "daily_close_to_close"
+            else ("1h" if row["as_of"] >= self.hourly_boundary else "1d")
+        )
         warmup_days = 14 if resolution == "1h" else 45
         trade_start = market.created_at - timedelta(days=warmup_days)
         if resolution == "1h":

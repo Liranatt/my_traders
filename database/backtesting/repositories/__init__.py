@@ -11,6 +11,9 @@ from database.backtesting.repositories.runs import (
     finish_work,
     record_stage_failure,
     purge_run,
+    stored_world_source_summary,
+    clone_stored_run_decisions,
+    clone_stored_world_state,
 )
 
 from database.backtesting.repositories.event_decisions import (
@@ -111,6 +114,9 @@ __all__ = [
     "finish_work",
     "record_stage_failure",
     "purge_run",
+    "stored_world_source_summary",
+    "clone_stored_run_decisions",
+    "clone_stored_world_state",
     "save_event_decision",
     "reusable_event_decision",
     "accepted_event_ids",

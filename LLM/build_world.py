@@ -2,20 +2,16 @@ from __future__ import annotations
 
 from datetime import datetime
 import re
-from typing import Callable, Literal
-from uuid import UUID
+from typing import Literal
 
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    ValidationError,
-    create_model,
     field_validator,
     model_validator,
 )
 
-from LLM.ollama_client import OllamaClient
 from main_backtesting.models import Asset, IBTradableAsset, SourceMarket
 
 
@@ -23,7 +19,7 @@ class AssetCandidate(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     symbol: str = Field(min_length=1, max_length=20)
-    asset_name: str = Field(min_length=1, max_length=120)
+    asset_name: str = Field(min_length=1, max_length=260)
     asset_class: Literal["stock", "etf"]
     relationship_type: Literal[
         "direct_company",
@@ -50,6 +46,12 @@ class AssetCandidate(BaseModel):
             "that an asset may be affected are insufficient."
         ),
     )
+    connection_strength: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=1.0,
+        description="Mechanical exposure strength in [0, 1]; legacy one-pass worlds default to 1.0.",
+    )
 
     @field_validator("symbol")
     @classmethod
@@ -62,7 +64,7 @@ class AssetWorld(BaseModel):
 
     universe_name: str = Field(min_length=1, max_length=200)
     universe_reason: str = Field(min_length=20, max_length=700)
-    assets: list[AssetCandidate] = Field(min_length=4, max_length=15)
+    assets: list[AssetCandidate] = Field(default_factory=list, max_length=20)
 
     @model_validator(mode="after")
     def require_unique_symbols(self) -> AssetWorld:
@@ -77,127 +79,124 @@ class AssetWorld(BaseModel):
 
 class BatchedAssetWorld(AssetWorld):
     request_id: str
+    # Pass-1 score for the market question itself. Multiplied by each asset's connection_strength
+    # to form the final relevance. Defaults to 1.0 for legacy one-pass worlds (unscored).
+    question_relevance: float = 1.0
 
 
-class BatchedAssetWorlds(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    worlds: list[BatchedAssetWorld]
-
-
-
-class ClusteredRoutingPlan(BaseModel):
+class CompactAssetWorld(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    event_archetype: Literal["Macroeconomic / Fed", "Geopolitical / Conflict", "Earnings / Financials", "Regulatory / Legal", "Product Releases / Tech", "Asset Prices / Targets", "Other"]
-    primary_direct_companies: list[str] = Field(default_factory=list, max_length=5)
-    custom_related_companies: list[str] = Field(default_factory=list, max_length=15)
-    impacted_ib_industries: list[str] = Field(default_factory=list, max_length=5)
-    impacted_ib_categories: list[str] = Field(default_factory=list, max_length=5)
-    rationale: str = Field(min_length=20, max_length=700)
+    request_id: str
+    symbols: list[str] = Field(default_factory=list, max_length=20)
 
-class CatalogSearchPlan(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
-    direct_entities: list[str] = Field(default_factory=list, max_length=10)
-    related_entities: list[str] = Field(default_factory=list, max_length=20)
-    ticker_hints: list[str] = Field(default_factory=list, max_length=20)
-    industries: list[str] = Field(default_factory=list, max_length=15)
-    etf_themes: list[str] = Field(default_factory=list, max_length=15)
-    economic_keywords: list[str] = Field(default_factory=list, max_length=25)
-    rationale: str = Field(min_length=20, max_length=700)
-
-    @field_validator("ticker_hints")
+    @field_validator("symbols")
     @classmethod
-    def uppercase_ticker_hints(cls, values: list[str]) -> list[str]:
+    def normalize_symbols(cls, values: list[str]) -> list[str]:
         return [value.upper() for value in values]
 
 
-SYSTEM_PROMPT = """
-Build a cross-sectional research world of 4-15 stocks and equity ETFs that have concrete
-economic relationships to the supplied prediction-market question.
+class CompactAssetWorlds(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    worlds: list[CompactAssetWorld]
 
-This is asset selection only. Do not predict Yes or No, provide direction, confidence,
-position sizing, or trading advice. Choose only real tickers available in the IB-confirmed
-tradable universe. The final output is validated against that universe.
 
-Think broadly about the event's economic relationship graph. Relevant relationships can
-include the directly named company, customers, suppliers, distributors, partners,
-competitors, substitutes, complements, creditors, investors, landlords, tenants, and
-specific sector or country ETFs. Competitors are valid when the event changes shared
-demand, supply, pricing, market share, or substitution economics; being in the same broad
-industry alone is not enough.
+# Below this question-relevance score the YES outcome has no real mechanical channel to US
+# equities; we skip the (expensive) stock-mapping pass and emit an empty world.
+QUESTION_RELEVANCE_FLOOR = 0.10
 
-For company earnings questions, build the world around the reporting company and the
-companies whose economics are materially connected to its results. Do not assume whether
-earnings will beat or miss.
 
-For geopolitical questions, infer the economic transmission channels from the exact
-question, such as commodities, supply chains, shipping, defense demand, sanctions,
-regional revenue, or country exposure. Decide the assets yourself; do not default to
-famous companies or broad-market ETFs.
+class RelevanceDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-Every reason must state the relationship and causal transmission channel. Phrases such as
-"may be affected", "potential applications", or "has exposure" are insufficient unless
-the reason explains exactly why. Classify every asset with the supplied relationship_type;
-use other_specific only when none of the defined relationships fits and explain it fully.
-Return 4-15 unique assets and only the supplied JSON schema.
+    request_id: str
+    question_relevance: float = Field(
+        ge=0.0,
+        le=1.0,
+        description="How mechanically a YES outcome reprices US-listed equities, in [0, 1].",
+    )
+    reason: str = Field(min_length=20, max_length=500)
+
+
+class RelevanceGateBatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    decisions: list[RelevanceDecision]
+
+
+class TightAssetWorld(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    request_id: str
+    universe_name: str = Field(min_length=1, max_length=200)
+    universe_reason: str = Field(min_length=20, max_length=700)
+    assets: list[AssetCandidate] = Field(default_factory=list, max_length=20)
+
+
+class TightAssetWorlds(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    worlds: list[TightAssetWorld]
+
+
+GEMINI_RELEVANCE_GATE_PROMPT = """
+For each prediction-market question, rate question_relevance in [0, 1]: how mechanically a YES
+outcome would move US-listed equities or ETFs. Judge the QUESTION itself, not any single stock.
+
+Weigh four things:
+1. Directness -- does YES hit a US company's cash flow/value directly (a US name's earnings,
+   FDA, M&A), a US-traded commodity or rate (oil, Treasuries), or only a foreign/indirect channel?
+2. Breadth x magnitude -- does it move one stock, a sector, or the whole US market?
+3. Surprise -- is YES a genuine market-moving surprise, or a low bar already priced in?
+4. US proximity -- US government / Federal Reserve action > a major US ally's action > a distant
+   regional actor with no US transmission. Use your world knowledge of whether this TYPE of event
+   has historically repriced US stocks.
+
+Calibration anchors (generalize the principle; do not pattern-match the exact wording):
+  ~1.0  a US company's own earnings / FDA / M&A; a Fed rate decision or emergency/surprise action
+  ~0.8  direct US military action; a major OPEC / Strait-of-Hormuz oil-supply shock; a US tariff on a named sector
+  ~0.5  an ally or regional conflict with a real oil-supply channel but no US actor
+  ~0.3  a routine macro print near consensus (e.g. CPI a few tenths from expectations); a modest, expected policy move
+  ~0.2  foreign/regional events US markets routinely shrug off (e.g. recurring Houthi strikes on Israel)
+  ~0.0  no mechanical US-equity channel at all: speech-word counts, celebrity, sports, pure narrative
+
+Do not choose assets in this pass. Do not predict the outcome or trading direction. Return only
+request_id, question_relevance, and a one-line reason that names the channel (or its absence).
 """.strip()
 
 
-CLUSTERED_ROUTER_PROMPT = """
-You are an elite financial analyst at Morgan Stanley. Your mission is to analyze a prediction market event and build a research routing plan. Identify the event archetype. Name the EXACT primary companies involved, their direct competitors, and select the 1-2 most impacted industry subsectors/categories from the provided list. Do not make shit up.
-Return only the supplied JSON schema.
+GEMINI_TIGHT_MAPPING_PROMPT = """
+Build the tightest possible US-listed equity/ETF asset world for every supplied request.
+
+Selection rules:
+- If no liquid US equity/ETF mechanically reprices on YES, return an empty assets list.
+- Earnings / FDA / drug-approval / PDUFA / merger / named-company: return ONLY the single named
+  US company. Never add competitors, suppliers, customers, or sector peers -- they do not
+  mechanically reprice on THIS company's result.
+- Geopolitical / military / supply-shock: return only the commodity actually disrupted, via a
+  liquid US ETF (oil: USO, XLE, XOP, BNO), and ONLY when the actor/region mechanically affects
+  supply (OPEC, Strait of Hormuz, a major producer). Do NOT add defense names (LMT, RTX, ITA) on
+  conflict sentiment -- include defense only if the outcome changes US procurement or budgets.
+- Macro / rates / inflation: return rate-sensitive US equities across BOTH ends of the rate
+  channel -- rate-level names (financials XLF/KRE, homebuilders ITB, REITs) AND duration /
+  borrowing-sensitive names (long-duration tech and growth via QQQ, and heavy borrowers such as
+  TSLA: cheaper money lifts them, dearer money sinks them) -- plus the rate instrument (TLT).
+  Let the downstream model's debt features sort the leverage cross-section. Never fall back to
+  SPY or "the whole market".
+- Tariffs / sanctions / policy: return the specifically named exposed importers, exporters, or sector ETF.
+
+connection_strength in [0, 1]: 1.0 = the asset IS the subject or the direct instrument of the
+outcome; 0.6-0.9 = a strong, specific mechanical channel; 0.3-0.5 = real but indirect. Exclude
+anything tied only by narrative or risk-off sentiment. Keep worlds small -- prefer 1-6 names.
+
+This is asset selection only. Do not predict Yes/No, direction, sizing, or expected return.
+Return request_id, universe_name, universe_reason, and assets using the schema.
 """.strip()
 
-CLUSTERED_SELECTION_PROMPT = (
-    SYSTEM_PROMPT
-    + """
 
-You are the lead analyst. You routed a market event and retrieved the following IB-verified assets based on the exact companies and subsectors you requested. The user payload contains these strongest matching catalog records in available_ib_assets. Select the best 4-15 assets only from that list. Copy symbol, asset_name, and asset_class exactly. Write a factual, concrete economic reason for each. Do not make shit up. NEVER provide trading advice, buy/sell signals, or technical analysis.
-""".rstrip()
-)
-CATALOG_SEARCH_PROMPT = """
-Create a search plan for finding economically related stocks and equity ETFs inside a
-complete Interactive Brokers asset catalog.
+# Backward-compatible import name used by older stage metadata. The implementation below
+# is now two-pass: relevance gate, then tight mapping.
+GEMINI_ONE_CALL_PROMPT = GEMINI_TIGHT_MAPPING_PROMPT
 
-Do not select the final assets yet. Identify the directly named companies, economically
-related companies, likely ticker hints, relevant industries, specific ETF themes, and
-economic transmission keywords. Think about customers, suppliers, partners, competitors,
-substitutes, complements, creditors, investors, landlords, tenants, commodities, country
-exposure, and sector exposure. Avoid generic words that would match almost every company.
-Return only the supplied JSON schema.
-""".strip()
 
-CATALOG_SELECTION_PROMPT = (
-    SYSTEM_PROMPT
-    + """
-
-The user payload contains available_ib_assets. This is the authoritative shortlist of
-real, currently IB-tradable assets relevant to the question. Choose every final asset
-only from that list. Copy its symbol, asset_name, and asset_class exactly. Do not invent
-or modify tickers. The discovered_world is research input, not an allowed-symbol list;
-use it to select the strongest 4-15 assets available in available_ib_assets. Preserve the
-discovered relationship_type and concrete causal reason for every retained discovered
-asset.
-""".rstrip()
-)
-
-FULL_CATALOG_SELECTION_PROMPT = (
-    SYSTEM_PROMPT
-    + """
-
-The system searched the complete IB-confirmed stock and equity-ETF catalog using your
-economic search plan. The user payload contains the strongest matching catalog records in
-available_ib_assets. Select the best 4-15 assets only from that list. Copy symbol,
-asset_name, and asset_class exactly. Do not assume that a keyword or industry match is
-economically relevant; include an asset only when you can explain a concrete relationship
-and causal transmission channel to the exact market question.
-""".rstrip()
-)
-
-MAX_MISSING_BATCH_RETRIES = 3
-MAX_INVALID_SYMBOL_RETRIES = 3
-CATALOG_RETRIEVAL_LIMIT = 80
 CATALOG_TOKEN_RE = re.compile(r"[A-Z0-9]+")
 CATALOG_STOP_WORDS = {
     "A",
@@ -259,6 +258,242 @@ def ib_asset_catalog_index(
     return IBAssetCatalogIndex(assets)
 
 
+def gemini_world_payload(
+    requests: list[tuple[str, SourceMarket, datetime]],
+) -> dict[str, list[dict[str, object]]]:
+    return {
+        "requests": [
+            {
+                "request_id": request_id,
+                "event_title": market.event_title,
+                "market_question": market.question,
+                "tags": market.tags,
+                "market_created_at": market.created_at,
+                "market_end_at": market.end_at,
+                "historical_as_of": as_of,
+            }
+            for request_id, market, as_of in requests
+        ]
+    }
+
+
+def canonicalize_compact_gemini_world(
+    compact_world: CompactAssetWorld,
+    market: SourceMarket,
+    catalog: IBAssetCatalogIndex,
+) -> BatchedAssetWorld:
+    selected: list[tuple[IBTradableAsset, str]] = []
+    seen: set[str] = set()
+    for symbol in compact_world.symbols:
+        key = ib_symbol_key(symbol)
+        asset = catalog.by_symbol.get(key)
+        if asset is None or key in seen:
+            continue
+        seen.add(key)
+        selected.append((asset, "gemini"))
+    if len(selected) < 4:
+        # No fallback. Gemini must return at least four IB-tradable symbols; if it
+        # does not, crash loudly instead of padding with hardcoded local symbols.
+        raise ValueError(
+            "Gemini returned fewer than four IB-tradable symbols for request "
+            f"{compact_world.request_id}: {list(compact_world.symbols)}"
+        )
+    assets = [
+        AssetCandidate(
+            symbol=asset.symbol,
+            asset_name=asset.asset_name,
+            asset_class=asset.asset_class,
+            relationship_type="sector_etf" if asset.asset_class == "etf" else "other_specific",
+            reason=(
+                f"Gemini 3.5 Flash selected {asset.asset_name} as economically related "
+                "to the supplied prediction-market question."
+            ),
+        )
+        for asset, _source in selected[:20]
+    ]
+    universe_name = (market.event_title or market.question or "Gemini asset world")[:200]
+    return BatchedAssetWorld(
+        request_id=compact_world.request_id,
+        universe_name=universe_name,
+        universe_reason=(
+            "Gemini 3.5 Flash selected this locally IB-verified cross-sectional "
+            "research world."
+        ),
+        assets=assets,
+    )
+
+
+def _single_named_entity_market(market: SourceMarket) -> bool:
+    text = " ".join(
+        [
+            market.event_title or "",
+            market.question or "",
+            " ".join(market.tags or []),
+        ]
+    ).lower()
+    needles = (
+        "earnings",
+        "eps",
+        "revenue",
+        "fda",
+        "pdufa",
+        "drug approval",
+        "approval",
+        "merger",
+        "acquisition",
+        "takeover",
+    )
+    return any(needle in text for needle in needles)
+
+
+def _reason(value: str | None, fallback: str) -> str:
+    text = (value or "").strip()
+    if len(text) >= 20:
+        return text[:700]
+    return fallback
+
+
+def empty_world(
+    request_id: str,
+    market: SourceMarket,
+    reason: str | None = None,
+    *,
+    question_relevance: float = 0.0,
+) -> BatchedAssetWorld:
+    return BatchedAssetWorld(
+        request_id=request_id,
+        universe_name=(market.event_title or market.question or "No liquid equity world")[:200],
+        universe_reason=_reason(
+            reason,
+            "Relevance gate scored this question below the floor for mechanical US-equity repricing.",
+        ),
+        assets=[],
+        question_relevance=question_relevance,
+    )
+
+
+def canonicalize_tight_gemini_world(
+    tight_world: TightAssetWorld,
+    market: SourceMarket,
+    catalog: IBAssetCatalogIndex,
+    *,
+    question_relevance: float = 1.0,
+) -> BatchedAssetWorld:
+    selected: list[AssetCandidate] = []
+    seen: set[str] = set()
+    for item in tight_world.assets:
+        key = ib_symbol_key(item.symbol)
+        asset = catalog.by_symbol.get(key)
+        if asset is None or key in seen:
+            continue
+        seen.add(key)
+        selected.append(
+            AssetCandidate(
+                symbol=asset.symbol,
+                asset_name=asset.asset_name,
+                asset_class=asset.asset_class,
+                relationship_type=item.relationship_type,
+                reason=item.reason,
+                connection_strength=item.connection_strength,
+            )
+        )
+    if _single_named_entity_market(market) and len(selected) > 1:
+        selected = selected[:1]
+    if tight_world.assets and not selected:
+        # The LLM named only assets we cannot trade on IB (e.g. a small-cap biotech not in the
+        # catalog). Emit an empty world for this market rather than crashing the whole run --
+        # we simply have no tradeable exposure here. No hardcoded fallback symbols.
+        print(
+            f"[world] no IB-tradable symbol for {tight_world.request_id}: "
+            f"{[asset.symbol for asset in tight_world.assets]} -> empty world"
+        )
+        return empty_world(
+            tight_world.request_id,
+            market,
+            f"Mapped names are not IB-tradable: {[asset.symbol for asset in tight_world.assets]}",
+            question_relevance=question_relevance,
+        )
+    return BatchedAssetWorld(
+        request_id=tight_world.request_id,
+        universe_name=(tight_world.universe_name or market.event_title or market.question)[:200],
+        universe_reason=_reason(
+            tight_world.universe_reason,
+            "Tight mapping selected assets with concrete mechanical exposure to the prediction-market YES outcome.",
+        ),
+        assets=selected,
+        question_relevance=question_relevance,
+    )
+
+
+async def build_gemini_asset_worlds(
+    gemini: object,
+    requests: list[tuple[str, SourceMarket, datetime]],
+    *,
+    tradable_assets: list[IBTradableAsset] | IBAssetCatalogIndex,
+) -> list[BatchedAssetWorld]:
+    if not requests:
+        return []
+    gate_response = await gemini.structured(  # type: ignore[attr-defined]
+        system_prompt=GEMINI_RELEVANCE_GATE_PROMPT,
+        payload=gemini_world_payload(requests),
+        response_model=RelevanceGateBatch,
+        max_tokens=max(800, len(requests) * 80),
+        prefer_prompt_schema=True,
+    )
+    catalog = ib_asset_catalog_index(tradable_assets)
+    expected = {request_id for request_id, _, _ in requests}
+    decisions = {
+        decision.request_id: decision
+        for decision in gate_response.decisions
+        if decision.request_id in expected
+    }
+    missing_gate = expected - set(decisions)
+    if missing_gate:
+        raise ValueError(f"Gemini relevance gate omitted requests: {sorted(missing_gate)}")
+
+    worlds: dict[str, BatchedAssetWorld] = {}
+    relevant_requests: list[tuple[str, SourceMarket, datetime]] = []
+    relevance_by_request: dict[str, float] = {}
+    for request_id, market, _ in requests:
+        decision = decisions[request_id]
+        relevance_by_request[request_id] = decision.question_relevance
+        if decision.question_relevance >= QUESTION_RELEVANCE_FLOOR:
+            relevant_requests.append((request_id, market, _))
+        else:
+            worlds[request_id] = empty_world(
+                request_id,
+                market,
+                decision.reason,
+                question_relevance=decision.question_relevance,
+            )
+
+    if relevant_requests:
+        mapping_response = await gemini.structured(  # type: ignore[attr-defined]
+            system_prompt=GEMINI_TIGHT_MAPPING_PROMPT,
+            payload=gemini_world_payload(relevant_requests),
+            response_model=TightAssetWorlds,
+            max_tokens=max(1200, len(relevant_requests) * 220),
+            prefer_prompt_schema=True,
+        )
+        expected_mapping = {request_id for request_id, _, _ in relevant_requests}
+        mapped_by_request = {
+            world.request_id: world
+            for world in mapping_response.worlds
+            if world.request_id in expected_mapping
+        }
+        missing_mapping = expected_mapping - set(mapped_by_request)
+        if missing_mapping:
+            raise ValueError(f"Gemini tight mapping omitted requests: {sorted(missing_mapping)}")
+        for request_id, market, _ in relevant_requests:
+            worlds[request_id] = canonicalize_tight_gemini_world(
+                mapped_by_request[request_id],
+                market,
+                catalog,
+                question_relevance=relevance_by_request[request_id],
+            )
+    return [worlds[request_id] for request_id, _, _ in requests]
+
+
 def ib_symbol_key(symbol: str) -> str:
     return symbol.strip().upper().replace(".", " ").replace("$", " ")
 
@@ -278,766 +513,23 @@ def catalog_tokens(*values: str | None) -> set[str]:
     }
 
 
-def retrieve_catalog_candidates(
-    market: SourceMarket,
-    plan: CatalogSearchPlan,
-    catalog: IBAssetCatalogIndex,
-    *,
-    limit: int = CATALOG_RETRIEVAL_LIMIT,
-) -> list[IBTradableAsset]:
-    direct_phrases = [normalized_catalog_text(value) for value in plan.direct_entities]
-    related_phrases = [normalized_catalog_text(value) for value in plan.related_entities]
-    direct_tokens = catalog_tokens(*plan.direct_entities)
-    related_tokens = catalog_tokens(*plan.related_entities)
-    industry_tokens = catalog_tokens(*plan.industries)
-    theme_tokens = catalog_tokens(*plan.etf_themes)
-    economic_tokens = catalog_tokens(*plan.economic_keywords)
-    market_tokens = catalog_tokens(market.event_title, market.question, *market.tags)
-    candidate_keys = {
-        ib_symbol_key(symbol)
-        for symbol in plan.ticker_hints
-        if ib_symbol_key(symbol) in catalog.by_symbol
-    }
-    for token in (
-        direct_tokens
-        | related_tokens
-        | industry_tokens
-        | theme_tokens
-        | economic_tokens
-        | market_tokens
-    ):
-        candidate_keys.update(catalog.name_token_symbols.get(token, ()))
-        candidate_keys.update(catalog.metadata_token_symbols.get(token, ()))
-
-    ticker_hints = {ib_symbol_key(symbol) for symbol in plan.ticker_hints}
-    ranked: list[tuple[int, str, IBTradableAsset]] = []
-    for key in candidate_keys:
-        asset = catalog.by_symbol[key]
-        name_tokens = catalog.name_tokens[key]
-        metadata_tokens = catalog.metadata_tokens[key]
-        name_text = catalog.name_text[key]
-        score = 0
-        if key in ticker_hints:
-            score += 20_000
-        score += sum(2_000 for phrase in direct_phrases if phrase and phrase in name_text)
-        score += sum(1_000 for phrase in related_phrases if phrase and phrase in name_text)
-        score += len(direct_tokens & name_tokens) * 500
-        score += len(related_tokens & name_tokens) * 300
-        score += len(industry_tokens & metadata_tokens) * 180
-        score += len(economic_tokens & metadata_tokens) * 80
-        score += len(market_tokens & name_tokens) * 60
-        score += len(market_tokens & metadata_tokens) * 30
-        if asset.asset_class == "etf":
-            score += len(theme_tokens & (name_tokens | metadata_tokens)) * 220
-        if score > 0:
-            ranked.append((score, asset.symbol, asset))
-    ranked.sort(key=lambda item: (-item[0], item[1]))
-    return [asset for _, _, asset in ranked[:limit]]
-
-
-def invalid_ib_symbols(world: AssetWorld, tradable_symbols: set[str] | None) -> list[str]:
-    if tradable_symbols is None:
-        return []
-    allowed = {ib_symbol_key(symbol) for symbol in tradable_symbols}
-    return [
-        asset.symbol
-        for asset in world.assets
-        if ib_symbol_key(asset.symbol) not in allowed
-    ]
-
-
-def verified_discovered_assets(
-    discovered_world: AssetWorld,
-    tradable_assets: list[IBTradableAsset] | IBAssetCatalogIndex,
-) -> list[IBTradableAsset]:
-    catalog = ib_asset_catalog_index(tradable_assets)
-    return [
-        catalog.by_symbol[key]
-        for asset in discovered_world.assets
-        if (key := ib_symbol_key(asset.symbol)) in catalog.by_symbol
-    ]
-
-
-def invalid_catalog_symbols(
-    world: AssetWorld,
-    available_assets: list[IBTradableAsset],
-) -> list[str]:
-    allowed = {ib_symbol_key(asset.symbol) for asset in available_assets}
-    return [
-        asset.symbol
-        for asset in world.assets
-        if ib_symbol_key(asset.symbol) not in allowed
-    ]
-
-
-def canonicalize_catalog_world(
-    world: AssetWorld,
-    available_assets: list[IBTradableAsset],
-    discovered_world: AssetWorld | None = None,
-) -> AssetWorld:
-    by_symbol = {ib_symbol_key(asset.symbol): asset for asset in available_assets}
-    discovered_by_symbol = {
-        ib_symbol_key(asset.symbol): asset
-        for asset in discovered_world.assets
-    } if discovered_world is not None else {}
-    assets = []
-    for selected in world.assets:
-        key = ib_symbol_key(selected.symbol)
-        canonical = by_symbol[key]
-        discovered = discovered_by_symbol.get(key)
-        updates = {
-            "symbol": canonical.symbol,
-            "asset_name": canonical.asset_name,
-            "asset_class": canonical.asset_class,
-        }
-        if discovered is not None:
-            updates["relationship_type"] = discovered.relationship_type
-            updates["reason"] = discovered.reason
-        assets.append(
-            selected.model_copy(update=updates)
-        )
-    return world.model_copy(update={"assets": assets})
-
-
-def catalog_asset_world_model(
-    available_assets: list[IBTradableAsset],
-) -> type[AssetWorld]:
-    symbols = tuple(asset.symbol for asset in available_assets)
-    allowed_symbol = Literal.__getitem__(symbols)
-    candidate_model = create_model(
-        "CatalogAssetCandidate",
-        __base__=AssetCandidate,
-        symbol=(allowed_symbol, ...),
-    )
-    return create_model(
-        "CatalogAssetWorld",
-        __base__=AssetWorld,
-        assets=(list[candidate_model], Field(min_length=4, max_length=15)),
-    )
-
-
-def catalog_selection_payload(
-    request_id: str | None,
-    market: SourceMarket,
-    as_of: datetime,
-    discovered_world: AssetWorld,
-    available_assets: list[IBTradableAsset],
-    *,
-    rejected_symbols: list[str] | None = None,
-) -> dict[str, object]:
-    payload: dict[str, object] = {
-        "event_title": market.event_title,
-        "market_question": market.question,
-        "tags": market.tags,
-        "market_created_at": market.created_at,
-        "market_end_at": market.end_at,
-        "historical_as_of": as_of,
-        "discovered_world": discovered_world.model_dump(mode="json"),
-        "available_ib_assets": [asset.prompt_record() for asset in available_assets],
-    }
-    if request_id is not None:
-        payload["request_id"] = request_id
-    if rejected_symbols:
-        payload["rejected_symbols_not_in_available_ib_assets"] = rejected_symbols
-        payload["replacement_instruction"] = (
-            "Replace every rejected symbol using only available_ib_assets and return "
-            "a complete 4-15 asset world."
-        )
-    return payload
-
-
-async def select_asset_world_from_catalog(
-    ollama: OllamaClient,
-    market: SourceMarket,
-    as_of: datetime,
-    discovered_world: AssetWorld,
-    available_assets: list[IBTradableAsset],
-) -> AssetWorld:
-    if len(available_assets) < 4:
-        raise ValueError(
-            "Fewer than four relevant IB-tradable candidates were found for "
-            f"market {market.market_id}: {len(available_assets)}"
-        )
-    rejected_symbols: list[str] = []
-    response_model = catalog_asset_world_model(available_assets)
-    for attempt in range(MAX_INVALID_SYMBOL_RETRIES + 1):
-        payload = catalog_selection_payload(
-            None,
-            market,
-            as_of,
-            discovered_world,
-            available_assets,
-            rejected_symbols=rejected_symbols,
-        )
-        if attempt:
-            payload["schema_retry_instruction"] = (
-                "The previous response violated the allowed-symbol JSON schema. Use only "
-                "an exact symbol enum value from available_ib_assets."
-            )
-        try:
-            world = await ollama.structured(
-                system_prompt=CATALOG_SELECTION_PROMPT,
-                payload=payload,
-                response_model=response_model,
-                max_tokens=2200,
-            )
-        except ValidationError:
-            continue
-        rejected_symbols = invalid_catalog_symbols(world, available_assets)
-        if not rejected_symbols:
-            return canonicalize_catalog_world(world, available_assets, discovered_world)
-    raise ValueError(
-        "Asset world still contains symbols outside the supplied IB candidate catalog "
-        f"after {MAX_INVALID_SYMBOL_RETRIES + 1} attempts: {rejected_symbols}"
-    )
-
-
-async def build_catalog_retrieval_world(
-    ollama: OllamaClient,
-    market: SourceMarket,
-    *,
-    as_of: datetime,
-    catalog: IBAssetCatalogIndex,
-    progress: Callable[[str, dict[str, object]], None] | None = None,
-) -> tuple[AssetWorld, CatalogSearchPlan, list[IBTradableAsset]]:
-    search_payload = {
-        "event_title": market.event_title,
-        "market_question": market.question,
-        "tags": market.tags,
-        "market_created_at": market.created_at,
-        "market_end_at": market.end_at,
-        "historical_as_of": as_of,
-        "catalog_asset_count": len(catalog.assets),
-        "catalog_fields": [
-            "symbol",
-            "asset_name",
-            "asset_class",
-            "primary_exchange",
-            "industry",
-            "category",
-            "subcategory",
-        ],
-    }
-    if progress:
-        progress("search-plan-start", {"catalog_assets": len(catalog.assets)})
-    plan = await ollama.structured(
-        system_prompt=CATALOG_SEARCH_PROMPT,
-        payload=search_payload,
-        response_model=CatalogSearchPlan,
-        max_tokens=1200,
-    )
-    if progress:
-        progress(
-            "search-plan-complete",
-            {
-                "direct_entities": plan.direct_entities,
-                "related_entities": plan.related_entities,
-                "industries": plan.industries,
-                "etf_themes": plan.etf_themes,
-                "ticker_hints": plan.ticker_hints,
-            },
-        )
-    candidates = retrieve_catalog_candidates(market, plan, catalog)
-    if progress:
-        progress(
-            "candidates-retrieved",
-            {
-                "count": len(candidates),
-                "symbols": [asset.symbol for asset in candidates],
-            },
-        )
-    if len(candidates) < 4:
-        raise ValueError(
-            "Full-catalog retrieval found fewer than four candidates for "
-            f"market {market.market_id}: {len(candidates)}"
-        )
-    response_model = catalog_asset_world_model(candidates)
-    selection_payload = {
-        **search_payload,
-        "catalog_search_plan": plan.model_dump(mode="json"),
-        "available_ib_assets": [asset.prompt_record() for asset in candidates],
-    }
-    for attempt in range(MAX_INVALID_SYMBOL_RETRIES + 1):
-        if progress:
-            progress(
-                "selection-start",
-                {"attempt": attempt + 1, "available_candidates": len(candidates)},
-            )
-        if attempt:
-            selection_payload["schema_retry_instruction"] = (
-                "Use only an exact allowed symbol from available_ib_assets."
-            )
-        try:
-            world = await ollama.structured(
-                system_prompt=FULL_CATALOG_SELECTION_PROMPT,
-                payload=selection_payload,
-                response_model=response_model,
-                max_tokens=2200,
-            )
-        except ValidationError:
-            if progress:
-                progress("selection-schema-retry", {"attempt": attempt + 1})
-            continue
-        canonical_world = canonicalize_catalog_world(world, candidates)
-        if progress:
-            progress(
-                "selection-complete",
-                {"symbols": [asset.symbol for asset in canonical_world.assets]},
-            )
-        return canonical_world, plan, candidates
-    raise ValueError(
-        "Catalog-retrieval selection failed the allowed-symbol schema after "
-        f"{MAX_INVALID_SYMBOL_RETRIES + 1} attempts"
-    )
-
-
-async def select_asset_worlds_from_catalog(
-    ollama: OllamaClient,
-    requests: list[tuple[str, SourceMarket, datetime]],
-    discovered_worlds: list[BatchedAssetWorld],
-    available_by_request: dict[str, list[IBTradableAsset]],
-) -> list[BatchedAssetWorld]:
-    discovered_by_request = {world.request_id: world for world in discovered_worlds}
-    selected_worlds = []
-    for request_id, market, as_of in requests:
-        selected = await select_asset_world_from_catalog(
-            ollama,
-            market,
-            as_of,
-            discovered_by_request[request_id],
-            available_by_request[request_id],
-        )
-        selected_worlds.append(
-            BatchedAssetWorld(request_id=request_id, **selected.model_dump())
-        )
-    return selected_worlds
-
-
-async def build_asset_world(
-    ollama: OllamaClient,
-    market: SourceMarket,
-    *,
-    as_of: datetime | None = None,
-    tradable_symbols: set[str] | None = None,
-    initial_invalid_symbols: list[str] | None = None,
-) -> AssetWorld:
-    invalid_symbols = list(initial_invalid_symbols or [])
-    for attempt in range(MAX_INVALID_SYMBOL_RETRIES + 1):
-        payload = {
-            "event_title": market.event_title,
-            "market_question": market.question,
-            "tags": market.tags,
-            "market_created_at": market.created_at,
-            "market_end_at": market.end_at,
-            "historical_as_of": as_of,
-        }
-        if invalid_symbols:
-            payload["rejected_symbols_not_in_ib_tradable_universe"] = invalid_symbols
-            payload["replacement_instruction"] = (
-                "Replace every rejected symbol with a different economically related "
-                "IB-tradable stock or ETF. Return a complete 4-15 asset world."
-            )
-        world = await ollama.structured(
-            system_prompt=SYSTEM_PROMPT,
-            payload=payload,
-            response_model=AssetWorld,
-            max_tokens=2200,
-        )
-        invalid_symbols = invalid_ib_symbols(world, tradable_symbols)
-        if not invalid_symbols:
-            return world
-    raise ValueError(
-        "Asset world still contains symbols outside the IB-confirmed tradable universe "
-        f"after {MAX_INVALID_SYMBOL_RETRIES + 1} attempts: {invalid_symbols}"
-    )
-
-
-async def _build_single_asset_world(
-    ollama: OllamaClient,
-    request_id: str,
-    market: SourceMarket,
-    as_of: datetime,
-    *,
-    tradable_symbols: set[str] | None = None,
-    initial_invalid_symbols: list[str] | None = None,
-) -> BatchedAssetWorld:
-    world = await build_asset_world(
-        ollama,
-        market,
-        as_of=as_of,
-        tradable_symbols=tradable_symbols,
-        initial_invalid_symbols=initial_invalid_symbols,
-    )
-    return BatchedAssetWorld(request_id=request_id, **world.model_dump())
-
-
-async def build_asset_worlds(
-    ollama: OllamaClient,
-    requests: list[tuple[str, SourceMarket, datetime]],
-    *,
-    tradable_symbols: set[str] | None = None,
-    tradable_assets: list[IBTradableAsset] | IBAssetCatalogIndex | None = None,
-    progress: Callable[[str, dict[str, object]], None] | None = None,
-) -> list[BatchedAssetWorld]:
-    if progress:
-        progress("discovery-start", {"requests": len(requests)})
-    discovered_worlds = await _build_asset_worlds(
-        ollama,
-        requests,
-        missing_retry_attempt=0,
-        tradable_symbols=None if tradable_assets is not None else tradable_symbols,
-    )
-    if progress:
-        progress(
-            "discovery-complete",
-            {
-                "symbols": [
-                    asset.symbol
-                    for world in discovered_worlds
-                    for asset in world.assets
-                ]
-            },
-        )
-    if tradable_assets is None:
-        return discovered_worlds
-    catalog = ib_asset_catalog_index(tradable_assets)
-    verified_discoveries = []
-    available_by_request = {}
-    for (request_id, market, as_of), discovered_world in zip(requests, discovered_worlds):
-        if len(verified_discovered_assets(discovered_world, catalog)) < 4:
-            invalid_symbols = invalid_ib_symbols(
-                discovered_world,
-                set(catalog.by_symbol),
-            )
-            if progress:
-                progress(
-                    "correction-start",
-                    {"request_id": request_id, "invalid_symbols": invalid_symbols},
-                )
-            corrected = await build_asset_world(
-                ollama,
-                market,
-                as_of=as_of,
-                tradable_symbols=set(catalog.by_symbol),
-                initial_invalid_symbols=invalid_symbols,
-            )
-            discovered_world = BatchedAssetWorld(
-                request_id=request_id,
-                **corrected.model_dump(),
-            )
-            if progress:
-                progress(
-                    "correction-complete",
-                    {"symbols": [asset.symbol for asset in discovered_world.assets]},
-                )
-        available = verified_discovered_assets(discovered_world, catalog)
-        if len(available) < 4:
-            raise ValueError(
-                "Asset discovery did not produce four IB-confirmed stocks/ETFs for "
-                f"market {market.market_id}: {len(available)}"
-            )
-        if progress:
-            progress(
-                "ib-validation-complete",
-                {
-                    "request_id": request_id,
-                    "verified_count": len(available),
-                    "symbols": [asset.symbol for asset in available],
-                },
-            )
-        verified_discoveries.append(discovered_world)
-        available_by_request[request_id] = available
-    if progress:
-        progress("final-selection-start", {"requests": len(requests)})
-    selected_worlds = await select_asset_worlds_from_catalog(
-        ollama,
-        requests,
-        verified_discoveries,
-        available_by_request,
-    )
-    if progress:
-        progress(
-            "final-selection-complete",
-            {
-                "symbols": [
-                    asset.symbol
-                    for world in selected_worlds
-                    for asset in world.assets
-                ]
-            },
-        )
-    return selected_worlds
-
-
-async def _build_asset_worlds(
-    ollama: OllamaClient,
-    requests: list[tuple[str, SourceMarket, datetime]],
-    *,
-    missing_retry_attempt: int,
-    tradable_symbols: set[str] | None,
-) -> list[BatchedAssetWorld]:
-    if not requests:
-        return []
-    if len(requests) == 1:
-        request_id, market, as_of = requests[0]
-        return [
-            await _build_single_asset_world(
-                ollama,
-                request_id,
-                market,
-                as_of,
-                tradable_symbols=tradable_symbols,
-            )
-        ]
-    try:
-        response = await ollama.structured(
-            system_prompt=SYSTEM_PROMPT
-            + "\nBuild one independent world for every request_id and echo each request_id.",
-            payload={
-                "requests": [
-                    {
-                        "request_id": request_id,
-                        "event_title": market.event_title,
-                        "market_question": market.question,
-                        "tags": market.tags,
-                        "market_created_at": market.created_at,
-                        "market_end_at": market.end_at,
-                        "historical_as_of": as_of,
-                    }
-                    for request_id, market, as_of in requests
-                ]
-            },
-            response_model=BatchedAssetWorlds,
-            max_tokens=max(1200, len(requests) * 1200),
-        )
-        expected = {request_id for request_id, _, _ in requests}
-        seen: dict[str, BatchedAssetWorld] = {}
-        invalid: dict[str, list[str]] = {}
-        for world in response.worlds:
-            if world.request_id in expected:
-                rejected = invalid_ib_symbols(world, tradable_symbols)
-                if rejected:
-                    invalid[world.request_id] = rejected
-                else:
-                    seen.setdefault(world.request_id, world)
-        for request_id, market, as_of in requests:
-            if request_id in invalid:
-                seen[request_id] = await _build_single_asset_world(
-                    ollama,
-                    request_id,
-                    market,
-                    as_of,
-                    tradable_symbols=tradable_symbols,
-                    initial_invalid_symbols=invalid[request_id],
-                )
-        missing = [request for request in requests if request[0] not in seen]
-        if missing:
-            if missing_retry_attempt >= MAX_MISSING_BATCH_RETRIES:
-                print(
-                    f"[asset-world] Ollama dropped {len(missing)} world(s) after "
-                    f"{MAX_MISSING_BATCH_RETRIES} batch retries, building them individually"
-                )
-                retried = [
-                    await _build_single_asset_world(
-                        ollama,
-                        request_id,
-                        market,
-                        as_of,
-                        tradable_symbols=tradable_symbols,
-                    )
-                    for request_id, market, as_of in missing
-                ]
-            else:
-                print(
-                    f"[asset-world] Ollama dropped {len(missing)} world(s) from batch of "
-                    f"{len(requests)}, retrying only missing request IDs "
-                    f"({missing_retry_attempt + 1}/{MAX_MISSING_BATCH_RETRIES})"
-                )
-                retried = await _build_asset_worlds(
-                    ollama,
-                    missing,
-                    missing_retry_attempt=missing_retry_attempt + 1,
-                    tradable_symbols=tradable_symbols,
-                )
-            seen.update({world.request_id: world for world in retried})
-        return [seen[request_id] for request_id, _, _ in requests]
-    except (ValidationError, ValueError) as exc:
-        midpoint = len(requests) // 2
-        print(
-            f"[asset-world] Batch of {len(requests)} failed ({type(exc).__name__}), "
-            f"splitting into {midpoint}+{len(requests) - midpoint}"
-        )
-        left = await _build_asset_worlds(
-            ollama,
-            requests[:midpoint],
-            missing_retry_attempt=missing_retry_attempt,
-            tradable_symbols=tradable_symbols,
-        )
-        right = await _build_asset_worlds(
-            ollama,
-            requests[midpoint:],
-            missing_retry_attempt=missing_retry_attempt,
-            tradable_symbols=tradable_symbols,
-        )
-        return left + right
-
-
 def assets_from_world(world: AssetWorld) -> list[Asset]:
+    # Persist the FINAL relevance = question_relevance (pass 1) x connection_strength (pass 2),
+    # per Liran's design. Raw question_relevance is also kept in the world's llm_output JSON.
+    question_relevance = getattr(world, "question_relevance", 1.0)
     return [
         Asset(
             symbol=item.symbol,
             asset_name=item.asset_name,
             asset_class=item.asset_class,
             reason=f"[{item.relationship_type}] {item.reason}",
+            connection_strength=(
+                item.connection_strength * question_relevance
+                if item.connection_strength is not None
+                else question_relevance
+            ),
         )
         for item in world.assets
     ]
 
-
-def retrieve_clustered_candidates(
-    plan: ClusteredRoutingPlan,
-    catalog: IBAssetCatalogIndex,
-    *,
-    limit: int = CATALOG_RETRIEVAL_LIMIT,
-) -> list[IBTradableAsset]:
-    direct_phrases = [normalized_catalog_text(value) for value in plan.primary_direct_companies]
-    related_phrases = [normalized_catalog_text(value) for value in plan.custom_related_companies]
-    
-    candidate_keys = set()
-    
-    for phrase in direct_phrases + related_phrases:
-        if not phrase:
-            continue
-        tokens = catalog_tokens(phrase)
-        for token in tokens:
-            candidate_keys.update(catalog.name_token_symbols.get(token, ()))
-
-    industry_tokens = catalog_tokens(*plan.impacted_ib_industries)
-    category_tokens = catalog_tokens(*plan.impacted_ib_categories)
-    
-    for token in (industry_tokens | category_tokens):
-        candidate_keys.update(catalog.metadata_token_symbols.get(token, ()))
-
-    ranked: list[tuple[int, str, IBTradableAsset]] = []
-    for key in candidate_keys:
-        asset = catalog.by_symbol[key]
-        name_tokens = catalog.name_tokens[key]
-        metadata_tokens = catalog.metadata_tokens[key]
-        name_text = catalog.name_text[key]
-        score = 0
-        
-        score += sum(20_000 for phrase in direct_phrases if phrase and phrase in name_text)
-        score += sum(10_000 for phrase in related_phrases if phrase and phrase in name_text)
-        
-        score += len(industry_tokens & metadata_tokens) * 100
-        score += len(category_tokens & metadata_tokens) * 100
-        
-        if score > 0:
-            ranked.append((score, asset.symbol, asset))
-            
-    ranked.sort(key=lambda item: (-item[0], item[1]))
-    return [asset for _, _, asset in ranked[:limit]]
-
-async def build_clustered_routing_world(
-    ollama: OllamaClient,
-    market: SourceMarket,
-    *,
-    as_of: datetime,
-    catalog: IBAssetCatalogIndex,
-    progress: Callable[[str, dict[str, object]], None] | None = None,
-) -> tuple[AssetWorld, ClusteredRoutingPlan, list[IBTradableAsset]]:
-    available_industries = list({a.industry for a in catalog.assets if a.industry})
-    available_categories = list({a.category for a in catalog.assets if a.category})
-    
-    routing_payload = {
-        "event_title": market.event_title,
-        "market_question": market.question,
-        "tags": market.tags,
-        "market_created_at": market.created_at,
-        "market_end_at": market.end_at,
-        "historical_as_of": as_of,
-        "available_ib_industries": available_industries,
-        "available_ib_categories": available_categories,
-    }
-    
-    if progress:
-        progress("routing-plan-start", {"catalog_assets": len(catalog.assets)})
-        
-    plan = await ollama.structured(
-        system_prompt=CLUSTERED_ROUTER_PROMPT,
-        payload=routing_payload,
-        response_model=ClusteredRoutingPlan,
-        max_tokens=1200,
-    )
-    
-    if progress:
-        progress(
-            "routing-plan-complete",
-            {
-                "event_archetype": plan.event_archetype,
-                "primary_direct_companies": plan.primary_direct_companies,
-                "custom_related_companies": plan.custom_related_companies,
-                "impacted_ib_industries": plan.impacted_ib_industries,
-                "impacted_ib_categories": plan.impacted_ib_categories,
-            },
-        )
-        
-    candidates = retrieve_clustered_candidates(plan, catalog)
-    
-    if progress:
-        progress(
-            "candidates-retrieved",
-            {
-                "count": len(candidates),
-                "symbols": [asset.symbol for asset in candidates],
-            },
-        )
-        
-    if len(candidates) < 4:
-        raise ValueError(
-            "Clustered retrieval found fewer than four candidates for "
-            f"market {market.market_id}: {len(candidates)}"
-        )
-        
-    response_model = catalog_asset_world_model(candidates)
-    selection_payload = {
-        **routing_payload,
-        "clustered_routing_plan": plan.model_dump(mode="json"),
-        "available_ib_assets": [asset.prompt_record() for asset in candidates],
-    }
-    
-    for attempt in range(MAX_INVALID_SYMBOL_RETRIES + 1):
-        if progress:
-            progress(
-                "selection-start",
-                {"attempt": attempt + 1, "available_candidates": len(candidates)},
-            )
-        if attempt:
-            selection_payload["schema_retry_instruction"] = (
-                "Use only an exact allowed symbol from available_ib_assets."
-            )
-        try:
-            world = await ollama.structured(
-                system_prompt=CLUSTERED_SELECTION_PROMPT,
-                payload=selection_payload,
-                response_model=response_model,
-                max_tokens=2200,
-            )
-        except ValidationError:
-            if progress:
-                progress("selection-schema-retry", {"attempt": attempt + 1})
-            continue
-            
-        canonical_world = canonicalize_catalog_world(world, candidates)
-        if progress:
-            progress(
-                "selection-complete",
-                {"symbols": [asset.symbol for asset in canonical_world.assets]},
-            )
-        return canonical_world, plan, candidates
-        
-    raise ValueError(
-        "Clustered-routing selection failed the allowed-symbol schema after "
-        f"{MAX_INVALID_SYMBOL_RETRIES + 1} attempts"
-    )
 

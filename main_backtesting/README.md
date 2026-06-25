@@ -8,8 +8,9 @@ records the exact failed work item and stops the stage. It does not silently ski
 retry, split batches, or fall back to individual requests.
 
 Article research is temporarily excluded from the active pipeline. The fallback branch
-uses the first observed Polymarket crossing above 55%, positive asset ROC momentum,
-and completed-hour Polymarket volume confirmation when enough volume history exists.
+uses the first observed Polymarket crossing above 55%, then evaluates asset momentum
+and exits from completed daily closes. Asset trades enter at the next daily open;
+hourly Polymarket history remains the event trigger.
 A completed run verifies that every asset candidate reached simulation.
 `entry_decisions.csv` explains every opened or blocked trade candidate.
 
@@ -21,7 +22,10 @@ The active stages are:
    are preserved.
 3. Download hourly Polymarket probability and completed-hour traded volume from each
    surviving market's start through the simulation boundary.
-4. Keep only the first 55% crossing and batch-create asset worlds for crossed markets.
+4. Keep only the first 55% crossing and use one Gemini 3.5 Flash selection pass per
+   batch to create compact asset worlds. Tickers are validated locally against the
+   IB-confirmed asset catalog and locally completed when necessary, without a second
+   model-selection pass or model retry.
 5. Download only candidate-specific yfinance windows plus the daily bars required by
    the four-feature ML models.
 6. Train walk-forward asset-event models and simulate ML or Polymarket-momentum trades.

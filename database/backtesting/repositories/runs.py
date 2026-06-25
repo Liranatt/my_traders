@@ -40,6 +40,172 @@ async def historical_run(conn: asyncpg.Connection, run_id: UUID) -> asyncpg.Reco
     return row
 
 
+async def stored_world_source_summary(
+    conn: asyncpg.Connection,
+    run_id: UUID,
+) -> dict[str, Any]:
+    await historical_run(conn, run_id)
+    row = await conn.fetchrow(
+        f"""
+        SELECT
+            (SELECT COUNT(*) FROM {SCHEMA}.historical_run_market_passes
+             WHERE run_id=$1) AS pass_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.historical_run_worlds
+             WHERE run_id=$1) AS world_count,
+            (SELECT COUNT(*)
+             FROM {SCHEMA}.historical_run_market_passes p
+             WHERE p.run_id=$1
+               AND NOT EXISTS (
+                   SELECT 1 FROM {SCHEMA}.historical_run_worlds w
+                   WHERE w.run_id=p.run_id
+                     AND w.market_id=p.market_id
+                     AND w.pass_number=p.pass_number
+               )) AS passes_without_worlds,
+            (SELECT COUNT(*)
+             FROM {SCHEMA}.historical_run_worlds w
+             WHERE w.run_id=$1
+               AND NOT EXISTS (
+                   SELECT 1 FROM {SCHEMA}.historical_run_market_passes p
+                   WHERE p.run_id=w.run_id
+                     AND p.market_id=w.market_id
+                     AND p.pass_number=w.pass_number
+               )) AS worlds_without_passes,
+            (SELECT COUNT(*)
+             FROM {SCHEMA}.historical_run_worlds rw
+             JOIN {SCHEMA}.historical_asset_world_assets a
+               ON a.world_id=rw.world_id
+             WHERE rw.run_id=$1) AS asset_count,
+            (SELECT ARRAY_AGG(DISTINCT w.model_name ORDER BY w.model_name)
+             FROM {SCHEMA}.historical_run_worlds rw
+             JOIN {SCHEMA}.historical_asset_worlds w
+               ON w.world_id=rw.world_id
+             WHERE rw.run_id=$1) AS model_names
+        """,
+        run_id,
+    )
+    summary = dict(row)
+    if not summary["world_count"]:
+        raise ValueError(f"Source run has no stored asset worlds: {run_id}")
+    if summary["passes_without_worlds"] or summary["worlds_without_passes"]:
+        raise ValueError(
+            "Source run does not have complete pass/world coverage: "
+            f"passes_without_worlds={summary['passes_without_worlds']} "
+            f"worlds_without_passes={summary['worlds_without_passes']}"
+        )
+    return summary
+
+
+async def clone_stored_run_decisions(
+    conn: asyncpg.Connection,
+    *,
+    source_run_id: UUID,
+    target_run_id: UUID,
+) -> None:
+    await conn.execute(
+        f"""
+        INSERT INTO {SCHEMA}.historical_run_event_decisions
+            (run_id, event_id, input_hash)
+        SELECT $2, event_id, input_hash
+        FROM {SCHEMA}.historical_run_event_decisions
+        WHERE run_id=$1
+        ON CONFLICT (run_id, event_id) DO UPDATE
+        SET input_hash=EXCLUDED.input_hash
+        """,
+        source_run_id,
+        target_run_id,
+    )
+    await conn.execute(
+        f"""
+        INSERT INTO {SCHEMA}.historical_run_market_decisions
+            (run_id, market_id, input_hash)
+        SELECT $2, market_id, input_hash
+        FROM {SCHEMA}.historical_run_market_decisions
+        WHERE run_id=$1
+        ON CONFLICT (run_id, market_id) DO UPDATE
+        SET input_hash=EXCLUDED.input_hash
+        """,
+        source_run_id,
+        target_run_id,
+    )
+
+
+async def clone_stored_world_state(
+    conn: asyncpg.Connection,
+    *,
+    source_run_id: UUID,
+    target_run_id: UUID,
+    market_ids: list[str],
+) -> dict[str, int]:
+    if not market_ids:
+        raise ValueError(
+            "No source markets remain after applying the current semantic filters"
+        )
+    await conn.execute(
+        f"""
+        INSERT INTO {SCHEMA}.historical_run_markets (
+            run_id, market_id, event_id, question, created_at, end_at,
+            final_outcome, probability_hour_count, probability_graph_path
+        )
+        SELECT $2, market_id, event_id, question, created_at, end_at,
+               final_outcome, probability_hour_count, probability_graph_path
+        FROM {SCHEMA}.historical_run_markets
+        WHERE run_id=$1 AND market_id=ANY($3::TEXT[])
+        ON CONFLICT (run_id, market_id) DO NOTHING
+        """,
+        source_run_id,
+        target_run_id,
+        market_ids,
+    )
+    await conn.execute(
+        f"""
+        INSERT INTO {SCHEMA}.historical_run_market_passes (
+            run_id, market_id, event_id, question, pass_number, above_at,
+            above_probability, fell_below_at, fell_below_probability, final_outcome
+        )
+        SELECT $2, market_id, event_id, question, pass_number, above_at,
+               above_probability, fell_below_at, fell_below_probability, final_outcome
+        FROM {SCHEMA}.historical_run_market_passes
+        WHERE run_id=$1 AND market_id=ANY($3::TEXT[])
+        ON CONFLICT (run_id, market_id, pass_number) DO NOTHING
+        """,
+        source_run_id,
+        target_run_id,
+        market_ids,
+    )
+    await conn.execute(
+        f"""
+        INSERT INTO {SCHEMA}.historical_run_worlds
+            (run_id, market_id, pass_number, world_id)
+        SELECT $2, market_id, pass_number, world_id
+        FROM {SCHEMA}.historical_run_worlds
+        WHERE run_id=$1 AND market_id=ANY($3::TEXT[])
+        ON CONFLICT (run_id, market_id, pass_number) DO NOTHING
+        """,
+        source_run_id,
+        target_run_id,
+        market_ids,
+    )
+    row = await conn.fetchrow(
+        f"""
+        SELECT
+            (SELECT COUNT(*) FROM {SCHEMA}.historical_run_markets
+             WHERE run_id=$1) AS market_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.historical_run_market_passes
+             WHERE run_id=$1) AS pass_count,
+            (SELECT COUNT(*) FROM {SCHEMA}.historical_run_worlds
+             WHERE run_id=$1) AS world_count
+        """,
+        target_run_id,
+    )
+    summary = dict(row)
+    if not summary["world_count"] or summary["pass_count"] != summary["world_count"]:
+        raise ValueError(
+            "Stored world clone is incomplete: "
+            f"passes={summary['pass_count']} worlds={summary['world_count']}"
+        )
+    return summary
+
+
 async def update_run(
     conn: asyncpg.Connection,
     run_id: UUID,

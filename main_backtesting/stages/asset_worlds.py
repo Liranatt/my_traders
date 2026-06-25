@@ -11,10 +11,12 @@ from database.backtesting.repositories.worlds import (
     save_world,
 )
 from LLM.build_world import (
-    SYSTEM_PROMPT as WORLD_PROMPT,
+    GEMINI_ONE_CALL_PROMPT,
+    GEMINI_RELEVANCE_GATE_PROMPT,
+    GEMINI_TIGHT_MAPPING_PROMPT,
     IBAssetCatalogIndex,
     assets_from_world,
-    build_asset_worlds,
+    build_gemini_asset_worlds,
 )
 from main_backtesting.models import SourceMarket
 from main_backtesting.utils import chunks, input_hash
@@ -66,10 +68,11 @@ async def run(self, conn: Any) -> None:
             payloads_by_request[request_id] = payload
             payloads.append(payload)
         batch_llm_input = {
-            "system_prompt": WORLD_PROMPT
-            + "\nBuild one independent world for every request_id and echo each request_id.",
+            "system_prompt": GEMINI_ONE_CALL_PROMPT,
+            "relevance_gate_prompt": GEMINI_RELEVANCE_GATE_PROMPT,
+            "tight_mapping_prompt": GEMINI_TIGHT_MAPPING_PROMPT,
             "payload": {"requests": payloads},
-            "selection_mode": "discover_then_select_from_relevant_ib_catalog",
+            "selection_mode": "gemini_relevance_gate_then_tight_mapping_local_ib_validation",
             "ib_asset_catalog_count": len(tradable_assets),
             "ib_asset_catalog_hash": catalog_hash,
         }
@@ -77,7 +80,7 @@ async def run(self, conn: Any) -> None:
             request_id: input_hash(
                 {
                     "task": "asset_world",
-                    "model": self.ollama.model_name,
+                    "model": self.gemini.model_name,
                     "prompt_version": self.config.asset_world_prompt_version,
                     "ib_asset_catalog_hash": catalog_hash,
                     "model_input": payloads_by_request[request_id],
@@ -104,8 +107,8 @@ async def run(self, conn: Any) -> None:
                         world_id=item["world_id"],
                     )
         if missing_requests:
-            worlds = await build_asset_worlds(
-                self.ollama,
+            worlds = await build_gemini_asset_worlds(
+                self.gemini,
                 missing_requests,
                 tradable_assets=asset_catalog,
             )
@@ -124,7 +127,7 @@ async def run(self, conn: Any) -> None:
                         market=market,
                         pass_number=row["pass_number"],
                         as_of=as_of,
-                        model_name=self.ollama.model_name,
+                        model_name=self.gemini.model_name,
                         prompt_version=self.config.asset_world_prompt_version,
                         llm_input=batch_llm_input,
                         llm_output=batch_llm_output,

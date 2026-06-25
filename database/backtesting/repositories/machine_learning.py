@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import UUID
 import asyncpg
 from main_backtesting.models import MLModelSnapshot, MLObservation, MLPrediction
+from main_backtesting.semantic_groups import PROPOSED_GROUPS
 
 from database.backtesting.repositories._shared import SCHEMA, json_text, json_value
 
@@ -47,19 +48,33 @@ async def prior_ml_observations(
     event_archetype: str,
     before: datetime,
 ) -> list[MLObservation]:
-    rows = await conn.fetch(
-        f"""
-        SELECT * FROM {SCHEMA}.historical_ml_observations
-        WHERE run_id = $1 AND symbol = $2 AND event_archetype = $3
-          AND valid_for_training AND label_available_at IS NOT NULL
-          AND label_available_at < $4
-        ORDER BY label_available_at, first_pass_at
-        """,
-        run_id,
-        symbol.upper(),
-        event_archetype,
-        before,
-    )
+    if event_archetype in PROPOSED_GROUPS:
+        rows = await conn.fetch(
+            f"""
+            SELECT * FROM {SCHEMA}.historical_ml_observations
+            WHERE run_id = $1 AND event_archetype = $2
+              AND valid_for_training AND label_available_at IS NOT NULL
+              AND label_available_at < $3
+            ORDER BY label_available_at, first_pass_at, event_id, symbol
+            """,
+            run_id,
+            event_archetype,
+            before,
+        )
+    else:
+        rows = await conn.fetch(
+            f"""
+            SELECT * FROM {SCHEMA}.historical_ml_observations
+            WHERE run_id = $1 AND symbol = $2 AND event_archetype = $3
+              AND valid_for_training AND label_available_at IS NOT NULL
+              AND label_available_at < $4
+            ORDER BY label_available_at, first_pass_at
+            """,
+            run_id,
+            symbol.upper(),
+            event_archetype,
+            before,
+        )
     return [
         MLObservation(
             observation_id=row["observation_id"],

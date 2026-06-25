@@ -59,6 +59,7 @@ class Asset:
     asset_name: str
     asset_class: str
     reason: str
+    connection_strength: float | None = None
 
 
 @dataclass(frozen=True)
@@ -219,7 +220,22 @@ class Trade:
     maximum_price: float | None = None
     minimum_price: float | None = None
     stop_history: list[dict[str, Any]] = field(default_factory=list)
+    price_policy: str | None = None
+    anchor_close_at: datetime | None = None
+    anchor_close_price: float | None = None
+    exit_decision_at: datetime | None = None
+    exit_decision_price: float | None = None
+    holding_days: int | None = None
+    duplicate_suppression_count: int | None = None
     graph_path: str | None = None
+    # Optional beta-neutral hedge leg (config.hedge_ml_trades): an OPPOSITE-side position in
+    # the asset's sector ETF, same notional, entered/exited with the trade. Folds into
+    # net_profit so the booked P&L is the idiosyncratic (sector-hedged) move.
+    hedge_symbol: str | None = None
+    hedge_entry_price: float | None = None
+    hedge_exit_price: float | None = None
+    hedge_quantity: float | None = None
+    hedge_commission: float = 0.0
 
     @property
     def gross_profit(self) -> float | None:
@@ -230,11 +246,28 @@ class Trade:
         return (price - self.entry_price) * self.quantity * multiplier
 
     @property
+    def hedge_net_profit(self) -> float | None:
+        """P&L of the hedge leg. It is the OPPOSITE side of the trade (long beneficiary ->
+        short sector ETF, and vice versa), so it cancels the position's sector beta."""
+        if (
+            self.hedge_symbol is None
+            or self.hedge_entry_price is None
+            or self.hedge_exit_price is None
+            or self.hedge_quantity is None
+        ):
+            return None
+        hedge_multiplier = -1.0 if self.direction == "long" else 1.0
+        gross = (self.hedge_exit_price - self.hedge_entry_price) * self.hedge_quantity * hedge_multiplier
+        return gross - self.hedge_commission
+
+    @property
     def net_profit(self) -> float | None:
         gross = self.gross_profit
         if gross is None:
             return None
-        return gross - self.entry_commission - self.exit_commission
+        base = gross - self.entry_commission - self.exit_commission
+        hedge = self.hedge_net_profit
+        return base + hedge if hedge is not None else base
 
     @property
     def maximum_profit(self) -> float | None:

@@ -13,13 +13,26 @@ from database.backtesting.repositories.probabilities import probability_history
 from database.backtesting.repositories.runs import finish_work, start_work
 from database.backtesting.repositories.worlds import run_resolved_world_assets
 from database.backtesting.polymarket import probability_as_of
+from main_backtesting.semantic_groups import (
+    SEMANTIC_GROUPING_VERSION,
+    semantic_ml_group,
+)
 from main_backtesting.utils import event_archetype
-from strategies.event_driven_ml import DAILY_SESSION_LENGTH, build_observation, return_between, train_snapshot
+from strategies.event_driven_ml import (
+    DAILY_SESSION_LENGTH,
+    active_feature_names,
+    build_observation,
+    return_between,
+    train_snapshot,
+)
 
 from main_backtesting.stages.event_filter import accepted_markets, run_events
 
 
 async def run(self, conn: Any) -> None:
+    semantic_grouping = (
+        self.config.semantic_ml_grouping_version == SEMANTIC_GROUPING_VERSION
+    )
     events = {event.event_id: event for event in await run_events(self, conn)}
     markets = {market.market_id: market for market in await accepted_markets(self, conn)}
     world_rows = list(await run_resolved_world_assets(conn, self.run_id))
@@ -42,10 +55,20 @@ async def run(self, conn: Any) -> None:
             continue
         market = markets[row["market_id"]]
         event = events[event_id]
-        archetype = event_archetype(
-            market.tags,
-            question=market.question,
-            symbol=symbol,
+        archetype = (
+            semantic_ml_group(
+                market.question,
+                symbol=symbol,
+                asset_name=row["asset_name"],
+                event_title=market.event_title,
+                tags=market.tags,
+            )
+            if semantic_grouping
+            else event_archetype(
+                market.tags,
+                question=market.question,
+                symbol=symbol,
+            )
         )
         if archetype is None:
             await finish_work(
@@ -133,10 +156,15 @@ async def run(self, conn: Any) -> None:
             label_data_cutoff=self.config.historical_data_cutoff,
             symbol=symbol,
             event_archetype=archetype,
-            resolution="1h" if row["as_of"] >= self.hourly_boundary else "1d",
+            resolution=(
+                "1d"
+                if self.config.asset_price_policy == "daily_close_to_close"
+                else ("1h" if row["as_of"] >= self.hourly_boundary else "1d")
+            ),
             asset_daily=asset_daily,
             sector_daily=sector_daily,
             spy_daily=spy_daily,
+            probabilities=probabilities,
             research_data={
                 "current_probability": current_probability,
                 "recent_probability_changes": {
@@ -203,6 +231,12 @@ async def run(self, conn: Any) -> None:
             training_cutoff=snapshot_cutoff,
             observations=completed,
             minimum_prior_observations=self.config.minimum_ml_prior_observations,
+            minimum_prior_events=(
+                self.config.minimum_ml_prior_events if semantic_grouping else 0
+            ),
+            feature_names=active_feature_names(
+                self.config.ml_use_query_window_features
+            ),
         )
         snapshot.snapshot_id = await save_model_snapshot(conn, snapshot)
         await finish_work(

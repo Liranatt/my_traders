@@ -10,9 +10,9 @@ from uuid import UUID
 from database.backtesting.historical_repository import historical_run
 from database.backtesting.repository import candidate_events, event_markets
 from database.backtesting.schema import initialize_historical_schema
+from database.backtesting.repositories import json_value
 from database.db_connection import connect
 from main_backtesting.calibration import calibrate_batches
-from main_backtesting.asset_selection_experiment import run_asset_selection_experiment
 from main_backtesting.config import BacktestConfig
 from main_backtesting.engine import STAGES, HistoricalBacktestEngine, purge_historical_run
 from main_backtesting.reporting import generate_run_reports
@@ -41,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = commands.add_parser("run", help="Create and execute a new historical backtest.")
     run.add_argument("--max-events", type=int, default=0)
+
+    run_after_worlds = commands.add_parser(
+        "run-after-worlds",
+        help="Create a new run from stored asset worlds without initializing or calling LLMs.",
+    )
+    run_after_worlds.add_argument("--source-run-id", type=UUID, required=True)
 
     candidates = commands.add_parser(
         "list-candidates",
@@ -92,19 +98,6 @@ def build_parser() -> argparse.ArgumentParser:
         "calibrate-batches",
         help="Test increasing Ollama batch sizes once and save the largest valid sizes.",
     )
-    asset_selection_ab = commands.add_parser(
-        "asset-selection-ab",
-        help="Run a paired bounded A/B test of two LLM asset-selection methods.",
-    )
-    asset_selection_ab.add_argument("--source-run-id", type=UUID, required=True)
-    asset_selection_ab.add_argument("--limit", type=int, default=1000)
-    asset_selection_ab.add_argument("--seed", type=int, default=42)
-
-    resume_asset_selection_ab = commands.add_parser(
-        "resume-asset-selection-ab",
-        help="Resume an interrupted paired LLM asset-selection A/B test.",
-    )
-    resume_asset_selection_ab.add_argument("--experiment-id", type=UUID, required=True)
     return parser
 
 
@@ -155,30 +148,45 @@ async def regenerate_report(run_id: UUID) -> None:
         await conn.close()
 
 
+async def saved_run_config(run_id: UUID) -> BacktestConfig:
+    conn = await connect()
+    try:
+        await initialize_historical_schema(conn)
+        row = await historical_run(conn, run_id)
+        return BacktestConfig.from_json(json_value(row["config"]))
+    finally:
+        await conn.close()
+
+
+async def config_for_stored_world_run(source_run_id: UUID) -> BacktestConfig:
+    source = await saved_run_config(source_run_id)
+    current = BacktestConfig()
+    return replace(
+        current,
+        start=source.start,
+        end=source.end,
+        maximum_events=source.maximum_events,
+        selected_event_ids=source.selected_event_ids,
+        threshold=source.threshold,
+        minimum_days_remaining=source.minimum_days_remaining,
+        maximum_days_remaining=source.maximum_days_remaining,
+        historical_data_cutoff=source.historical_data_cutoff,
+        included_tags=source.included_tags,
+        excluded_tags=source.excluded_tags,
+        event_filter_prompt_version=source.event_filter_prompt_version,
+        asset_world_model=source.asset_world_model,
+        asset_world_thinking_level=source.asset_world_thinking_level,
+        asset_world_prompt_version=source.asset_world_prompt_version,
+        pipeline_start_stage="prices",
+    )
+
+
 async def main_async() -> None:
     args = build_parser().parse_args()
     config = BacktestConfig()
     if args.command == "calibrate-batches":
         selected = await calibrate_batches(config)
         print(f"[calibration complete] {selected}")
-        return
-    if args.command == "asset-selection-ab":
-        experiment_id = await run_asset_selection_experiment(
-            source_run_id=args.source_run_id,
-            experiment_id=None,
-            query_limit=args.limit,
-            sample_seed=args.seed,
-        )
-        print(f"[asset-selection A/B complete] experiment_id={experiment_id}")
-        return
-    if args.command == "resume-asset-selection-ab":
-        experiment_id = await run_asset_selection_experiment(
-            source_run_id=None,
-            experiment_id=args.experiment_id,
-            query_limit=1,
-            sample_seed=0,
-        )
-        print(f"[asset-selection A/B complete] experiment_id={experiment_id}")
         return
     if args.command == "list-candidates":
         config = replace(config, start=args.start, end=args.end)
@@ -208,11 +216,30 @@ async def main_async() -> None:
         run_id = await engine.run()
         print(f"[complete] run_id={run_id}")
         return
+    if args.command == "run-after-worlds":
+        config = await config_for_stored_world_run(args.source_run_id)
+        engine = HistoricalBacktestEngine(
+            config,
+            start_at_stage="prices",
+            stored_world_source_run_id=args.source_run_id,
+            use_llm_clients=False,
+        )
+        run_id = await engine.run()
+        print(
+            f"[complete] run_id={run_id} "
+            f"stored_world_source_run_id={args.source_run_id}"
+        )
+        return
     if args.command == "resume":
+        config = await saved_run_config(args.run_id)
+        start_at_stage = config.pipeline_start_stage
+        use_llm_clients = STAGES.index(start_at_stage) <= STAGES.index("asset_worlds")
         engine = HistoricalBacktestEngine(
             config,
             run_id=args.run_id,
             stop_after_stage=args.through,
+            start_at_stage=start_at_stage,
+            use_llm_clients=use_llm_clients,
         )
         run_id = await engine.run(resume=True)
         if args.through:

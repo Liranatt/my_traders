@@ -64,6 +64,16 @@ def average_true_range(previous_bars: list[PriceBar], period: int = 14) -> float
     return sum(ranges) / len(ranges)
 
 
+def average_close_volatility(bars: list[PriceBar], period: int = 14) -> float | None:
+    """Average absolute close-to-close movement over completed daily bars."""
+    if len(bars) <= period:
+        return None
+    selected = bars[-period:]
+    prior = bars[-period - 1 : -1]
+    moves = [abs(bar.close - prev.close) for prev, bar in zip(prior, selected)]
+    return sum(moves) / len(moves)
+
+
 class EventDrivenStrategy:
     def __init__(
         self,
@@ -95,17 +105,31 @@ class EventDrivenStrategy:
         strategy_branch: str = "momentum",
         resolution: Resolution = "1h",
         predicted_target_price: float | None = None,
+        price_policy: str = "legacy_intraday",
     ) -> Trade | None:
-        atr = average_true_range(previous_bars, self.range_period)
-        if atr is None or atr <= 0 or entry_bar.open <= 0:
-            return None
+        if self.range_multiplier < 0:
+            # Negative multiplier => fixed fractional hard stop from entry
+            # (e.g. -0.03 = 3% max loss). Needs no volatility history, so trades
+            # are not rejected for short price histories.
+            if entry_bar.open <= 0:
+                return None
+            stop_distance = abs(self.range_multiplier) * entry_bar.open
+        else:
+            range_value = (
+                average_close_volatility(previous_bars, self.range_period)
+                if price_policy == "daily_close_to_close"
+                else average_true_range(previous_bars, self.range_period)
+            )
+            if range_value is None or range_value <= 0 or entry_bar.open <= 0:
+                return None
+            stop_distance = self.range_multiplier * range_value
 
         quantity = self.trade_notional / entry_bar.open
         commission = ib_style_commission(quantity, self.trade_notional)
         stop = (
-            entry_bar.open - self.range_multiplier * atr
+            entry_bar.open - stop_distance
             if direction == "long"
-            else entry_bar.open + self.range_multiplier * atr
+            else entry_bar.open + stop_distance
         )
         return Trade(
             trade_id=uuid4(),
@@ -162,6 +186,11 @@ class EventDrivenStrategy:
             trade.exit_reason = "trailing_stop"
             return True
 
+        if self.range_multiplier < 0:
+            # Fixed hard stop: never trails; honors any externally raised stop
+            # (e.g. ML predicted-target lock).
+            return False
+
         completed = previous_bars + [bar]
         atr = average_true_range(completed, self.range_period)
         if atr is None or atr <= 0:
@@ -176,6 +205,60 @@ class EventDrivenStrategy:
             candidate = trade.lowest_price + self.range_multiplier * atr
             trade.current_stop = min(trade.current_stop, candidate)
         trade.stop_history.append({"timestamp": bar.timestamp, "stop": trade.current_stop})
+        return False
+
+    def update_trade_daily_close(
+        self,
+        trade: Trade,
+        bar: PriceBar,
+        previous_bars: list[PriceBar],
+    ) -> bool:
+        """Evaluate trailing stop using completed daily closes only.
+
+        Uses close-to-close volatility instead of ATR.  The stop triggers
+        only when a completed daily *close* is below (long) or above
+        (short) the trailing stop level.  Intraday highs/lows are ignored.
+        """
+        # Track extremes using close prices under daily-close policy
+        trade.maximum_price = max(trade.maximum_price or bar.close, bar.close)
+        trade.minimum_price = min(trade.minimum_price or bar.close, bar.close)
+        trade.highest_price = max(trade.highest_price, bar.close)
+        trade.lowest_price = min(trade.lowest_price or bar.close, bar.close)
+
+        if self.range_multiplier < 0:
+            # Fixed hard stop from entry: do not trail; honor any target-lock raise.
+            if trade.direction == "long":
+                triggered = bar.close < trade.current_stop
+            else:
+                triggered = bar.close > trade.current_stop
+            trade.stop_history.append(
+                {"timestamp": bar.timestamp, "stop": trade.current_stop}
+            )
+            if triggered:
+                trade.exit_reason = "daily_close_trailing_stop"
+                return True
+            return False
+
+        completed = previous_bars + [bar]
+        close_vol = average_close_volatility(completed, self.range_period)
+        if close_vol is None or close_vol <= 0:
+            return False
+
+        if trade.direction == "long":
+            candidate = trade.highest_price - self.range_multiplier * close_vol
+            trade.current_stop = max(trade.current_stop, candidate)
+            triggered = bar.close < trade.current_stop
+        else:
+            candidate = trade.lowest_price + self.range_multiplier * close_vol
+            trade.current_stop = min(trade.current_stop, candidate)
+            triggered = bar.close > trade.current_stop
+
+        trade.stop_history.append({"timestamp": bar.timestamp, "stop": trade.current_stop})
+
+        if triggered:
+            # Do NOT set exit here — caller executes at next daily open
+            trade.exit_reason = "daily_close_trailing_stop"
+            return True
         return False
 
     @staticmethod

@@ -243,6 +243,8 @@ def _performance_summary(values: list[float]) -> dict[str, float | int | None]:
         ),
         "profit_factor": gross_profit / gross_loss if gross_loss else None,
         "expectancy": sum(values) / len(values) if values else None,
+        "largest_winner": max(wins) if wins else None,
+        "largest_loser": min(losses) if losses else None,
         "maximum_consecutive_losses": maximum_consecutive,
     }
 
@@ -322,12 +324,30 @@ def _daily_portfolio_metrics(
         else None
     )
     total_notional = len(trades) * 1_000.0
+    annualized_return = mean_return * 252 if mean_return is not None else None
+    annualized_volatility = (
+        math.sqrt(variance) * math.sqrt(252) if variance and variance > 0 else None
+    )
+    positive_days = sum(1 for value in returns if value > 0)
     return (
         {
             "method": "daily_realized_executable_trade_returns",
             "daily_realized_days": len(daily_rows),
             "sharpe_ratio": sharpe,
             "sortino_ratio": sortino,
+            "annualized_return_pct": annualized_return,
+            "annualized_volatility_pct": annualized_volatility,
+            "calmar_return_over_max_drawdown": (
+                cumulative / abs(maximum_drawdown) if maximum_drawdown < 0 else None
+            ),
+            "total_return_pct_of_notional": (
+                cumulative / total_notional if total_notional else None
+            ),
+            "cumulative_pnl_dollars": cumulative,
+            "average_daily_return": mean_return,
+            "best_day_return": max(returns) if returns else None,
+            "worst_day_return": min(returns) if returns else None,
+            "positive_day_rate": positive_days / len(returns) if returns else None,
             "maximum_drawdown_dollars": maximum_drawdown,
             "maximum_drawdown_percent_of_total_signal_notional": (
                 maximum_drawdown / total_notional if total_notional else None
@@ -336,6 +356,50 @@ def _daily_portfolio_metrics(
         },
         daily_rows,
     )
+
+
+def _capital_metrics(
+    trades: list[Any], *, trade_notional: float, starting_capital: float
+) -> dict[str, Any]:
+    """Express P&L as a percent return on capital.
+
+    ``peak_capital_deployed`` is the most money the book ever has at risk at once: a
+    sweep line over [entry, exit) intervals times ``trade_notional`` (each signal is one
+    equal-notional ticket). Return on that peak is the realistic strategy return; return
+    on ``starting_capital`` (a fixed bankroll) is what's comparable across sweep variants.
+    """
+    net = sum(float(row["net_profit"] or 0.0) for row in trades)
+    timestamps = [row["entry_at"] for row in trades if row["entry_at"] is not None]
+    timestamps += [row["exit_at"] for row in trades if row["exit_at"] is not None]
+    # A still-open trade (no exit) is treated as deployed through the end of the window.
+    sentinel = max(timestamps) + timedelta(days=1) if timestamps else None
+    events: list[tuple[datetime, int]] = []
+    for row in trades:
+        entry = row["entry_at"]
+        if entry is None:
+            continue
+        exit_at = row["exit_at"] or sentinel
+        events.append((entry, 1))
+        events.append((exit_at, -1))
+    events.sort(key=lambda item: (item[0], item[1]))  # release (-1) before acquire (+1)
+    concurrent = peak = 0
+    for _, delta in events:
+        concurrent += delta
+        peak = max(peak, concurrent)
+    peak_capital = peak * trade_notional
+    return {
+        "starting_capital": starting_capital,
+        "net_profit": net,
+        "return_on_starting_capital_pct": (
+            net / starting_capital * 100.0 if starting_capital else None
+        ),
+        "peak_concurrent_positions": peak,
+        "peak_capital_deployed": peak_capital,
+        "return_on_peak_capital_pct": (
+            net / peak_capital * 100.0 if peak_capital else None
+        ),
+        "total_tickets_notional": len(trades) * trade_notional,
+    }
 
 
 async def generate_run_reports(
@@ -356,18 +420,27 @@ async def generate_run_reports(
         "market_passes.csv": f"SELECT * FROM {SCHEMA}.historical_run_market_passes WHERE run_id=$1 ORDER BY above_at",
         "processed_markets.csv": f"SELECT * FROM {SCHEMA}.historical_run_markets WHERE run_id=$1 ORDER BY created_at, market_id",
         "market_filter_decisions.csv": f"""
-            SELECT d.* FROM {SCHEMA}.historical_run_market_decisions r
+            SELECT d.input_hash, d.market_id, d.event_id, d.event_title,
+                   d.market_question, d.model_name, d.prompt_version, d.relevant,
+                   d.reason, d.processed_at
+            FROM {SCHEMA}.historical_run_market_decisions r
             JOIN {SCHEMA}.historical_market_decisions d ON d.input_hash=r.input_hash
             WHERE r.run_id=$1 ORDER BY d.processed_at, d.market_id
         """,
         "deleted_non_relevant_markets.csv": f"""
-            SELECT d.* FROM {SCHEMA}.historical_run_market_decisions r
+            SELECT d.input_hash, d.market_id, d.event_id, d.event_title,
+                   d.market_question, d.model_name, d.prompt_version, d.relevant,
+                   d.reason, d.processed_at
+            FROM {SCHEMA}.historical_run_market_decisions r
             JOIN {SCHEMA}.historical_market_decisions d ON d.input_hash=r.input_hash
             WHERE r.run_id=$1 AND NOT d.relevant
             ORDER BY d.processed_at, d.market_id
         """,
         "asset_worlds.csv": f"""
-            SELECT w.*, a.symbol, a.asset_name, a.asset_class, a.reason AS asset_reason
+            SELECT w.world_id, w.input_hash, w.market_id, w.event_id, w.pass_number,
+                   w.as_of, w.model_name, w.prompt_version, w.universe_name,
+                   w.universe_reason, w.created_at,
+                   a.symbol, a.asset_name, a.asset_class, a.reason AS asset_reason
             FROM {SCHEMA}.historical_run_worlds r
             JOIN {SCHEMA}.historical_asset_worlds w ON w.world_id=r.world_id
             JOIN {SCHEMA}.historical_asset_world_assets a ON a.world_id=w.world_id
@@ -411,7 +484,31 @@ async def generate_run_reports(
             ORDER BY resolution, average_signal_net_profit DESC,
                      range_period, range_multiplier
         """,
+        "momentum_threshold_performance.csv": f"""
+            SELECT
+                CASE
+                    WHEN passes_ten_percent THEN '10%+'
+                    WHEN passes_five_percent THEN '5-10%'
+                    ELSE '0-5%'
+                END AS momentum_bucket,
+                COUNT(*) AS signal_count,
+                COUNT(*) FILTER (WHERE opened) AS opened_trade_count,
+                AVG(momentum_value) AS average_momentum,
+                SUM(COALESCE(net_profit, 0.0)) AS total_signal_net_profit,
+                AVG(net_profit) FILTER (WHERE opened) AS average_opened_trade_net_profit
+            FROM {SCHEMA}.historical_momentum_parameter_results
+            WHERE run_id=$1 AND momentum_value IS NOT NULL
+            GROUP BY momentum_bucket
+            ORDER BY momentum_bucket
+        """,
         "failures.csv": f"SELECT * FROM {SCHEMA}.historical_run_failures WHERE run_id=$1 ORDER BY failure_id",
+        "duplicate_event_symbol_suppression.csv": f"""
+            SELECT event_id, symbol, MAX(duplicate_suppression_count) AS suppressed_count
+            FROM {SCHEMA}.historical_trades
+            WHERE run_id=$1 AND duplicate_suppression_count > 0
+            GROUP BY event_id, symbol
+            ORDER BY suppressed_count DESC
+        """,
     }
     outputs: dict[str, list[asyncpg.Record]] = {}
     for filename, query in queries.items():
@@ -467,7 +564,19 @@ async def generate_run_reports(
                CASE WHEN COUNT(*) OVER (
                    PARTITION BY t.market_id, t.pass_number, t.symbol, t.direction
                ) > 1 THEN 'repeated_identical_signal' ELSE 'single_signal' END
-                   AS duplicate_status
+                   AS duplicate_status,
+               CASE
+                   WHEN t.holding_days <= 1 THEN '0-1'
+                   WHEN t.holding_days <= 5 THEN '2-5'
+                   WHEN t.holding_days <= 10 THEN '6-10'
+                   WHEN t.holding_days <= 20 THEN '11-20'
+                   WHEN t.holding_days IS NULL THEN 'unknown'
+                   ELSE '21+'
+               END AS holding_days_bucket,
+               CASE WHEN ROW_NUMBER() OVER (
+                   PARTITION BY t.event_id, t.symbol ORDER BY t.entry_at
+               ) = 1 THEN 'first_trade' ELSE 'repeated_trade' END
+                   AS event_symbol_sequence
         FROM {SCHEMA}.historical_trades t
         LEFT JOIN {SCHEMA}.historical_ml_observations o
           ON o.run_id=t.run_id AND o.event_id=t.event_id AND o.symbol=t.symbol
@@ -482,6 +591,9 @@ async def generate_run_reports(
         ("symbol", "performance_by_ticker.csv"),
         ("exit_reason", "performance_by_exit_reason.csv"),
         ("duplicate_status", "performance_by_duplicate_status.csv"),
+        ("holding_days_bucket", "performance_by_holding_days.csv"),
+        ("price_policy", "performance_by_price_policy.csv"),
+        ("event_symbol_sequence", "performance_first_vs_repeated_event_symbol.csv"),
     ]:
         _write_records_csv(report_dir / filename, _group_performance(performance_rows, key))
     predictions = outputs["ml_predictions.csv"]
@@ -542,6 +654,16 @@ async def generate_run_reports(
         ),
     }
     summary["machine_learning"] = ml_metrics
+    raw_config = await conn.fetchval(
+        f"SELECT config FROM {SCHEMA}.historical_backtest_runs WHERE run_id=$1",
+        run_id,
+    )
+    run_config = json.loads(raw_config) if isinstance(raw_config, str) else (raw_config or {})
+    summary["capital"] = _capital_metrics(
+        trades,
+        trade_notional=float(run_config.get("trade_notional", 1000.0)),
+        starting_capital=float(run_config.get("starting_capital", 50_000.0)),
+    )
     (report_dir / "summary.json").write_text(
         json.dumps(summary, indent=2, ensure_ascii=False),
         encoding="utf-8",
@@ -560,10 +682,7 @@ async def generate_run_reports(
         "llm_deleted_markets": sum(not bool(row["relevant"]) for row in market_decisions),
         "processed_markets": len(outputs["processed_markets.csv"]),
         "markets_with_probability_passes": len({row["market_id"] for row in passes}),
-        "asset_worlds": sum(
-            row["stage"] == "asset_worlds" and row["status"] == "complete"
-            for row in stage_rows
-        ),
+        "asset_worlds": len({row["world_id"] for row in outputs["asset_worlds.csv"]}),
         "trades": len(trades),
     }
     (report_dir / "event_processing_funnel.json").write_text(

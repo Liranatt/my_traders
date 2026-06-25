@@ -8,7 +8,6 @@ from database.backtesting.historical_repository import save_batch_calibration
 from database.backtesting.repository import candidate_events, event_markets
 from database.backtesting.schema import initialize_historical_schema
 from database.db_connection import connect
-from LLM.build_world import build_asset_worlds
 from LLM.ollama_client import OllamaClient
 from LLM.remove_unwanted_markets import classify_markets
 from main_backtesting.config import BacktestConfig
@@ -88,30 +87,10 @@ async def calibrate_batches(config: BacktestConfig) -> dict[str, int]:
             selected_batch_size=filter_size,
         )
 
-        async def test_world(size: int) -> tuple[int, int]:
-            requests = [
-                (f"calibration-world-{index}", markets[index % len(markets)], config.start)
-                for index in range(size)
-            ]
-            result = await build_asset_worlds(ollama, requests)
-            output = [item.model_dump(mode="json") for item in result]
-            return len(result), len(json.dumps(output, ensure_ascii=False).encode("utf-8"))
-
-        world_size, world_results = await _test_sizes(
-            "asset_world", [1, 2, 3, 4], test_world
-        )
-        await save_batch_calibration(
-            conn,
-            calibration_id=uuid4(),
-            task="asset_world",
-            model_name=ollama.model_name,
-            tested_sizes=world_results,
-            selected_batch_size=world_size,
-        )
-
+        # Asset-world batches are built by Gemini in a single call per batch, so only
+        # the Ollama event-filter batch size is calibrated here.
         return {
             "event_filter": filter_size,
-            "asset_world": world_size,
         }
     finally:
         await conn.close()

@@ -145,8 +145,12 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_asset_world_assets (
     asset_name              TEXT NOT NULL,
     asset_class             TEXT NOT NULL,
     reason                  TEXT NOT NULL,
+    connection_strength     DOUBLE PRECISION,
     PRIMARY KEY (world_id, symbol)
 );
+
+ALTER TABLE {SCHEMA}.historical_asset_world_assets
+    ADD COLUMN IF NOT EXISTS connection_strength DOUBLE PRECISION;
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_asset_selection_experiments (
     experiment_id           UUID PRIMARY KEY,
@@ -335,6 +339,23 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_asset_metadata (
 ALTER TABLE {SCHEMA}.historical_asset_metadata
     ADD COLUMN IF NOT EXISTS benchmark_symbol TEXT;
 
+CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_asset_fundamentals (
+    symbol                  TEXT NOT NULL,
+    as_of                   DATE NOT NULL,
+    debt_to_equity          DOUBLE PRECISION,
+    total_debt              DOUBLE PRECISION,
+    total_cash              DOUBLE PRECISION,
+    market_cap              DOUBLE PRECISION,
+    beta                    DOUBLE PRECISION,
+    profit_margin           DOUBLE PRECISION,
+    free_cash_flow          DOUBLE PRECISION,
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (symbol, as_of)
+);
+
+CREATE INDEX IF NOT EXISTS idx_historical_asset_fundamentals_symbol_updated
+    ON {SCHEMA}.historical_asset_fundamentals(symbol, updated_at DESC);
+
 CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_us_security_master (
     official_symbol         TEXT PRIMARY KEY,
     yfinance_symbol         TEXT NOT NULL,
@@ -389,6 +410,11 @@ ALTER TABLE {SCHEMA}.historical_ml_observations
 CREATE INDEX IF NOT EXISTS idx_historical_ml_prior_observations
     ON {SCHEMA}.historical_ml_observations(
         run_id, symbol, event_archetype, label_available_at
+    );
+
+CREATE INDEX IF NOT EXISTS idx_historical_ml_pooled_group_observations
+    ON {SCHEMA}.historical_ml_observations(
+        run_id, event_archetype, label_available_at
     );
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_ml_model_snapshots (
@@ -573,6 +599,22 @@ ALTER TABLE {SCHEMA}.historical_trades
 ALTER TABLE {SCHEMA}.historical_trades
     ADD COLUMN IF NOT EXISTS parameter_selection JSONB NOT NULL DEFAULT '{{}}'::JSONB;
 
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS price_policy TEXT;
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS anchor_close_at TIMESTAMPTZ;
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS anchor_close_price DOUBLE PRECISION;
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS exit_decision_at TIMESTAMPTZ;
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS exit_decision_price DOUBLE PRECISION;
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS holding_days INTEGER;
+ALTER TABLE {SCHEMA}.historical_trades
+    ADD COLUMN IF NOT EXISTS duplicate_suppression_count INTEGER;
+
+
 CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_momentum_parameter_results (
     run_id                  UUID NOT NULL REFERENCES {SCHEMA}.historical_backtest_runs(run_id) ON DELETE CASCADE,
     market_id               TEXT NOT NULL,
@@ -586,6 +628,9 @@ CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_momentum_parameter_results (
     opened                  BOOLEAN NOT NULL,
     reason                  TEXT NOT NULL,
     net_profit              DOUBLE PRECISION,
+    momentum_value          DOUBLE PRECISION,
+    passes_five_percent     BOOLEAN,
+    passes_ten_percent      BOOLEAN,
     created_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (
         run_id, market_id, pass_number, symbol, range_period, range_multiplier
@@ -596,6 +641,13 @@ CREATE INDEX IF NOT EXISTS idx_historical_momentum_parameter_walk_forward
     ON {SCHEMA}.historical_momentum_parameter_results(
         run_id, resolution, trigger_at, range_period, range_multiplier
     );
+
+ALTER TABLE {SCHEMA}.historical_momentum_parameter_results
+    ADD COLUMN IF NOT EXISTS momentum_value DOUBLE PRECISION;
+ALTER TABLE {SCHEMA}.historical_momentum_parameter_results
+    ADD COLUMN IF NOT EXISTS passes_five_percent BOOLEAN;
+ALTER TABLE {SCHEMA}.historical_momentum_parameter_results
+    ADD COLUMN IF NOT EXISTS passes_ten_percent BOOLEAN;
 
 CREATE TABLE IF NOT EXISTS {SCHEMA}.historical_run_failures (
     failure_id              BIGSERIAL PRIMARY KEY,

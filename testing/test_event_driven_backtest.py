@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from uuid import uuid4
 
+import asyncpg
 import httpx
 import pytest
 
@@ -35,17 +36,15 @@ from database.backtesting.security_master import (
 )
 from LLM.build_world import (
     AssetWorld,
-    BatchedAssetWorlds,
-    CatalogSearchPlan,
     IBAssetCatalogIndex,
+    RelevanceGateBatch,
+    TightAssetWorlds,
     assets_from_world,
-    build_asset_world,
-    build_asset_worlds,
-    catalog_asset_world_model,
-    retrieve_catalog_candidates,
+    build_gemini_asset_worlds,
 )
 from LLM.remove_unwanted_markets import classify_markets, is_speech_word_market
 import main_backtesting.engine as engine_module
+import main_backtesting.stages.event_filter as event_filter_stage
 import main_backtesting.stages.prices as prices_stage
 from main_backtesting.config import BacktestConfig
 from main_backtesting.engine import (
@@ -64,6 +63,14 @@ from main_backtesting.models import (
     SourceMarket,
 )
 from main_backtesting.reporting import create_probability_graph, create_trade_graph
+from main_backtesting.semantic_groups import (
+    LEGACY_GROUPING_VERSION,
+    SEMANTIC_GROUPING_VERSION,
+    classify_assignment,
+    group_allows_long,
+    question_allows_long_consideration,
+    semantic_ml_group,
+)
 from main_backtesting.stages.prices import (
     _merge_requests,
     download_and_save_prices,
@@ -77,7 +84,7 @@ from strategies.event_driven_long import (
     ib_style_commission,
     rate_of_change,
 )
-from strategies.event_driven_ml import build_observation, close_as_of, predict, train_snapshot
+from strategies.event_driven_ml import FEATURE_NAMES, build_observation, close_as_of, predict, train_snapshot
 
 START = datetime(2026, 1, 2, 14, tzinfo=timezone.utc)
 
@@ -393,360 +400,207 @@ def test_asset_world_requires_four_unique_symbols() -> None:
         )
 
 
-def test_asset_world_batch_retries_only_missing_request_ids() -> None:
-    class PartialWorldOllama:
-        def __init__(self) -> None:
-            self.request_ids: list[list[str]] = []
+class TwoPassGemini:
+    """Mock of the two-pass world builder: relevance gate, then tight mapping."""
 
-        async def structured(
-            self,
-            *,
-            payload,
-            response_model,
-            **kwargs,
-        ):
-            if response_model is AssetWorld:
-                return AssetWorld.model_validate(
-                    {
-                        "universe_name": "Single retry world",
-                        "universe_reason": "Assets with direct exposure to this market question.",
-                        "assets": asset_world_test_assets(),
-                    }
-                )
-            request_ids = [item["request_id"] for item in payload["requests"]]
-            self.request_ids.append(request_ids)
-            return BatchedAssetWorlds.model_validate(
+    def __init__(self, *, question_relevance: float = 0.9, mapping_assets: list[dict] | None = None) -> None:
+        self.calls = 0
+        self.models: list[str] = []
+        self.question_relevance = question_relevance
+        self.mapping_assets = mapping_assets or []
+
+    async def structured(self, *, system_prompt, payload, response_model, **kwargs):
+        self.calls += 1
+        self.models.append(response_model.__name__)
+        requests = payload["requests"]
+        if response_model is RelevanceGateBatch:
+            reason = (
+                "Concrete mechanical equity channel exists for the named exposure."
+                if self.question_relevance >= 0.10
+                else "No liquid US-listed equity or ETF mechanically reprices on this outcome."
+            )
+            return RelevanceGateBatch.model_validate(
                 {
-                    "worlds": [
+                    "decisions": [
                         {
-                            "request_id": request_ids[0],
-                            "universe_name": "Partial batch world",
-                            "universe_reason": "Assets with direct exposure to this market question.",
-                            "assets": asset_world_test_assets(),
+                            "request_id": request["request_id"],
+                            "question_relevance": self.question_relevance,
+                            "reason": reason,
                         }
+                        for request in requests
                     ]
                 }
             )
-
-    market = SourceMarket(
-        market_id="market",
-        event_id="event",
-        event_title="Event",
-        question="Question?",
-        created_at=START,
-        end_at=START + timedelta(days=10),
-        tags=["finance"],
-        raw_market={},
-        yes_token_id="yes-token",
-        condition_id="condition-id",
-        final_outcome=None,
-    )
-    ollama = PartialWorldOllama()
-    worlds = asyncio.run(
-        build_asset_worlds(
-            ollama,
-            [(f"request-{index}", market, START) for index in range(4)],
-        )
-    )
-    assert [world.request_id for world in worlds] == [
-        "request-0",
-        "request-1",
-        "request-2",
-        "request-3",
-    ]
-    assert ollama.request_ids == [
-        ["request-0", "request-1", "request-2", "request-3"],
-        ["request-1", "request-2", "request-3"],
-        ["request-2", "request-3"],
-    ]
-
-
-def test_asset_world_batch_falls_back_to_singles_after_bounded_retries() -> None:
-    class DroppingWorldOllama:
-        def __init__(self) -> None:
-            self.batch_calls = 0
-            self.single_calls = 0
-
-        async def structured(
-            self,
-            *,
-            response_model,
-            **kwargs,
-        ):
-            if response_model is BatchedAssetWorlds:
-                self.batch_calls += 1
-                return BatchedAssetWorlds(worlds=[])
-            self.single_calls += 1
-            return AssetWorld.model_validate(
+        if response_model is TightAssetWorlds:
+            return TightAssetWorlds.model_validate(
                 {
-                    "universe_name": "Single fallback world",
-                    "universe_reason": "Assets with direct exposure to this market question.",
-                    "assets": asset_world_test_assets(),
-                }
-            )
-
-    market = SourceMarket(
-        market_id="market",
-        event_id="event",
-        event_title="Event",
-        question="Question?",
-        created_at=START,
-        end_at=START + timedelta(days=10),
-        tags=["finance"],
-        raw_market={},
-        yes_token_id="yes-token",
-        condition_id="condition-id",
-        final_outcome=None,
-    )
-    ollama = DroppingWorldOllama()
-    worlds = asyncio.run(
-        build_asset_worlds(
-            ollama,
-            [(f"request-{index}", market, START) for index in range(3)],
-        )
-    )
-
-    assert [world.request_id for world in worlds] == [
-        "request-0",
-        "request-1",
-        "request-2",
-    ]
-    assert ollama.batch_calls == 4
-    assert ollama.single_calls == 3
-
-
-def test_asset_world_retries_symbols_outside_ib_tradable_universe() -> None:
-    class RetryingWorldOllama:
-        def __init__(self) -> None:
-            self.payloads: list[dict[str, object]] = []
-
-        async def structured(self, *, payload, **kwargs):
-            self.payloads.append(payload)
-            assets = asset_world_test_assets()
-            if len(self.payloads) == 1:
-                assets[0] = {**assets[0], "symbol": "FAKE"}
-            return AssetWorld.model_validate(
-                {
-                    "universe_name": "IB validated world",
-                    "universe_reason": "Assets connected through concrete economic relationships.",
-                    "assets": assets,
-                }
-            )
-
-    market = SourceMarket(
-        market_id="market",
-        event_id="event",
-        event_title="Event",
-        question="Question?",
-        created_at=START,
-        end_at=START + timedelta(days=10),
-        tags=["finance"],
-        raw_market={},
-        yes_token_id="yes-token",
-        condition_id="condition-id",
-        final_outcome=None,
-    )
-    ollama = RetryingWorldOllama()
-    world = asyncio.run(
-        build_asset_world(
-            ollama,
-            market,
-            as_of=START,
-            tradable_symbols={"AAPL", "MSFT", "AMZN", "XLK"},
-        )
-    )
-
-    assert [asset.symbol for asset in world.assets] == ["AAPL", "MSFT", "AMZN", "XLK"]
-    assert ollama.payloads[1]["rejected_symbols_not_in_ib_tradable_universe"] == ["FAKE"]
-    assert assets_from_world(world)[0].reason.startswith("[direct_company]")
-
-
-def test_asset_world_final_selection_uses_supplied_ib_asset_catalog() -> None:
-    class CatalogAwareOllama:
-        def __init__(self) -> None:
-            self.catalog_payload: dict[str, object] | None = None
-
-        async def structured(self, *, payload, **kwargs):
-            if "available_ib_assets" not in payload:
-                if "rejected_symbols_not_in_ib_tradable_universe" in payload:
-                    return AssetWorld.model_validate(
+                    "worlds": [
                         {
-                            "universe_name": "Corrected discovered relationships",
-                            "universe_reason": "Relationships corrected to use IB-confirmed assets.",
-                            "assets": asset_world_test_assets(),
+                            "request_id": request["request_id"],
+                            "universe_name": "Test world",
+                            "universe_reason": "Specifically exposed names with a concrete mechanical channel.",
+                            "assets": self.mapping_assets,
                         }
-                    )
-                assets = asset_world_test_assets()
-                assets[0] = {
-                    **assets[0],
-                    "symbol": "FAKE",
-                    "asset_name": "Apple",
-                }
-                return AssetWorld.model_validate(
-                    {
-                        "universe_name": "Discovered relationships",
-                        "universe_reason": "Potential relationships discovered before IB validation.",
-                        "assets": assets,
-                    }
-                )
-            self.catalog_payload = payload
-            return AssetWorld.model_validate(
-                {
-                    "universe_name": "Catalog selected world",
-                    "universe_reason": "Final assets selected only from the supplied IB catalog.",
-                    "assets": [
-                        {
-                            **asset,
-                            "asset_name": "LLM-provided name is replaced",
-                            "relationship_type": "direct_company",
-                            "reason": "Generic final-selector reason that must not replace discovery.",
-                        }
-                        for asset in asset_world_test_assets()
-                    ],
+                        for request in requests
+                    ]
                 }
             )
+        raise AssertionError(f"unexpected response_model {response_model!r}")
 
-    market = SourceMarket(
+
+def _market(question: str, *, tags: list[str]) -> SourceMarket:
+    return SourceMarket(
         market_id="market",
         event_id="event",
-        event_title="Will Apple beat quarterly earnings?",
-        question="Will Apple beat quarterly earnings?",
+        event_title=question,
+        question=question,
         created_at=START,
         end_at=START + timedelta(days=10),
-        tags=["earnings", "tech"],
+        tags=tags,
         raw_market={},
         yes_token_id="yes-token",
         condition_id="condition-id",
         final_outcome=None,
     )
+
+
+def test_two_pass_world_maps_relevant_names_and_drops_untradeable() -> None:
+    market = _market("Will the US or Israel strike Iran?", tags=["geopolitics", "commodities"])
     catalog = [
-        IBTradableAsset("AAPL", "Apple Inc.", "stock", "NASDAQ", "COMMON", "Technology"),
-        IBTradableAsset("MSFT", "Microsoft Corporation", "stock", "NASDAQ", "COMMON", "Technology"),
-        IBTradableAsset("AMZN", "Amazon.com, Inc.", "stock", "NASDAQ", "COMMON", "Retail"),
-        IBTradableAsset("XLK", "Technology Select Sector SPDR Fund", "etf", "ARCA", "ETF"),
-        IBTradableAsset("NVDA", "NVIDIA Corporation", "stock", "NASDAQ", "COMMON", "Technology"),
+        IBTradableAsset("USO", "United States Oil Fund", "etf", "ARCA", "ETF"),
+        IBTradableAsset("XLE", "Energy Select Sector SPDR Fund", "etf", "ARCA", "ETF"),
     ]
-    ollama = CatalogAwareOllama()
-    worlds = asyncio.run(
-        build_asset_worlds(
-            ollama,
-            [("request", market, START)],
-            tradable_assets=catalog,
-        )
+    gemini = TwoPassGemini(
+        mapping_assets=[
+            {
+                "symbol": "USO",
+                "asset_name": "United States Oil Fund",
+                "asset_class": "etf",
+                "relationship_type": "commodity_proxy",
+                "reason": "Crude oil reprices on the Middle East supply-shock risk premium.",
+                "connection_strength": 0.9,
+            },
+            {
+                "symbol": "XLE",
+                "asset_name": "Energy Select Sector SPDR Fund",
+                "asset_class": "etf",
+                "relationship_type": "sector_etf",
+                "reason": "Energy sector equities track the crude oil supply-shock channel.",
+                "connection_strength": 0.7,
+            },
+            {
+                "symbol": "FAKE",
+                "asset_name": "Fake Co",
+                "asset_class": "stock",
+                "relationship_type": "other_specific",
+                "reason": "Absent from the IB catalog so canonicalization must drop it.",
+                "connection_strength": 0.5,
+            },
+        ]
     )
+    worlds = asyncio.run(
+        build_gemini_asset_worlds(gemini, [("request-1", market, START)], tradable_assets=catalog)
+    )
+    assert gemini.calls == 2
+    assert gemini.models == ["RelevanceGateBatch", "TightAssetWorlds"]
+    world = worlds[0]
+    assert [asset.symbol for asset in world.assets] == ["USO", "XLE"]
+    assert [asset.connection_strength for asset in world.assets] == [0.9, 0.7]
+    assert world.assets[0].relationship_type == "commodity_proxy"
+    assert world.question_relevance == 0.9  # carried from the pass-1 score
 
-    assert ollama.catalog_payload is not None
-    available = ollama.catalog_payload["available_ib_assets"]
-    assert {item["symbol"] for item in available} <= {asset.symbol for asset in catalog}
-    assert "FAKE" not in {item["symbol"] for item in available}
-    assert [asset.symbol for asset in worlds[0].assets] == ["AAPL", "MSFT", "AMZN", "XLK"]
-    assert worlds[0].assets[0].asset_name == "Apple Inc."
-    assert worlds[0].assets[-1].asset_class == "etf"
-    assert worlds[0].assets[1].relationship_type == "competitor"
-    assert worlds[0].assets[1].reason == asset_world_test_assets()[1]["reason"]
 
-
-def test_catalog_asset_world_schema_rejects_symbol_outside_available_assets() -> None:
+def test_two_pass_world_collapses_earnings_to_single_named_company() -> None:
+    market = _market("Will Apple beat quarterly earnings?", tags=["earnings", "tech"])
     catalog = [
         IBTradableAsset("AAPL", "Apple Inc.", "stock", "NASDAQ", "COMMON"),
         IBTradableAsset("MSFT", "Microsoft Corporation", "stock", "NASDAQ", "COMMON"),
         IBTradableAsset("AMZN", "Amazon.com, Inc.", "stock", "NASDAQ", "COMMON"),
-        IBTradableAsset("XLK", "Technology Select Sector SPDR Fund", "etf", "ARCA", "ETF"),
     ]
-    schema = catalog_asset_world_model(catalog)
-    invalid_assets = asset_world_test_assets()
-    invalid_assets[0] = {**invalid_assets[0], "symbol": "FAKE"}
-
-    with pytest.raises(ValueError):
-        schema.model_validate(
+    gemini = TwoPassGemini(
+        question_relevance=1.0,
+        mapping_assets=[
             {
-                "universe_name": "Invalid catalog world",
-                "universe_reason": "This world contains a symbol outside the supplied catalog.",
-                "assets": invalid_assets,
-            }
-        )
-
-
-def test_full_catalog_retrieval_prioritizes_llm_search_plan_entities() -> None:
-    catalog = IBAssetCatalogIndex(
-        [
-            IBTradableAsset(
-                "GOOGL",
-                "Alphabet Inc. - Class A Common Stock",
-                "stock",
-                "NASDAQ",
-                "COMMON",
-                "Communications",
-                "Internet",
-                "Web Portals/ISP",
-            ),
-            IBTradableAsset(
-                "MSFT",
-                "Microsoft Corporation - Common Stock",
-                "stock",
-                "NASDAQ",
-                "COMMON",
-                "Technology",
-                "Software",
-                "Applications Software",
-            ),
-            IBTradableAsset(
-                "AMZN",
-                "Amazon.com, Inc. - Common Stock",
-                "stock",
-                "NASDAQ",
-                "COMMON",
-                "Communications",
-                "Internet",
-                "E-Commerce/Products",
-            ),
-            IBTradableAsset(
-                "CLOU",
-                "Global X Cloud Computing ETF",
-                "etf",
-                "NASDAQ",
-                "ETF",
-            ),
-            IBTradableAsset(
-                "NKE",
-                "Nike, Inc. Common Stock",
-                "stock",
-                "NYSE",
-                "COMMON",
-                "Consumer, Cyclical",
-                "Apparel",
-                "Athletic Footwear",
-            ),
+                "symbol": "AAPL",
+                "asset_name": "Apple Inc.",
+                "asset_class": "stock",
+                "relationship_type": "direct_company",
+                "reason": "Apple is the company directly named by this earnings question.",
+                "connection_strength": 1.0,
+            },
+            {
+                "symbol": "MSFT",
+                "asset_name": "Microsoft Corporation",
+                "asset_class": "stock",
+                "relationship_type": "competitor",
+                "reason": "A peer that does not mechanically reprice on Apple's own result.",
+                "connection_strength": 0.4,
+            },
+            {
+                "symbol": "AMZN",
+                "asset_name": "Amazon.com, Inc.",
+                "asset_class": "stock",
+                "relationship_type": "partner",
+                "reason": "A peer that does not mechanically reprice on Apple's own result.",
+                "connection_strength": 0.3,
+            },
         ]
     )
-    market = SourceMarket(
-        market_id="market",
-        event_id="event",
-        event_title="Alphabet cloud revenue",
-        question="Will Alphabet cloud revenue beat expectations?",
-        created_at=START,
-        end_at=START + timedelta(days=10),
-        tags=["earnings", "tech"],
-        raw_market={},
-        yes_token_id="yes-token",
-        condition_id="condition-id",
-        final_outcome=None,
+    worlds = asyncio.run(
+        build_gemini_asset_worlds(gemini, [("request-1", market, START)], tradable_assets=catalog)
     )
-    plan = CatalogSearchPlan(
-        direct_entities=["Alphabet"],
-        related_entities=["Microsoft", "Amazon"],
-        ticker_hints=["GOOGL"],
-        industries=["Cloud software"],
-        etf_themes=["Cloud computing"],
-        economic_keywords=["enterprise cloud"],
-        rationale="Search direct cloud companies, competitors, and focused cloud ETFs.",
+    # Single-named-entity earnings markets collapse to ONLY the named company -- no peer dump.
+    assert [asset.symbol for asset in worlds[0].assets] == ["AAPL"]
+    assert worlds[0].assets[0].connection_strength == 1.0
+
+
+def test_two_pass_gate_drops_irrelevant_market_to_empty_world() -> None:
+    market = _market('Will Powell say "inflation" 40 times?', tags=["fed"])
+    catalog = [IBTradableAsset("SPY", "SPDR S&P 500 ETF Trust", "etf", "ARCA", "ETF")]
+    gemini = TwoPassGemini(question_relevance=0.05)
+    worlds = asyncio.run(
+        build_gemini_asset_worlds(gemini, [("request-1", market, START)], tradable_assets=catalog)
     )
+    # Question scored below the relevance floor -> empty world and the tight-mapping pass is skipped.
+    assert gemini.calls == 1
+    assert gemini.models == ["RelevanceGateBatch"]
+    assert worlds[0].assets == []
+    assert worlds[0].question_relevance == 0.05
 
-    candidates = retrieve_catalog_candidates(market, plan, catalog)
 
-    assert candidates[0].symbol == "GOOGL"
-    assert {asset.symbol for asset in candidates[:4]} == {"GOOGL", "AMZN", "MSFT", "CLOU"}
-    assert "NKE" not in {asset.symbol for asset in candidates}
+def test_two_pass_world_emits_empty_when_no_symbol_is_ib_tradable() -> None:
+    market = _market("Will a major AI technology event happen?", tags=["ai", "tech"])
+    catalog = [
+        IBTradableAsset("QQQ", "Invesco QQQ Trust", "etf", "NASDAQ", "ETF"),
+        IBTradableAsset("XLK", "Technology Select Sector SPDR Fund", "etf", "ARCA", "ETF"),
+    ]
+    gemini = TwoPassGemini(
+        mapping_assets=[
+            {
+                "symbol": "FAKE1",
+                "asset_name": "Fake One",
+                "asset_class": "stock",
+                "relationship_type": "other_specific",
+                "reason": "Not present in the IB catalog and must not be padded with a fallback.",
+                "connection_strength": 0.8,
+            },
+            {
+                "symbol": "FAKE2",
+                "asset_name": "Fake Two",
+                "asset_class": "stock",
+                "relationship_type": "other_specific",
+                "reason": "Not present in the IB catalog and must not be padded with a fallback.",
+                "connection_strength": 0.8,
+            },
+        ]
+    )
+    # No hardcoded fallback symbols -- but a single untradeable market must not crash the whole
+    # run. It becomes an empty world (no tradeable exposure) instead.
+    worlds = asyncio.run(
+        build_gemini_asset_worlds(gemini, [("request", market, START)], tradable_assets=catalog)
+    )
+    assert gemini.calls == 2
+    assert worlds[0].assets == []
 
 
 def test_speech_word_markets_are_rejected_without_calling_llm() -> None:
@@ -1010,6 +864,73 @@ def test_stage_order_matches_required_pipeline() -> None:
     assert [function.__module__.rsplit(".", 1)[-1] for function in STAGE_FUNCTIONS] == STAGES
 
 
+def test_stage_reconnects_and_retries_after_database_connection_drop(monkeypatch) -> None:
+    async def run() -> tuple[object, list[str]]:
+        lifecycle: list[str] = []
+        stage_calls = 0
+        engine = HistoricalBacktestEngine.__new__(HistoricalBacktestEngine)
+        engine.run_id = uuid4()
+        engine.current_work_key = None
+
+        class FakeConnection:
+            def __init__(self, name: str) -> None:
+                self.name = name
+                self.closed = False
+
+            def is_closed(self) -> bool:
+                return self.closed
+
+            async def close(self) -> None:
+                self.closed = True
+                lifecycle.append(f"{self.name}_closed")
+
+        first = FakeConnection("first")
+        second = FakeConnection("second")
+
+        async def fake_connect() -> FakeConnection:
+            lifecycle.append("reconnected")
+            return second
+
+        async def initialize(conn: FakeConnection) -> None:
+            lifecycle.append(f"{conn.name}_initialized")
+
+        async def update_run(conn: FakeConnection, *args: object, **kwargs: object) -> None:
+            lifecycle.append(f"{conn.name}_updated")
+
+        async def stage_function(engine: object, conn: FakeConnection) -> None:
+            nonlocal stage_calls
+            stage_calls += 1
+            lifecycle.append(f"{conn.name}_stage")
+            if stage_calls == 1:
+                raise asyncpg.exceptions.ConnectionDoesNotExistError(
+                    "connection was closed in the middle of operation"
+                )
+
+        async def unexpected_failure_record(*args: object, **kwargs: object) -> None:
+            raise AssertionError("A recovered connection drop must not record stage failure")
+
+        monkeypatch.setattr(engine_module, "connect", fake_connect)
+        monkeypatch.setattr(engine_module, "initialize_historical_schema", initialize)
+        monkeypatch.setattr(engine_module, "update_run", update_run)
+        monkeypatch.setattr(engine_module, "record_stage_failure", unexpected_failure_record)
+        monkeypatch.setattr(engine_module, "DATABASE_CONNECTION_RETRY_BASE_SECONDS", 0)
+
+        result = await engine._run_stage(first, "simulation", stage_function)
+        return result, lifecycle
+
+    result, lifecycle = asyncio.run(run())
+    assert getattr(result, "name") == "second"
+    assert lifecycle == [
+        "first_updated",
+        "first_stage",
+        "first_closed",
+        "reconnected",
+        "second_initialized",
+        "second_updated",
+        "second_stage",
+    ]
+
+
 def test_stop_after_stage_marks_run_paused_and_stops_execution(tmp_path, monkeypatch) -> None:
     async def run() -> tuple[list[str], list[tuple[str, str | None]]]:
         executed: list[str] = []
@@ -1091,6 +1012,7 @@ def test_resume_loads_saved_config_and_executes_stages_in_order(tmp_path, monkey
         engine.hourly_boundary = START - timedelta(days=1)
         engine.run_dir = engine.config.run_dir(engine.run_id)
         engine.current_work_key = None
+        engine.gemini = SimpleNamespace(model_name="test", thinking_level="low")
 
         class FakeConnection:
             async def close(self) -> None:
@@ -1139,6 +1061,27 @@ def test_resume_loads_saved_config_and_executes_stages_in_order(tmp_path, monkey
     assert lifecycle == ["loaded_run", "database_closed", "clients_closed"]
 
 
+def test_stored_world_engine_does_not_initialize_llm_clients(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    def unexpected_client() -> object:
+        raise AssertionError("An LLM client was initialized")
+
+    monkeypatch.setattr(engine_module, "GeminiClient", unexpected_client)
+    monkeypatch.setattr(engine_module, "OllamaClient", unexpected_client)
+
+    engine = HistoricalBacktestEngine(
+        BacktestConfig(output_root=tmp_path),
+        start_at_stage="prices",
+        stored_world_source_run_id=uuid4(),
+        use_llm_clients=False,
+    )
+
+    assert engine.gemini is None
+    assert engine.ollama is None
+
+
 def test_repository_modules_and_compatibility_facade_export_same_functions() -> None:
     from database.backtesting import historical_repository
     from database.backtesting.repositories import (
@@ -1178,6 +1121,16 @@ def test_smoke_test_event_selection_is_saved_in_config() -> None:
 
     assert restored.maximum_events == 2
     assert restored.selected_event_ids == ("event-1", "event-2")
+
+
+def test_old_saved_config_resumes_with_legacy_ml_grouping() -> None:
+    values = BacktestConfig().to_json()
+    values.pop("semantic_ml_grouping_version")
+
+    restored = BacktestConfig.from_json(values)
+
+    assert restored.semantic_ml_grouping_version == LEGACY_GROUPING_VERSION
+    assert BacktestConfig().semantic_ml_grouping_version == SEMANTIC_GROUPING_VERSION
 
 
 def test_candidate_events_require_between_five_and_sixty_days() -> None:
@@ -1274,8 +1227,14 @@ def test_rate_of_change_requires_positive_completed_bar_momentum() -> None:
 
 def test_corrected_parameter_grid_and_semantic_corporate_archetype() -> None:
     config = BacktestConfig()
+    assert config.asset_price_policy == "daily_close_to_close"
     assert config.momentum_lookback_grid == (5, 7, 12, 14, 18, 21)
-    assert config.trailing_range_multiplier_grid == (1.5, 2.0, 2.5, 3.0)
+    # Positive entries are ATR multipliers (k-fold tune of k); negative entries are
+    # fixed fractional hard stops (shadow test). Momentum walk-forward selects across both.
+    assert config.trailing_range_multiplier_grid == (
+        1.5, 2.0, 2.5, 3.0, -0.01, -0.02, -0.03, -0.05,
+    )
+    assert config.ml_stop_loss_pct == 0.03
     assert config.trailing_range_bars == 14
     assert config.trailing_range_multiplier == 3.0
     question = "Will Alphabet (GOOGL) beat quarterly earnings estimates?"
@@ -1285,6 +1244,116 @@ def test_corrected_parameter_grid_and_semantic_corporate_archetype() -> None:
     assert event_archetype(["earnings"], question=question, symbol="NFLX") is None
     assert event_archetype(["finance"], question="Will something happen?", symbol="SPY") is None
     assert benchmark_symbol("TNA", quote_type="ETF", sector=None) == "IWM"
+
+
+def test_semantic_ml_groups_require_supported_outcome_and_asset_role() -> None:
+    assert semantic_ml_group(
+        "Will Apple (AAPL) beat quarterly earnings?",
+        symbol="AAPL",
+        asset_name="Apple Inc.",
+        tags=["earnings"],
+    ) == "earnings_beat+direct_company"
+    assert semantic_ml_group(
+        "Will Apple (AAPL) beat quarterly earnings?",
+        symbol="MSFT",
+        asset_name="Microsoft Corporation",
+        tags=["earnings"],
+    ) is None
+    assert semantic_ml_group(
+        "Will US attack Iran before July?",
+        symbol="LMT",
+        asset_name="Lockheed Martin Corporation",
+        tags=["iran", "military-action"],
+    ) == "military_escalation+defense_beneficiary"
+    assert semantic_ml_group(
+        "Will US attack Iran before July?",
+        symbol="XLE",
+        asset_name="Energy Select Sector SPDR Fund",
+        tags=["iran", "oil"],
+    ) == "military_escalation+energy_beneficiary"
+
+
+def test_semantic_long_only_rejects_negative_and_ambiguous_groups() -> None:
+    ceasefire = classify_assignment(
+        "Will Russia and Ukraine agree to a ceasefire?",
+        symbol="LMT",
+        asset_name="Lockheed Martin Corporation",
+        tags=["russia", "ukraine"],
+    )
+    rate_cut = classify_assignment(
+        "Will the Fed decrease interest rates by 25 bps?",
+        symbol="TLT",
+        asset_name="iShares 20+ Year Treasury Bond ETF",
+        tags=["fed-rates"],
+    )
+    assert ceasefire.group == "ceasefire_or_deescalation+defense_exposure"
+    assert ceasefire.yes_outcome_polarity == "negative"
+    assert group_allows_long(ceasefire.group) is False
+    assert rate_cut.group == "rate_cut+duration_asset"
+    assert rate_cut.yes_outcome_polarity == "positive"
+    assert group_allows_long(rate_cut.group) is True
+    assert semantic_ml_group(
+        "Will Apple dip next week?",
+        symbol="AAPL",
+        asset_name="Apple Inc.",
+    ) is None
+    assert question_allows_long_consideration(
+        "Will Apple (AAPL) beat quarterly earnings?",
+        tags=["earnings"],
+    )
+    assert not question_allows_long_consideration(
+        "Will Russia and Ukraine agree to a ceasefire?",
+        tags=["russia", "ukraine"],
+    )
+
+
+def test_semantic_runs_filter_negative_questions_before_downstream_stages(monkeypatch) -> None:
+    positive = SourceMarket(
+        market_id="positive",
+        event_id="earnings",
+        event_title="Apple earnings",
+        question="Will Apple (AAPL) beat quarterly earnings?",
+        created_at=START,
+        end_at=START + timedelta(days=10),
+        tags=["earnings"],
+        raw_market={},
+        yes_token_id="yes-positive",
+        condition_id=None,
+        final_outcome=None,
+    )
+    negative = SourceMarket(
+        market_id="negative",
+        event_id="ceasefire",
+        event_title="Ukraine ceasefire",
+        question="Will Russia and Ukraine agree to a ceasefire?",
+        created_at=START,
+        end_at=START + timedelta(days=10),
+        tags=["russia", "ukraine"],
+        raw_market={},
+        yes_token_id="yes-negative",
+        condition_id=None,
+        final_outcome=None,
+    )
+
+    async def accepted_market_ids(conn: object, run_id: object) -> list[str]:
+        return ["positive", "negative"]
+
+    async def candidate_markets(engine: object, conn: object) -> list[SourceMarket]:
+        return [positive, negative]
+
+    monkeypatch.setattr(event_filter_stage, "accepted_market_ids", accepted_market_ids)
+    monkeypatch.setattr(event_filter_stage, "candidate_markets", candidate_markets)
+
+    semantic_engine = SimpleNamespace(run_id=uuid4(), config=BacktestConfig())
+    legacy_engine = SimpleNamespace(
+        run_id=uuid4(),
+        config=BacktestConfig(semantic_ml_grouping_version=LEGACY_GROUPING_VERSION),
+    )
+    semantic = asyncio.run(event_filter_stage.accepted_markets(semantic_engine, object()))
+    legacy = asyncio.run(event_filter_stage.accepted_markets(legacy_engine, object()))
+
+    assert [market.market_id for market in semantic] == ["positive"]
+    assert [market.market_id for market in legacy] == ["positive", "negative"]
 
 
 def test_walk_forward_momentum_selection_uses_only_prior_completed_results() -> None:
@@ -1321,6 +1390,32 @@ def test_walk_forward_momentum_selection_uses_only_prior_completed_results() -> 
     assert selected["selection_method"] == "walk_forward_best_prior_net_expectancy"
     assert "trigger_at < $3" in connection.query
     assert connection.arguments[2] == START
+
+
+def test_walk_forward_momentum_selection_abstains_on_non_positive_expectancy() -> None:
+    class FakeConnection:
+        async def fetchrow(self, query: str, *arguments: object):
+            return {
+                "range_period": 14,
+                "range_multiplier": 3.0,
+                "sample_count": 50,
+                "average_net_profit": -0.25,
+            }
+
+    selected = asyncio.run(
+        select_walk_forward_momentum_parameters(
+            FakeConnection(),
+            run_id=uuid4(),
+            before=START,
+            resolution="1d",
+            minimum_samples=30,
+            fallback_period=14,
+            fallback_multiplier=3.0,
+        )
+    )
+
+    assert selected["should_trade"] is False
+    assert selected["selection_method"] == "walk_forward_abstain_non_positive_expectancy"
 
 
 def test_historical_company_symbol_alias_does_not_resolve_to_reused_ticker() -> None:
@@ -1401,6 +1496,7 @@ def test_machine_learning_trade_locks_predicted_target_then_exits_on_reversal(tm
     async def run():
         config = BacktestConfig(
             output_root=tmp_path,
+            asset_price_policy="legacy_intraday",
             trailing_range_bars=14,
             trailing_range_multiplier=3,
         )
@@ -1483,7 +1579,10 @@ def test_machine_learning_trade_locks_predicted_target_then_exits_on_reversal(tm
 def test_machine_learning_trade_uses_atr_trailing_stop(tmp_path) -> None:
     async def run():
         fake_engine = SimpleNamespace(
-            config=BacktestConfig(output_root=tmp_path),
+            config=BacktestConfig(
+                output_root=tmp_path,
+                asset_price_policy="legacy_intraday",
+            ),
             run_id=uuid4(),
             run_dir=tmp_path,
             strategy=EventDrivenLongStrategy(range_period=14, range_multiplier=3),
@@ -1548,12 +1647,7 @@ def test_machine_learning_trade_uses_atr_trailing_stop(tmp_path) -> None:
 
 def test_ml_remaining_gap_is_direction_aware() -> None:
     def snapshot(*, classifier_intercept: float, ridge_intercept: float) -> MLModelSnapshot:
-        feature_names = [
-            "asset_ytd_change",
-            "sector_one_month_trend",
-            "spy_two_week_trend",
-            "asset_two_week_trend",
-        ]
+        feature_names = list(FEATURE_NAMES)
         return MLModelSnapshot(
             snapshot_id=uuid4(),
             run_id=uuid4(),
@@ -1574,12 +1668,7 @@ def test_ml_remaining_gap_is_direction_aware() -> None:
             validation_metrics={},
         )
 
-    features = {
-        "asset_ytd_change": 0.0,
-        "sector_one_month_trend": 0.0,
-        "spy_two_week_trend": 0.0,
-        "asset_two_week_trend": 0.0,
-    }
+    features = {name: 0.0 for name in FEATURE_NAMES}
     long_prediction = predict(
         snapshot(classifier_intercept=10.0, ridge_intercept=0.10),
         run_id=uuid4(),
@@ -1611,7 +1700,10 @@ def test_ml_remaining_gap_is_direction_aware() -> None:
 
 def test_machine_learning_trade_exits_one_day_before_market_end(tmp_path) -> None:
     async def run():
-        config = BacktestConfig(output_root=tmp_path)
+        config = BacktestConfig(
+            output_root=tmp_path,
+            asset_price_policy="legacy_intraday",
+        )
         fake_engine = SimpleNamespace(
             config=config,
             run_id=uuid4(),
@@ -1788,6 +1880,12 @@ def ml_observation(index: int, classification: int) -> MLObservation:
             "sector_one_month_trend": index / 200,
             "spy_two_week_trend": -index / 300,
             "asset_two_week_trend": classification * (index + 1) / 100,
+            "polymarket_probability_at_trigger": 0.55 + index / 200,
+            "polymarket_probability_slope_24h": classification * index / 500,
+            "polymarket_time_to_resolution_days": 30.0 - index,
+            "polymarket_crossing_latency_days": float(index),
+            "polymarket_pre_entry_volume_log": float(index % 5),
+            "polymarket_probability_volatility": index / 1000,
         },
         research_data={},
         classification_target=classification,
@@ -1850,6 +1948,23 @@ def test_machine_learning_trains_after_eight_completed_prior_observations() -> N
     assert trained.ridge_coefficients
 
 
+def test_pooled_semantic_model_requires_independent_prior_events() -> None:
+    correlated = [ml_observation(index, 1 if index % 2 else -1) for index in range(8)]
+    for observation in correlated:
+        observation.event_id = "same-event"
+    snapshot = train_snapshot(
+        run_id=uuid4(),
+        symbol="TEST",
+        event_archetype="military_escalation+defense_beneficiary",
+        training_cutoff=START + timedelta(days=20),
+        observations=correlated,
+        minimum_prior_observations=8,
+        minimum_prior_events=2,
+    )
+
+    assert snapshot.status == "insufficient_event_history"
+
+
 def test_unresolved_event_observation_is_saved_but_not_trainable() -> None:
     daily = [
         PriceBar(
@@ -1882,17 +1997,17 @@ def test_unresolved_event_observation_is_saved_but_not_trainable() -> None:
     assert observation.classification_target is None
     assert observation.regression_target is None
     assert observation.valid_for_training is False
-    assert observation.research_data["event_open_price"] == pytest.approx(100)
+    assert observation.research_data["anchor_close_price"] == pytest.approx(119.5)
 
 
-def test_ml_regression_target_is_post_threshold_peak_from_event_open() -> None:
+def test_ml_regression_target_is_post_threshold_peak_from_anchor_close() -> None:
     daily = [
         PriceBar(
             timestamp=START + timedelta(days=index),
             open=100,
             high=150 if index == 1 else 110,
             low=95,
-            close=105,
+            close=100 + index * 5,
             volume=1_000,
         )
         for index in range(5)
@@ -1916,7 +2031,8 @@ def test_ml_regression_target_is_post_threshold_peak_from_event_open() -> None:
     )
 
     assert observation.classification_target == 1
-    assert observation.regression_target == pytest.approx(0.10)
+    assert observation.research_data["anchor_close_price"] == pytest.approx(105)
+    assert observation.regression_target == pytest.approx(15 / 105)
     assert observation.research_data["post_threshold_path_rows"] == 3
 
 
@@ -1991,6 +2107,33 @@ def test_prior_observations_are_filtered_by_label_availability_not_first_pass() 
     )
     assert "label_available_at < $4" in connection.query
     assert "first_pass_at < $4" not in connection.query
+
+
+def test_semantic_prior_observations_pool_across_symbols_by_group() -> None:
+    class FakeConnection:
+        def __init__(self) -> None:
+            self.query = ""
+            self.arguments: tuple[object, ...] = ()
+
+        async def fetch(self, query: str, *arguments: object) -> list[object]:
+            self.query = query
+            self.arguments = arguments
+            return []
+
+    connection = FakeConnection()
+    asyncio.run(
+        prior_ml_observations(
+            connection,
+            run_id=uuid4(),
+            symbol="AAPL",
+            event_archetype="earnings_beat+direct_company",
+            before=START,
+        )
+    )
+    assert "symbol = $2" not in connection.query
+    assert "event_archetype = $2" in connection.query
+    assert "label_available_at < $3" in connection.query
+    assert connection.arguments[1] == "earnings_beat+direct_company"
 
 
 def test_each_bought_trade_can_generate_its_own_graph(tmp_path) -> None:

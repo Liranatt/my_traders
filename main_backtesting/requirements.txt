@@ -6,3 +6,5 @@ pandas
 pydantic
 python-dotenv
 yfinance
+pyarrow
+xgboost

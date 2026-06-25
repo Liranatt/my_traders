@@ -3,22 +3,53 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
+import warnings
 
 import numpy as np
+from sklearn.linear_model import (
+    LogisticRegression,
+    LogisticRegressionCV,
+    Ridge,
+    RidgeCV,
+)
 
 from main_backtesting.models import (
     MLModelSnapshot,
     MLObservation,
     MLPrediction,
     PriceBar,
+    ProbabilityPoint,
 )
 
 FEATURE_NAMES = [
+    # Original price-trend features (kept until shown to add nothing).
     "asset_ytd_change",
     "sector_one_month_trend",
     "spy_two_week_trend",
     "asset_two_week_trend",
+    # Polymarket signal features -- the prediction-market edge the paper is built on.
+    # All are computed strictly from data at or before the threshold crossing (Tθ).
+    "polymarket_probability_at_trigger",
+    "polymarket_probability_slope_24h",
+    "polymarket_time_to_resolution_days",
+    "polymarket_crossing_latency_days",
+    "polymarket_pre_entry_volume_log",
+    "polymarket_probability_volatility",
 ]
+
+# Opt-in query-window features: price behaviour relative to the QUERY timeline (T0 -> Te),
+# not just the 55% crossing. Added to the model only when config.ml_use_query_window_features
+# is set, so we can A/B whether query-relative data lifts accuracy.
+QUERY_WINDOW_FEATURE_NAMES = [
+    "query_runup_since_creation",
+    "query_elapsed_fraction_at_crossing",
+]
+
+
+def active_feature_names(use_query_window_features: bool) -> list[str]:
+    if use_query_window_features:
+        return list(FEATURE_NAMES) + list(QUERY_WINDOW_FEATURE_NAMES)
+    return list(FEATURE_NAMES)
 ALPHAS = [0.01, 0.1, 1.0, 10.0]
 DAILY_SESSION_LENGTH = timedelta(hours=6, minutes=30)
 
@@ -47,35 +78,43 @@ def observation_targets(
     peak_window_start: datetime,
     end: datetime,
 ) -> tuple[int | None, float | None, dict[str, Any]]:
-    event_window = [
+    completed_before_threshold = [
         bar
         for bar in bars
-        if event_start <= bar.timestamp and bar.timestamp + DAILY_SESSION_LENGTH <= end
+        if bar.timestamp + DAILY_SESSION_LENGTH <= peak_window_start
     ]
-    peak_window = [
+    post_threshold_window = [
         bar
-        for bar in event_window
-        if peak_window_start <= bar.timestamp
+        for bar in bars
+        if bar.timestamp + DAILY_SESSION_LENGTH > peak_window_start
+        and bar.timestamp + DAILY_SESSION_LENGTH <= end
     ]
-    if not event_window or event_window[0].open <= 0:
-        return None, None, {"reason": "missing_event_price_path"}
-    if not peak_window:
+    if not completed_before_threshold or completed_before_threshold[-1].close <= 0:
+        return None, None, {"reason": "missing_pre_threshold_anchor_close"}
+    if not post_threshold_window:
         return None, None, {"reason": "missing_post_threshold_price_path"}
-    opening = event_window[0].open
-    above = sum(bar.close > opening for bar in event_window)
-    below_or_equal = len(event_window) - above
-    direction = 1 if above > below_or_equal else -1
-    maximum_change = max((bar.high / opening) - 1.0 for bar in peak_window)
-    minimum_change = min((bar.low / opening) - 1.0 for bar in peak_window)
+    anchor = completed_before_threshold[-1]
+    terminal = post_threshold_window[-1]
+    anchor_price = anchor.close
+    direction = 1 if terminal.close > anchor_price else -1
+    maximum_change = max(
+        (bar.close / anchor_price) - 1.0 for bar in post_threshold_window
+    )
+    minimum_change = min(
+        (bar.close / anchor_price) - 1.0 for bar in post_threshold_window
+    )
     signed_peak = maximum_change if direction == 1 else minimum_change
     return direction, signed_peak, {
-        "event_open_price": opening,
-        "event_path_rows": len(event_window),
-        "post_threshold_path_rows": len(peak_window),
+        # Kept as a compatibility alias for existing prediction persistence.
+        "event_open_price": anchor_price,
+        "anchor_close_at": anchor.timestamp,
+        "anchor_close_price": anchor_price,
+        "terminal_close_at": terminal.timestamp,
+        "terminal_close_price": terminal.close,
+        "event_path_rows": len(completed_before_threshold) + len(post_threshold_window),
+        "post_threshold_path_rows": len(post_threshold_window),
         "maximum_change": maximum_change,
         "minimum_change": minimum_change,
-        "majority_above_count": above,
-        "majority_below_or_equal_count": below_or_equal,
     }
 
 
@@ -96,6 +135,7 @@ def build_observation(
     sector_daily: list[PriceBar],
     spy_daily: list[PriceBar],
     research_data: dict[str, Any],
+    probabilities: list[ProbabilityPoint] | None = None,
 ) -> MLObservation:
     from datetime import timedelta, timezone
 
@@ -112,20 +152,82 @@ def build_observation(
             asset_daily, first_pass_at - timedelta(days=14), first_pass_at
         ),
     }
-    known_opening_bar = next(
-        (
-            bar
-            for bar in asset_daily
-            if event_created_at <= bar.timestamp <= label_data_cutoff
-        ),
-        None,
+    # --- Polymarket signal features (strictly from probability data <= Tθ) ---
+    # Neutral 0.0 imputations below apply only when there is no pre-trigger history;
+    # they are explicit, documented defaults, not silent cross-system fallbacks.
+    pre_trigger_points = [
+        point for point in (probabilities or []) if point.timestamp <= first_pass_at
+    ]
+    probability_at_trigger = (
+        pre_trigger_points[-1].probability if pre_trigger_points else None
+    )
+    cutoff_24h = first_pass_at - timedelta(hours=24)
+    points_24h_prior = [p for p in pre_trigger_points if p.timestamp <= cutoff_24h]
+    probability_24h_ago = points_24h_prior[-1].probability if points_24h_prior else None
+    probability_slope_24h = (
+        probability_at_trigger - probability_24h_ago
+        if probability_at_trigger is not None and probability_24h_ago is not None
+        else 0.0
+    )
+    completed_volumes = [
+        float(p.volume_usdc)
+        for p in pre_trigger_points
+        if p.volume_usdc is not None and p.volume_usdc > 0
+    ]
+    probability_series = [p.probability for p in pre_trigger_points]
+    features.update(
+        {
+            "polymarket_probability_at_trigger": probability_at_trigger,
+            "polymarket_probability_slope_24h": probability_slope_24h,
+            "polymarket_time_to_resolution_days": max(
+                (event_end_at - first_pass_at).total_seconds() / 86_400.0, 0.0
+            ),
+            "polymarket_crossing_latency_days": max(
+                (first_pass_at - event_created_at).total_seconds() / 86_400.0, 0.0
+            ),
+            "polymarket_pre_entry_volume_log": (
+                float(np.log1p(sum(completed_volumes))) if completed_volumes else 0.0
+            ),
+            "polymarket_probability_volatility": (
+                float(np.std(probability_series)) if len(probability_series) >= 2 else 0.0
+            ),
+        }
+    )
+    # --- Query-window features: price behaviour relative to the QUERY timeline, not just
+    # the 55% crossing. runup = move from query creation (T0) to the crossing (Tθ) -- the
+    # "already priced-in" move; elapsed_fraction = where in the query's life the signal
+    # fired. Both use only data <= Tθ. Defaults are explicit, not silent fallbacks. ---
+    query_span_seconds = (event_end_at - event_created_at).total_seconds()
+    query_elapsed_seconds = (first_pass_at - event_created_at).total_seconds()
+    runup_since_creation = return_between(asset_daily, event_created_at, first_pass_at)
+    features.update(
+        {
+            "query_runup_since_creation": (
+                runup_since_creation if runup_since_creation is not None else 0.0
+            ),
+            "query_elapsed_fraction_at_crossing": (
+                min(max(query_elapsed_seconds / query_span_seconds, 0.0), 1.0)
+                if query_span_seconds > 0
+                else 0.0
+            ),
+        }
+    )
+    completed_before_threshold = [
+        bar
+        for bar in asset_daily
+        if bar.timestamp + DAILY_SESSION_LENGTH <= first_pass_at
+    ]
+    known_anchor_bar = (
+        completed_before_threshold[-1] if completed_before_threshold else None
     )
     if event_end_at > label_data_cutoff:
         target_direction, target_magnitude = None, None
         target_data = {
             "reason": "event_unresolved_at_historical_data_cutoff",
             "historical_data_cutoff": label_data_cutoff,
-            "event_open_price": known_opening_bar.open if known_opening_bar else None,
+            "event_open_price": known_anchor_bar.close if known_anchor_bar else None,
+            "anchor_close_at": known_anchor_bar.timestamp if known_anchor_bar else None,
+            "anchor_close_price": known_anchor_bar.close if known_anchor_bar else None,
         }
     else:
         target_direction, target_magnitude, target_data = observation_targets(
@@ -161,9 +263,11 @@ def build_observation(
     )
 
 
-def _matrix(observations: list[MLObservation]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _matrix(
+    observations: list[MLObservation], feature_names: list[str]
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     x = np.array(
-        [[float(item.features[name]) for name in FEATURE_NAMES] for item in observations],
+        [[float(item.features[name]) for name in feature_names] for item in observations],
         dtype=float,
     )
     y_class = np.array([int(item.classification_target) for item in observations], dtype=float)
@@ -184,50 +288,70 @@ def _sigmoid(value: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-clipped))
 
 
-def _fit_logistic(x: np.ndarray, y: np.ndarray, alpha: float) -> tuple[np.ndarray, float]:
-    weights = np.zeros(x.shape[1], dtype=float)
-    intercept = 0.0
-    learning_rate = 0.1
-    for _ in range(2_000):
-        predictions = _sigmoid(x @ weights + intercept)
-        error = predictions - y
-        gradient = (x.T @ error) / len(x) + alpha * weights / len(x)
-        intercept_gradient = float(error.mean())
-        weights -= learning_rate * gradient
-        intercept -= learning_rate * intercept_gradient
-    return weights, intercept
+def _fit_classifier(
+    x: np.ndarray, y: np.ndarray
+) -> tuple[np.ndarray, float, float, dict[str, float]]:
+    """L2-regularized logistic regression (scikit-learn, lbfgs).
+
+    Returns coefficients on the standardized features, the intercept, the selected
+    L2 ``alpha`` (= 1/C), and per-alpha cross-validation scores. Regularization is
+    chosen by stratified CV when there are enough samples per class; otherwise a
+    moderate fixed strength is used. Replaces the old 2000-step hand-rolled gradient
+    descent (faster and with proper convergence).
+    """
+    classes = sorted({int(round(v)) for v in y.tolist()})
+    min_class = int(min((y == c).sum() for c in classes)) if len(classes) == 2 else 0
+    inverse_strengths = [1.0 / alpha for alpha in ALPHAS]  # C values
+    cv_scores: dict[str, float] = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if len(classes) == 2 and len(x) >= 12 and min_class >= 3:
+            folds = int(min(5, min_class))
+            model = LogisticRegressionCV(
+                Cs=inverse_strengths,
+                cv=folds,
+                scoring="neg_log_loss",
+                max_iter=2000,
+                refit=True,
+            ).fit(x, y)
+            selected_c = float(model.C_[0])
+            try:
+                fold_scores = next(iter(model.scores_.values()))  # (folds, n_Cs)
+                mean_scores = fold_scores.mean(axis=0)
+                cv_scores = {
+                    str(round(1.0 / c, 4)): float(s)
+                    for c, s in zip(inverse_strengths, mean_scores)
+                }
+            except Exception:
+                cv_scores = {}
+        else:
+            selected_c = 1.0
+            model = LogisticRegression(C=selected_c, max_iter=2000).fit(x, y)
+    return (
+        model.coef_[0].astype(float),
+        float(model.intercept_[0]),
+        float(1.0 / selected_c),
+        cv_scores,
+    )
 
 
-def _fit_ridge(x: np.ndarray, y: np.ndarray, alpha: float) -> tuple[np.ndarray, float]:
-    intercept = float(y.mean())
-    centered = y - intercept
-    identity = np.eye(x.shape[1])
-    weights = np.linalg.solve(x.T @ x + alpha * identity, x.T @ centered)
-    return weights, intercept
-
-
-def _walk_forward_alpha(x: np.ndarray, y: np.ndarray, *, classification: bool) -> tuple[float, dict[str, float]]:
-    if len(x) < 5:
-        return 1.0, {}
-    scores: dict[float, list[float]] = {alpha: [] for alpha in ALPHAS}
-    start = max(3, len(x) // 2)
-    for index in range(start, len(x)):
-        train_x, train_y = x[:index], y[:index]
-        test_x, test_y = x[index : index + 1], y[index : index + 1]
-        for alpha in ALPHAS:
-            if classification:
-                if len(set(train_y.tolist())) < 2:
-                    continue
-                weights, intercept = _fit_logistic(train_x, train_y, alpha)
-                probability = float(_sigmoid(test_x @ weights + intercept)[0])
-                scores[alpha].append(-(float(test_y[0]) - probability) ** 2)
-            else:
-                weights, intercept = _fit_ridge(train_x, train_y, alpha)
-                prediction = float((test_x @ weights + intercept)[0])
-                scores[alpha].append(-abs(float(test_y[0]) - prediction))
-    means = {alpha: float(np.mean(values)) for alpha, values in scores.items() if values}
-    selected = max(means, key=means.get) if means else 1.0
-    return selected, {str(key): value for key, value in means.items()}
+def _fit_ridge_model(
+    x: np.ndarray, y: np.ndarray
+) -> tuple[np.ndarray, float, float, dict[str, float]]:
+    """Ridge regression (scikit-learn) with efficient built-in LOO alpha selection."""
+    cv_scores: dict[str, float] = {}
+    if len(x) >= 5:
+        model = RidgeCV(alphas=ALPHAS, store_cv_results=True).fit(x, y)
+        selected_alpha = float(model.alpha_)
+        try:
+            mse = model.cv_results_.mean(axis=0)  # (n_alphas,) leave-one-out MSE
+            cv_scores = {str(a): float(-m) for a, m in zip(ALPHAS, mse)}
+        except Exception:
+            cv_scores = {}
+    else:
+        selected_alpha = 1.0
+        model = Ridge(alpha=selected_alpha).fit(x, y)
+    return model.coef_.astype(float), float(model.intercept_), selected_alpha, cv_scores
 
 
 def train_snapshot(
@@ -238,8 +362,11 @@ def train_snapshot(
     training_cutoff: datetime,
     observations: list[MLObservation],
     minimum_prior_observations: int,
+    minimum_prior_events: int = 0,
     prediction_features: dict[str, float | None] | None = None,
+    feature_names: list[str] | None = None,
 ) -> MLModelSnapshot:
+    names = list(feature_names) if feature_names else list(FEATURE_NAMES)
     valid = [
         item
         for item in observations
@@ -255,7 +382,7 @@ def train_snapshot(
         training_cutoff=training_cutoff,
         training_event_ids=[item.event_id for item in valid],
         training_sample_count=len(valid),
-        feature_names=FEATURE_NAMES,
+        feature_names=names,
         feature_means={},
         feature_scales={},
         classifier_coefficients=None,
@@ -267,38 +394,42 @@ def train_snapshot(
     )
     if len(valid) < minimum_prior_observations:
         return MLModelSnapshot(status="insufficient_history", **base)
+    if len({item.event_id for item in valid}) < minimum_prior_events:
+        return MLModelSnapshot(status="insufficient_event_history", **base)
     classes = {item.classification_target for item in valid}
     if len(classes) < 2:
         return MLModelSnapshot(status="insufficient_class_diversity", **base)
     if prediction_features is not None and any(
-        prediction_features.get(name) is None for name in FEATURE_NAMES
+        prediction_features.get(name) is None for name in names
     ):
         return MLModelSnapshot(status="missing_required_feature", **base)
 
-    x, y_class, y_reg = _matrix(valid)
+    x, y_class, y_reg = _matrix(valid, names)
     standardized, means, scales = _standardize(x)
-    classifier_alpha, classifier_cv = _walk_forward_alpha(
-        standardized, y_class, classification=True
+    class_weights, class_intercept, classifier_alpha, classifier_cv = _fit_classifier(
+        standardized, y_class
     )
-    ridge_alpha, ridge_cv = _walk_forward_alpha(standardized, y_reg, classification=False)
-    class_weights, class_intercept = _fit_logistic(standardized, y_class, classifier_alpha)
-    ridge_weights, ridge_intercept = _fit_ridge(standardized, y_reg, ridge_alpha)
-    class_predictions = (_sigmoid(standardized @ class_weights + class_intercept) >= 0.5).astype(float)
+    ridge_weights, ridge_intercept, ridge_alpha, ridge_cv = _fit_ridge_model(
+        standardized, y_reg
+    )
+    class_predictions = (
+        _sigmoid(standardized @ class_weights + class_intercept) >= 0.5
+    ).astype(float)
     ridge_predictions = standardized @ ridge_weights + ridge_intercept
     metrics = {
         "training_classification_accuracy": float((class_predictions == y_class).mean()),
         "training_regression_mae": float(np.abs(ridge_predictions - y_reg).mean()),
         "training_regression_rmse": float(np.sqrt(((ridge_predictions - y_reg) ** 2).mean())),
-        "classifier_walk_forward_scores": classifier_cv,
-        "ridge_walk_forward_scores": ridge_cv,
+        "classifier_cv_scores": classifier_cv,
+        "ridge_cv_scores": ridge_cv,
     }
     return MLModelSnapshot(
         status="trained",
-        feature_means=dict(zip(FEATURE_NAMES, means.tolist())),
-        feature_scales=dict(zip(FEATURE_NAMES, scales.tolist())),
-        classifier_coefficients=dict(zip(FEATURE_NAMES, class_weights.tolist())),
+        feature_means=dict(zip(names, means.tolist())),
+        feature_scales=dict(zip(names, scales.tolist())),
+        classifier_coefficients=dict(zip(names, class_weights.tolist())),
         classifier_intercept=class_intercept,
-        ridge_coefficients=dict(zip(FEATURE_NAMES, ridge_weights.tolist())),
+        ridge_coefficients=dict(zip(names, ridge_weights.tolist())),
         ridge_intercept=ridge_intercept,
         hyperparameters={
             "classifier_l2_alpha": classifier_alpha,
@@ -324,27 +455,37 @@ def predict(
     features: dict[str, float | None],
     event_open_price: float,
     realized_price_at_entry: float,
+    direction_mode: str = "classifier",
 ) -> MLPrediction | None:
     if snapshot.status != "trained":
         return None
-    if any(features.get(name) is None for name in FEATURE_NAMES):
+    # Use the snapshot's own feature list so prediction always matches what was trained
+    # (handles the opt-in query-window features without a global constant).
+    names = list(snapshot.feature_names)
+    if any(features.get(name) is None for name in names):
         return None
-    vector = np.array([float(features[name]) for name in FEATURE_NAMES], dtype=float)
-    means = np.array([snapshot.feature_means[name] for name in FEATURE_NAMES])
-    scales = np.array([snapshot.feature_scales[name] for name in FEATURE_NAMES])
+    vector = np.array([float(features[name]) for name in names], dtype=float)
+    means = np.array([snapshot.feature_means[name] for name in names])
+    scales = np.array([snapshot.feature_scales[name] for name in names])
     standardized = (vector - means) / scales
     class_weights = np.array(
-        [snapshot.classifier_coefficients[name] for name in FEATURE_NAMES], dtype=float
+        [snapshot.classifier_coefficients[name] for name in names], dtype=float
     )
     ridge_weights = np.array(
-        [snapshot.ridge_coefficients[name] for name in FEATURE_NAMES], dtype=float
+        [snapshot.ridge_coefficients[name] for name in names], dtype=float
     )
     probability = float(_sigmoid(np.array([standardized @ class_weights + snapshot.classifier_intercept]))[0])
-    direction = "long" if probability >= 0.5 else "short"
     predicted_peak = float(standardized @ ridge_weights + snapshot.ridge_intercept)
-    directions_agree = (direction == "long" and predicted_peak > 0) or (
-        direction == "short" and predicted_peak < 0
-    )
+    if direction_mode == "regression_sign":
+        # Direction taken from the Ridge predicted peak's sign; the logistic classifier
+        # is not used as a gate (directions_agree is trivially satisfied).
+        direction = "long" if predicted_peak >= 0 else "short"
+        directions_agree = True
+    else:
+        direction = "long" if probability >= 0.5 else "short"
+        directions_agree = (direction == "long" and predicted_peak > 0) or (
+            direction == "short" and predicted_peak < 0
+        )
     realized = realized_price_at_entry / event_open_price - 1.0
     directional_realized = realized if direction == "long" else -realized
     gap = abs(predicted_peak) - directional_realized
@@ -378,20 +519,22 @@ def evaluate_prediction(
     changes = [bar.close / event_open_price - 1.0 for bar in bars_until_event_end]
     favorable = max(changes) if prediction.direction == "long" else -min(changes)
     adverse = min(changes) if prediction.direction == "long" else -max(changes)
+    terminal_change = changes[-1]
+    actual_direction = "long" if terminal_change > 0 else "short"
     if prediction.direction == "long":
         hit = next(
-            (bar for bar in bars_until_event_end if bar.high >= prediction.predicted_target_price),
+            (bar for bar in bars_until_event_end if bar.close >= prediction.predicted_target_price),
             None,
         )
-        actual_direction = "long" if max(changes) >= abs(min(changes)) else "short"
     else:
         hit = next(
-            (bar for bar in bars_until_event_end if bar.low <= prediction.predicted_target_price),
+            (bar for bar in bars_until_event_end if bar.close <= prediction.predicted_target_price),
             None,
         )
-        actual_direction = "short" if abs(min(changes)) > max(changes) else "long"
     prediction.target_reached = hit is not None
-    prediction.target_reached_at = hit.timestamp if hit else None
+    prediction.target_reached_at = (
+        hit.timestamp + DAILY_SESSION_LENGTH if hit else None
+    )
     prediction.actual_max_favorable = favorable
     prediction.actual_max_adverse = adverse
     prediction.actual_direction = actual_direction
