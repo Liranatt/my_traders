@@ -150,12 +150,13 @@ Weigh four things:
    regional actor with no US transmission. Use your world knowledge of whether this TYPE of event
    has historically repriced US stocks.
 
-Calibration anchors (generalize the principle; do not pattern-match the exact wording):
-  ~1.0  a US company's own earnings / FDA / M&A; a Fed rate decision or emergency/surprise action
-  ~0.8  direct US military action; a major OPEC / Strait-of-Hormuz oil-supply shock; a US tariff on a named sector
-  ~0.5  an ally or regional conflict with a real oil-supply channel but no US actor
-  ~0.3  a routine macro print near consensus (e.g. CPI a few tenths from expectations); a modest, expected policy move
-  ~0.2  foreign/regional events US markets routinely shrug off (e.g. recurring Houthi strikes on Israel)
+Calibration anchors (generalize the principle from the magnitude of impact; do NOT pattern-match
+the wording, and do not pre-decide which ticker is involved):
+  ~1.0  a US company's own earnings / FDA / M&A; a Federal Reserve rate decision or emergency action
+  ~0.8  direct US action that moves a commodity or a named sector; a major global commodity-supply shock
+  ~0.5  an ally/regional event that reaches US markets only through a commodity, with no US actor
+  ~0.3  a routine macro print near consensus; a modest, expected policy move
+  ~0.2  foreign/regional events US markets routinely shrug off
   ~0.0  no mechanical US-equity channel at all: speech-word counts, celebrity, sports, pure narrative
 
 Do not choose assets in this pass. Do not predict the outcome or trading direction. Return only
@@ -164,37 +165,33 @@ request_id, question_relevance, and a one-line reason that names the channel (or
 
 
 GEMINI_TIGHT_MAPPING_PROMPT = """
-Build the tightest possible US-listed equity/ETF asset world for every supplied request.
+For each relevant request, REASON from the event to the assets in three steps, then return the
+world. Do not jump straight to a ticker or rely on which name is famous -- reason about cause and
+effect, so this works on events you have never seen.
 
-Selection rules:
-- If no liquid US equity/ETF mechanically reprices on YES, return an empty assets list.
-- Earnings / merger / named-company: return ONLY the single named US company. Never add
-  competitors, suppliers, customers, or sector peers -- they do not mechanically reprice on THIS
-  company's result.
-- FDA / drug-approval / PDUFA: the single named company, but ONLY when the drug is material to
-  its value -- a small/mid-cap biotech where the drug IS the company (connection_strength ~1.0).
-  For a diversified large-cap pharma (e.g. Sanofi, Pfizer, J&J) a single approval barely moves the
-  stock: give connection_strength <= 0.3 or return empty.
-- Geopolitical / military / supply-shock: map the disrupted COMMODITY through its direct US fund.
-  For oil-supply threats use the crude OIL funds (USO, BNO, UCO) -- do NOT use energy-equity ETFs
-  (XLE, XOP) or oil majors (XOM, CVX): on geopolitical risk energy equities sell off with the
-  market while crude itself rises. Only when the actor/region mechanically affects supply (OPEC,
-  Strait of Hormuz, a major producer). Do NOT add defense names (LMT, RTX, ITA) on conflict
-  sentiment -- include defense only if the outcome changes US procurement or budgets.
-- Macro / rates / inflation: return rate-sensitive US equities across BOTH ends of the rate
-  channel -- rate-level names (financials XLF/KRE, homebuilders ITB, REITs) AND duration /
-  borrowing-sensitive names (long-duration tech and growth via QQQ, and heavy borrowers such as
-  TSLA: cheaper money lifts them, dearer money sinks them) -- plus the rate instrument (TLT).
-  Let the downstream model's debt features sort the leverage cross-section. Never fall back to
-  SPY or "the whole market".
-- Tariffs / sanctions / policy: return the specifically named exposed importers, exporters, or sector ETF.
+1. CHANNEL: What does a YES outcome mechanically change? Name the single most direct transmission
+   channel -- one company's cash flow, a specific commodity's price, interest-rate expectations,
+   a regulatory/tariff cost, a currency, etc.
+2. INSTRUMENTS: Which liquid US-listed equities/ETFs are MOST DIRECTLY driven by THAT channel?
+   Prefer the most direct instrument over things that merely correlate with it. If the channel is a
+   commodity's price, decide whether the outcome reprices the commodity itself or the equities that
+   produce it -- the producers also carry broad-market and company risk and can move the other way,
+   so pick what the channel actually drives. If the channel is interest rates, think about what
+   rates mechanically reprice (long-duration instruments, heavy borrowers, rate-sensitive sectors).
+   List only what the channel moves -- never a name merely because it is topically related.
+3. STRENGTH: connection_strength in [0,1] = how directly the channel drives that asset. 1.0 = the
+   outcome is the asset's defining driver; lower = more steps removed; exclude anything tied only by
+   narrative or risk-off sentiment.
 
-connection_strength in [0, 1]: 1.0 = the asset IS the subject or the direct instrument of the
-outcome; 0.6-0.9 = a strong, specific mechanical channel; 0.3-0.5 = real but indirect. Exclude
-anything tied only by narrative or risk-off sentiment. Keep worlds small -- prefer 1-6 names.
+Hard constraints:
+- Earnings / merger / named-company: ONLY the named company, and ONLY if the outcome is material to
+  its value -- weigh a single product or segment against the company's total size; where it IS the
+  company, strength is high; where it is immaterial to a diversified large-cap, strength is low or
+  return empty. Never add peers, competitors, suppliers, or customers.
+- Keep worlds small (prefer 1-4 names). If nothing is directly exposed, return an empty assets list.
 
-This is asset selection only. Do not predict Yes/No, direction, sizing, or expected return.
-Return request_id, universe_name, universe_reason, and assets using the schema.
+This is asset selection only. Do not predict Yes/No, direction, sizing, or expected return. Return
+request_id, universe_name, universe_reason (state the channel you identified), and assets per the schema.
 """.strip()
 
 

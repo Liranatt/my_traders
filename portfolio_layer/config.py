@@ -103,3 +103,5 @@ class SimConfig:
     objective: str = "sharpe"                # sharpe | calmar | return_maxdd  (task B2)
     maxdd_cap: float = 0.20                  # return_maxdd: maximize net return s.t. maxDD <= cap
     seed: int = 7
+    hedge: bool = True                       # False => raw long (no sector-ETF short leg)
+    min_relevance: float = 0.0               # only trade candidates with final relevance >= this

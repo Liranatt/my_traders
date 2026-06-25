@@ -42,6 +42,7 @@ class Candidate:
     alpha_score: float = 0.0
     alpha_dir: str = ""
     ml_dir: str = ""
+    relevance: float = 1.0  # final relevance = question_relevance x connection_strength
 
     @property
     def tradeable(self) -> bool:
@@ -267,6 +268,7 @@ async def _load_world_from_parquet(path: Path) -> World:
             alpha_score=_float_or_nan(row.get("alpha_score")),
             alpha_dir=str(row.get("alpha_dir") or ""),
             ml_dir=str(row.get("feat_ml_dir") or ""),
+            relevance=(lambda v: v if np.isfinite(v) else 1.0)(_float_or_nan(row.get("feat_connection_strength"))),
         ))
     return World(candidates=candidates, calendar=calendar, close=close, ret=ret, prob=prob)
 

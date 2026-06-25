@@ -41,6 +41,7 @@ class Position:
     entry_idx: int
     entry_asset: float
     entry_hedge: float
+    hedge: bool = True               # False => raw long, no sector-ETF short leg
     best_return: float = 0.0
     best_idx: int = -1               # last day the cumulative return made a new high
 
@@ -174,10 +175,10 @@ def _hedge_symbol(world: World, c: Candidate) -> str:
 
 
 def _daily_position_return(world: World, pos: Position, idx: int) -> float:
-    hedge = _hedge_symbol(world, pos.candidate)
-    return pos.direction * (
-        _ret(world, pos.candidate.symbol, idx) - _ret(world, hedge, idx)
-    )
+    r = _ret(world, pos.candidate.symbol, idx)
+    if pos.hedge:
+        r -= _ret(world, _hedge_symbol(world, pos.candidate), idx)
+    return pos.direction * r
 
 
 def _cumulative_return(world: World, pos: Position, idx: int, basis: str) -> float:
@@ -186,7 +187,7 @@ def _cumulative_return(world: World, pos: Position, idx: int, basis: str) -> flo
     if not np.isfinite(asset_now) or pos.entry_asset <= 0:
         return 0.0
     asset_ret = asset_now / pos.entry_asset - 1.0
-    if basis == "asset":
+    if basis == "asset" or not pos.hedge:
         return pos.direction * asset_ret
 
     hedge_now = _close(world, _hedge_symbol(world, c), idx)
@@ -203,7 +204,7 @@ def _rolling_spread_vol(world: World, pos: Position, idx: int, lookback: int) ->
         return 0.0
     hedge = _hedge_symbol(world, c)
     vals = [
-        _ret(world, c.symbol, i) - _ret(world, hedge, i)
+        _ret(world, c.symbol, i) - (_ret(world, hedge, i) if pos.hedge else 0.0)
         for i in range(start, idx + 1)
     ]
     arr = np.asarray(vals, dtype=float)
@@ -299,17 +300,20 @@ def _exit_reason(world: World, pos: Position, idx: int, policy: PolicyConfig) ->
     return None
 
 
-def _open_position(world: World, c: Candidate, direction: int, idx: int) -> Position | None:
+def _open_position(world: World, c: Candidate, direction: int, idx: int, hedge: bool = True) -> Position | None:
     asset = _close(world, c.symbol, idx)
-    hedge = _close(world, _hedge_symbol(world, c), idx)
-    if not np.isfinite(asset) or not np.isfinite(hedge) or asset <= 0 or hedge <= 0:
+    if not np.isfinite(asset) or asset <= 0:
+        return None
+    hedge_px = _close(world, _hedge_symbol(world, c), idx)
+    if hedge and (not np.isfinite(hedge_px) or hedge_px <= 0):
         return None
     return Position(
         candidate=c,
         direction=direction,
         entry_idx=idx,
         entry_asset=asset,
-        entry_hedge=hedge,
+        entry_hedge=hedge_px if (np.isfinite(hedge_px) and hedge_px > 0) else asset,
+        hedge=hedge,
         best_idx=idx,
     )
 
@@ -410,7 +414,7 @@ def simulate(
             if sector_counts.get(hedge, 0) >= sim.sector_cap:
                 continue
             direction = alpha_direction[cand_key(c)]
-            pos = _open_position(world, c, direction, idx)
+            pos = _open_position(world, c, direction, idx, hedge=sim.hedge)
             if pos is None:
                 continue
             active[cand_key(c)] = pos

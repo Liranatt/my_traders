@@ -78,8 +78,8 @@ def _row(
     }
 
 
-def _selected_candidates(world: World, split: str, universe: str) -> list[Candidate]:
-    return select(world, split, universe)
+def _selected_candidates(world: World, split: str, universe: str, min_relevance: float = 0.0) -> list[Candidate]:
+    return select(world, split, universe, min_relevance)
 
 
 def _oil_energy_candidates(candidates: Iterable[Candidate]) -> list[Candidate]:
@@ -169,14 +169,18 @@ def run_v1_sweep(
     return all_rows, selected_rows
 
 
-def run_exit_ablation(world: World, sim: SimConfig, *, universe: str) -> list[dict]:
+def run_exit_ablation(world: World, sim: SimConfig, *, universe: str) -> tuple[list[dict], list[dict]]:
     """Test exit rules A-E SEPARATELY. Direction = the configured alpha (parquet = the RF);
-    the `A_take_profit_rf_magnitude` variant is the RF-direction-+-magnitude experiment."""
+    the `A_take_profit_rf_magnitude` variant is the RF-direction-+-magnitude experiment.
+    Returns (summary_rows, per_trade_rows) -- the per-trade rows are written to CSV for review."""
     alpha = assign_alpha(world, sim.alpha_mode, sim.seed)
+    cand_by_key = {(c.market_id, c.symbol, c.pass_number): c for c in world.candidates}
     rows: list[dict] = []
+    trade_rows: list[dict] = []
     for rule_name, policy in exit_ablation_policies(entry_strong=0.60):
         for split in ("train", "val", "test"):
-            result = simulate(world, _selected_candidates(world, split, universe), alpha, policy, sim)
+            cands = _selected_candidates(world, split, universe, sim.min_relevance)
+            result = simulate(world, cands, alpha, policy, sim)
             row = _row(
                 objective=sim.objective, universe=universe, split=split,
                 policy_id=rule_name, policy_label=policy.label(), result=result,
@@ -184,7 +188,18 @@ def run_exit_ablation(world: World, sim: SimConfig, *, universe: str) -> list[di
             )
             row["rule"] = rule_name
             rows.append(row)
-    return rows
+            for t in result.trades:
+                cand = cand_by_key.get((t.market_id, t.symbol, t.pass_number))
+                trade_rows.append({
+                    "rule": rule_name, "universe": universe, "split": split,
+                    "market_id": t.market_id, "symbol": t.symbol,
+                    "archetype": cand.archetype if cand else "",
+                    "relevance": round(cand.relevance, 3) if cand else None,
+                    "direction": t.direction, "entry_date": t.entry_date, "exit_date": t.exit_date,
+                    "exit_reason": t.exit_reason, "return_pct": round(t.return_pct, 4),
+                    "hedged": sim.hedge,
+                })
+    return rows, trade_rows
 
 
 def _ablation_table(rows: list[dict]) -> str:
@@ -386,15 +401,21 @@ async def async_main(args: argparse.Namespace) -> None:
         max_positions=args.max_positions,
         sector_cap=args.sector_cap,
         maxdd_cap=args.maxdd_cap,
+        hedge=not args.no_hedge,
+        min_relevance=args.min_relevance,
     )
     world = await load_world(args.run_id, args.candidates)
 
     if args.mode == "exit_ablation":
         ablation_rows: list[dict] = []
+        trade_rows: list[dict] = []
         for universe in args.universes:
-            ablation_rows.extend(run_exit_ablation(world, sim, universe=universe))
+            summary, trades = run_exit_ablation(world, sim, universe=universe)
+            ablation_rows.extend(summary)
+            trade_rows.extend(trades)
         args.sweep_csv.parent.mkdir(parents=True, exist_ok=True)
         pd.DataFrame(ablation_rows).to_csv(Path("data/exit_ablation_results.csv"), index=False)
+        pd.DataFrame(trade_rows).to_csv(Path("data/exit_ablation_trades.csv"), index=False)
         report = Path("EXIT_ABLATION_RESULTS.md")
         lines = [
             "# Exit-Rule Ablation (A-E, tested separately)",
@@ -408,7 +429,8 @@ async def async_main(args: argparse.Namespace) -> None:
         for universe in args.universes:
             lines += [f"## universe = {universe}", "", _ablation_table([r for r in ablation_rows if r["universe"] == universe]), ""]
         report.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        print(f"[done] wrote {report} and data/exit_ablation_results.csv")
+        print(f"[done] wrote {report}, data/exit_ablation_results.csv, data/exit_ablation_trades.csv "
+              f"(hedge={not args.no_hedge}, min_relevance={args.min_relevance})")
         return
 
     sweep_rows, selected_rows = run_v1_sweep(
@@ -448,6 +470,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-positions", type=int, default=10)
     parser.add_argument("--sector-cap", type=int, default=4)
     parser.add_argument("--maxdd-cap", type=float, default=0.20)
+    parser.add_argument("--no-hedge", action="store_true", help="raw long, no sector-ETF short leg")
+    parser.add_argument("--min-relevance", type=float, default=0.0,
+                        help="hard-filter: only trade candidates with final relevance >= this")
     parser.add_argument("--seed", type=int, default=7)
     return parser.parse_args()
 

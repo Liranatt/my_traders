@@ -76,13 +76,19 @@ def _alpha_from_candidates_or_parquet(world: World) -> dict[tuple, int]:
     return out
 
 
-def select(world: World, split: str, universe: str) -> list[Candidate]:
-    """Tradeable candidates for a split and universe (task B3: all vs pre_drop)."""
+def select(world: World, split: str, universe: str, min_relevance: float = 0.0) -> list[Candidate]:
+    """Tradeable candidates for a split and universe (task B3: all vs pre_drop).
+
+    `min_relevance` hard-filters on the final relevance grade (question_relevance x
+    connection_strength) -- a real universe filter, applied consistently here.
+    """
     out = []
     for c in world.candidates:
         if c.split != split or not c.tradeable:
             continue
         if universe == "pre_drop" and not c.in_pre_drop:
+            continue
+        if c.relevance < min_relevance:
             continue
         out.append(c)
     return out
