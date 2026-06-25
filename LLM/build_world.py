@@ -168,13 +168,19 @@ Build the tightest possible US-listed equity/ETF asset world for every supplied 
 
 Selection rules:
 - If no liquid US equity/ETF mechanically reprices on YES, return an empty assets list.
-- Earnings / FDA / drug-approval / PDUFA / merger / named-company: return ONLY the single named
-  US company. Never add competitors, suppliers, customers, or sector peers -- they do not
-  mechanically reprice on THIS company's result.
-- Geopolitical / military / supply-shock: return only the commodity actually disrupted, via a
-  liquid US ETF (oil: USO, XLE, XOP, BNO), and ONLY when the actor/region mechanically affects
-  supply (OPEC, Strait of Hormuz, a major producer). Do NOT add defense names (LMT, RTX, ITA) on
-  conflict sentiment -- include defense only if the outcome changes US procurement or budgets.
+- Earnings / merger / named-company: return ONLY the single named US company. Never add
+  competitors, suppliers, customers, or sector peers -- they do not mechanically reprice on THIS
+  company's result.
+- FDA / drug-approval / PDUFA: the single named company, but ONLY when the drug is material to
+  its value -- a small/mid-cap biotech where the drug IS the company (connection_strength ~1.0).
+  For a diversified large-cap pharma (e.g. Sanofi, Pfizer, J&J) a single approval barely moves the
+  stock: give connection_strength <= 0.3 or return empty.
+- Geopolitical / military / supply-shock: map the disrupted COMMODITY through its direct US fund.
+  For oil-supply threats use the crude OIL funds (USO, BNO, UCO) -- do NOT use energy-equity ETFs
+  (XLE, XOP) or oil majors (XOM, CVX): on geopolitical risk energy equities sell off with the
+  market while crude itself rises. Only when the actor/region mechanically affects supply (OPEC,
+  Strait of Hormuz, a major producer). Do NOT add defense names (LMT, RTX, ITA) on conflict
+  sentiment -- include defense only if the outcome changes US procurement or budgets.
 - Macro / rates / inflation: return rate-sensitive US equities across BOTH ends of the rate
   channel -- rate-level names (financials XLF/KRE, homebuilders ITB, REITs) AND duration /
   borrowing-sensitive names (long-duration tech and growth via QQQ, and heavy borrowers such as

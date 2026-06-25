@@ -159,7 +159,7 @@ async def run(self, conn: Any) -> None:
             market.market_id: input_hash(
                 {
                     "task": "market_filter",
-                    "model": self.ollama.model_name,
+                    "model": self.gemini.model_name,
                     "prompt_version": self.config.event_filter_prompt_version,
                     "model_input": batch_llm_input,
                     "market_id": market.market_id,
@@ -173,7 +173,7 @@ async def run(self, conn: Any) -> None:
                 or await reusable_market_decision_for_market(
                     conn,
                     market_id=market.market_id,
-                    model_name=self.ollama.model_name,
+                    model_name=self.gemini.model_name,
                     prompt_version=self.config.event_filter_prompt_version,
                 )
             )
@@ -192,7 +192,7 @@ async def run(self, conn: Any) -> None:
                         input_hash=item["input_hash"],
                     )
         if missing_markets:
-            decisions = await classify_markets(self.ollama, missing_markets)
+            decisions = await classify_markets(self.gemini, missing_markets)
             by_id = {item.market_id: item for item in decisions}
             batch_llm_output = {
                 "decisions": [decision.model_dump(mode="json") for decision in decisions]
@@ -208,7 +208,7 @@ async def run(self, conn: Any) -> None:
                         event_id=market.event_id,
                         event_title=market.event_title,
                         market_question=market.question,
-                        model_name=self.ollama.model_name,
+                        model_name=self.gemini.model_name,
                         prompt_version=self.config.event_filter_prompt_version,
                         llm_input=batch_llm_input,
                         llm_output=batch_llm_output,

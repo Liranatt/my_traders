@@ -120,7 +120,7 @@ class BacktestConfig:
     event_filter_prompt_version: str = "historical-market-filter-v3"
     asset_world_model: str = "gemini-3.5-flash"
     asset_world_thinking_level: str = "low"
-    asset_world_prompt_version: str = "historical-pass-world-v7-gemini-two-pass-tight-mapping"
+    asset_world_prompt_version: str = "historical-pass-world-v8-oil-commodity-fda-materiality"
     semantic_ml_grouping_version: str = "semantic-outcome-role-v1"
     ollama_sentiment_prompt_version: str = "historical-sentiment-v1"
     output_root: Path = REPO_ROOT / "main_backtesting" / "output" / "runs"
