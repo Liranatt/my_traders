@@ -120,21 +120,35 @@ class GeminiClient:
         }
 
     async def _post(self, body: dict[str, Any]) -> httpx.Response:
-        for attempt in range(4):
-            response = await self.client.post(
-                f"/models/{self.model_name}:generateContent",
-                headers={"x-goog-api-key": self._api_key},
-                json=body,
-            )
-            if response.status_code != 429:
+        last: httpx.Response | None = None
+        for attempt in range(6):
+            try:
+                response = await self.client.post(
+                    f"/models/{self.model_name}:generateContent",
+                    headers={"x-goog-api-key": self._api_key},
+                    json=body,
+                )
+            except (httpx.TransportError, httpx.TimeoutException):
+                # Transient network error -- back off and retry instead of killing the run.
+                if attempt == 5:
+                    raise
+                await asyncio.sleep(min(2 ** attempt + 1, 45))
+                continue
+            last = response
+            # Success or a non-retryable client error -> return as-is.
+            if response.status_code != 429 and response.status_code < 500:
                 return response
-            text = response.text
-            if "PerDay" in text or "requests per day" in text.lower():
-                return response
-            match = RETRY_DELAY_RE.search(text)
-            delay = float(match.group(1)) + 1 if match else min(2 ** attempt, 30)
+            if response.status_code == 429:
+                text = response.text
+                if "PerDay" in text or "requests per day" in text.lower():
+                    return response  # daily quota -- retrying will not help
+                match = RETRY_DELAY_RE.search(text)
+                delay = float(match.group(1)) + 1 if match else min(2 ** attempt, 30)
+            else:
+                # 5xx transient server error (e.g. 502/503) -- exponential backoff and retry.
+                delay = min(2 ** attempt + 1, 45)
             await asyncio.sleep(min(delay, 70))
-        return response
+        return last  # type: ignore[return-value]
 
     async def structured(
         self,
