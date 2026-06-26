@@ -54,10 +54,11 @@ def entry_day(
     policy: dict,
 ) -> tuple[pd.Timestamp, float] | None:
     """Apply the entry rule; return (entry_ts, entry_prob) or None."""
-    pts = [(t, v) for t, v in prob_path if t >= t_theta - pd.Timedelta(days=1)]
+    first_eligible_day = t_theta.normalize()
+    pts = [(t, v) for t, v in prob_path if t >= first_eligible_day]
     if not pts:
         return None
-    p0 = next((v for t, v in pts if t >= t_theta), pts[0][1])
+    p0 = pts[0][1]
     if p0 >= policy["enter_strong"]:
         return pts[0][0], p0
     held = 0

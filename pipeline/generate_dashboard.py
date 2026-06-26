@@ -200,6 +200,229 @@ def port_policy_from_vec(vec):
     return p
 
 
+def ib_cost(shares: int, price: float, is_sell: bool) -> float:
+    """IB tiered commission + SEC fee on sells + 5 bp slippage."""
+    if shares <= 0 or price <= 0:
+        return 0.0
+    trade_val = shares * price
+    commission = max(0.35, min(shares * 0.0035, trade_val * 0.01))
+    sec = trade_val * 0.0000278 if is_sell else 0.0
+    slippage = trade_val * 0.0005
+    return commission + sec + slippage
+
+
+def _bench_close_on(prices, sym, date):
+    """Return the close price of *sym* on or just before *date*."""
+    bars = prices.get(sym, [])
+    c = None
+    for t, _h, _l, cl in bars:
+        if t <= date:
+            c = cl
+        else:
+            break
+    return c
+
+
+def _asset_close_on(prices, sym, date):
+    """Return close of *sym* on or just before *date*."""
+    return _bench_close_on(prices, sym, date)
+
+
+def sim_portfolio_opp_cost(df, prices, probs, policy,
+                           bench_sym="SPY", initial=100_000):
+    """Portfolio sim where idle capital stays invested in *bench_sym*.
+
+    On trade entry: sell benchmark shares → buy asset.
+    On trade exit:  sell asset → buy benchmark shares back.
+    All four legs incur IB costs + slippage.
+    Returns (tdf, daily_eq_log, stats, policy).
+    """
+    ps = policy.get("position_size_pct", 0.10)
+    mc = policy.get("max_concurrent", 10)
+
+    empty_stats = {"initial": initial, "final": initial, "total_return": 0,
+                    "max_dd": 0, "n_trades": 0, "total_pnl": 0,
+                    "avg_pnl": 0, "win_rate": 0, "total_txn_cost": 0,
+                    "bench_sym": bench_sym}
+    if df.empty:
+        return pd.DataFrame(), [], empty_stats, policy
+
+    # 1. Pre-compute all candidate trades
+    df_s = df.sort_values("t_theta").copy()
+    all_trades = []
+    for _, row in df_s.iterrows():
+        trade = simulate_one(row, prices, probs, policy)
+        if trade is not None:
+            trade["_entry_ts"] = pd.Timestamp(trade["entry_date"], tz="UTC")
+            trade["_exit_ts"] = pd.Timestamp(trade["exit_date"], tz="UTC")
+            all_trades.append(trade)
+    all_trades.sort(key=lambda t: t["_entry_ts"])
+
+    # 2. Build trading-day calendar from benchmark bars
+    bench_bars = prices.get(bench_sym, [])
+    if not bench_bars:
+        return pd.DataFrame(), [], empty_stats, policy
+
+    cal_dates = sorted(set(t for t, *_ in bench_bars))
+    if all_trades:
+        first_date = min(t["_entry_ts"] for t in all_trades)
+        last_date = max(t["_exit_ts"] for t in all_trades)
+        cal_dates = [d for d in cal_dates if d >= first_date - pd.Timedelta(days=5)
+                     and d <= last_date + pd.Timedelta(days=5)]
+    if not cal_dates:
+        return pd.DataFrame(), [], {"initial": initial, "final": initial,
+            "total_return": 0, "max_dd": 0, "n_trades": 0, "total_pnl": 0,
+            "avg_pnl": 0, "win_rate": 0, "total_txn_cost": 0}, policy
+
+    # 3. Buy benchmark at start
+    first_bench_close = _bench_close_on(prices, bench_sym, cal_dates[0])
+    if first_bench_close is None or first_bench_close <= 0:
+        first_bench_close = bench_bars[0][3]
+    bench_shares = int(initial / first_bench_close)
+    cash = initial - bench_shares * first_bench_close
+    buy_cost_init = ib_cost(bench_shares, first_bench_close, False)
+    cash -= buy_cost_init
+    total_txn = buy_cost_init
+
+    open_pos = []       # {trade dict + qty, cost, sym_shares}
+    completed = []
+    eq_log = []
+    trade_idx = 0       # pointer into all_trades
+
+    for day in cal_dates:
+        bc = _bench_close_on(prices, bench_sym, day)
+        if bc is None:
+            continue
+
+        # 4a. Close positions whose exit_date <= today
+        still_open = []
+        for pos in open_pos:
+            if pos["_exit_ts"] <= day:
+                sym = pos["symbol"]
+                xp = pos["exit_price"]
+                qty = pos["_qty"]
+                sell_cost = ib_cost(qty, xp, True)
+                net_proceeds = qty * xp - sell_cost
+                total_txn += sell_cost
+                # Buy benchmark back
+                rebuy_shares = int(net_proceeds / bc) if bc > 0 else 0
+                rebuy_cost = ib_cost(rebuy_shares, bc, False)
+                total_txn += rebuy_cost
+                cash += net_proceeds - rebuy_shares * bc - rebuy_cost
+                bench_shares += rebuy_shares
+                # Record completed trade
+                entry_cost = pos["_entry_cost_total"]
+                exit_val = qty * xp
+                pnl = exit_val - pos["_cost_basis"]
+                pos["pnl"] = round(pnl, 2)
+                pos["pnl_pct"] = round(pnl / pos["_cost_basis"] * 100, 2) if pos["_cost_basis"] > 0 else 0
+                pos["exit_value"] = round(exit_val, 2)
+                pos["txn_cost"] = round(entry_cost + sell_cost + rebuy_cost, 2)
+                completed.append(pos)
+            else:
+                still_open.append(pos)
+        open_pos = still_open
+
+        # 4b. Open new positions if available and under capacity
+        while trade_idx < len(all_trades):
+            trade = all_trades[trade_idx]
+            if trade["_entry_ts"] > day:
+                break
+            trade_idx += 1
+            if trade["_entry_ts"] < day:
+                continue  # missed entry date
+            if len(open_pos) >= mc:
+                continue
+
+            total_eq = bench_shares * bc + sum(
+                p["_qty"] * (_asset_close_on(prices, p["symbol"], day) or p["entry_price"])
+                for p in open_pos) + cash
+            alloc = total_eq * ps
+            ep = trade["entry_price"]
+            if ep <= 0 or alloc < ep:
+                continue
+
+            # Sell benchmark to fund
+            sell_bench_qty = min(int(alloc / bc), bench_shares) if bc > 0 else 0
+            if sell_bench_qty < 1:
+                continue
+            sell_bench_cost = ib_cost(sell_bench_qty, bc, True)
+            total_txn += sell_bench_cost
+            net_from_bench = sell_bench_qty * bc - sell_bench_cost
+            bench_shares -= sell_bench_qty
+
+            # Buy alpha asset
+            alpha_qty = int(net_from_bench / ep)
+            if alpha_qty < 1:
+                bench_shares += sell_bench_qty
+                cash += sell_bench_cost
+                total_txn -= sell_bench_cost
+                continue
+            buy_alpha_cost = ib_cost(alpha_qty, ep, False)
+            total_txn += buy_alpha_cost
+            cost_basis = alpha_qty * ep + buy_alpha_cost
+            cash += net_from_bench - alpha_qty * ep - buy_alpha_cost
+
+            pos = {**trade, "_qty": alpha_qty, "_cost_basis": round(cost_basis, 2),
+                   "_entry_cost_total": round(sell_bench_cost + buy_alpha_cost, 2)}
+            open_pos.append(pos)
+
+        # 4c. Log daily equity
+        open_val = sum(
+            p["_qty"] * (_asset_close_on(prices, p["symbol"], day) or p["entry_price"])
+            for p in open_pos)
+        equity = bench_shares * bc + open_val + cash
+        eq_log.append({"date": str(day.date()), "equity": round(equity, 2),
+                       "positions": len(open_pos),
+                       "bench_shares": bench_shares,
+                       "capital": round(cash, 2)})
+
+    # 5. Force-close any remaining open positions
+    for pos in open_pos:
+        xp = pos["exit_price"]
+        qty = pos["_qty"]
+        sell_cost = ib_cost(qty, xp, True)
+        net = qty * xp - sell_cost
+        total_txn += sell_cost
+        last_bc = bench_bars[-1][3]
+        rebuy = int(net / last_bc) if last_bc > 0 else 0
+        rebuy_c = ib_cost(rebuy, last_bc, False)
+        total_txn += rebuy_c
+        cash += net - rebuy * last_bc - rebuy_c
+        bench_shares += rebuy
+        pnl = qty * xp - pos["_cost_basis"]
+        pos["pnl"] = round(pnl, 2)
+        pos["pnl_pct"] = round(pnl / pos["_cost_basis"] * 100, 2) if pos["_cost_basis"] > 0 else 0
+        pos["exit_value"] = round(qty * xp, 2)
+        pos["txn_cost"] = round(pos["_entry_cost_total"] + sell_cost + rebuy_c, 2)
+        completed.append(pos)
+
+    final_bc = bench_bars[-1][3]
+    final_eq = bench_shares * final_bc + cash
+    tot_ret = (final_eq / initial - 1) * 100
+
+    if eq_log:
+        ev = [e["equity"] for e in eq_log]
+        pk = np.maximum.accumulate(ev)
+        dd = [(v - p) / p * 100 if p > 0 else 0 for v, p in zip(ev, pk)]
+        max_dd = min(dd) if dd else 0
+    else:
+        max_dd = 0
+
+    tdf = pd.DataFrame(completed) if completed else pd.DataFrame()
+    stats = {
+        "initial": initial, "final": round(final_eq, 2),
+        "total_return": round(tot_ret, 2), "max_dd": round(max_dd, 2),
+        "n_trades": len(completed),
+        "total_pnl": round(sum(t["pnl"] for t in completed), 2) if completed else 0,
+        "avg_pnl": round(float(np.mean([t["pnl"] for t in completed])), 2) if completed else 0,
+        "win_rate": round(float(np.mean([t["pnl"] > 0 for t in completed]) * 100), 1) if completed else 0,
+        "total_txn_cost": round(total_txn, 2),
+        "bench_sym": bench_sym,
+    }
+    return tdf, eq_log, stats, policy
+
+
 def sim_portfolio(df, prices, probs, policy, initial=100_000):
     df_s = df.sort_values("t_theta").copy()
     capital = initial
@@ -296,6 +519,49 @@ def port_cem(df, prices, probs, dd_weight=0.3, n_iter=8, pop=30, seed=42):
             best_s = ib
             best_p = pols[ei[-1]]
         print(f"  CEM(dd_w={dd_weight}) iter {it}/{n_iter} best={ib:+.3f}")
+    return best_p
+
+
+def port_cem_opp_cost(df, prices, probs, bench_sym="SPY",
+                      reward_mode="sharpe", n_iter=8, pop=30, seed=42):
+    """CEM search over portfolio knobs using the opportunity-cost sim."""
+    rng = np.random.default_rng(seed)
+    names = list(PORTFOLIO_BOUNDS.keys())
+    dim = len(names)
+    ek = max(2, int(pop * 0.25))
+    mean = np.array([PORT_DEFAULT[n] for n in names], float)
+    std = np.array([(PORTFOLIO_BOUNDS[n][1] - PORTFOLIO_BOUNDS[n][0]) / 4
+                    for n in names], float)
+    df_tr = df[df["split"] == "train"]
+    best_s, best_p = -999, None
+
+    for it in range(n_iter):
+        samps = rng.normal(mean, std, size=(pop, dim))
+        pols = [port_policy_from_vec(s) for s in samps]
+        scores = []
+        for p in pols:
+            t, _, st, _ = sim_portfolio_opp_cost(
+                df_tr, prices, probs, p, bench_sym=bench_sym)
+            if t.empty or st["n_trades"] < 3:
+                scores.append(-999)
+                continue
+            sh = score_sharpe_per_day(t)
+            if reward_mode == "max_pnl":
+                scores.append(st["total_return"])
+            elif reward_mode == "min_dd":
+                scores.append(sh - 1.5 * abs(st["max_dd"]))
+            else:  # sharpe
+                scores.append(sh - 0.3 * abs(st["max_dd"]))
+        scores = np.array(scores)
+        ei = np.argsort(scores)[-ek:]
+        elite = samps[ei]
+        mean = elite.mean(0)
+        std = elite.std(0) + 1e-4
+        ib = scores.max()
+        if ib > best_s:
+            best_s = ib
+            best_p = pols[ei[-1]]
+        print(f"  CEM-OC({bench_sym},{reward_mode}) iter {it}/{n_iter} best={ib:+.3f}")
     return best_p
 
 
@@ -528,6 +794,51 @@ def main():
     run_port("CEM Min-DD", df, {**pol_mindd}, "#d29922")
     run_port("Non-Earnings CEM Sharpe", df_other, {**pol_sharpe}, "#bc8cff")
 
+    # ── Opportunity-Cost Portfolio Simulations ──
+    opp_cost_results = []
+
+    def run_oc(name, subset, policy, bench_sym, color):
+        print(f"  Opp-Cost: {name}...")
+        tdf, eq, stats, pol = sim_portfolio_opp_cost(
+            subset, P, PR, policy, bench_sym=bench_sym)
+        tdf_e = enrich(tdf, P) if not tdf.empty else tdf
+        opp_cost_results.append({
+            "name": name, "color": color, "benchmark": bench_sym,
+            "policy": {k: round(v, 4) if isinstance(v, float) else v
+                       for k, v in pol.items()},
+            "stats": stats, "equity": eq,
+            "splits": split_metrics(tdf_e),
+            "trades": trades_to_list(tdf_e),
+        })
+
+    for bsym, bcolor_base in [("SPY", 0), ("QQQ", 1)]:
+        print(f"\n  === Opportunity-Cost: {bsym} ===")
+        print(f"  CEM-OC {bsym} Sharpe...")
+        oc_sharpe = port_cem_opp_cost(df, P, PR, bsym, "sharpe",
+                                       n_iter=8, pop=30, seed=42)
+        print(f"  CEM-OC {bsym} Max P&L...")
+        oc_maxpnl = port_cem_opp_cost(df, P, PR, bsym, "max_pnl",
+                                       n_iter=8, pop=30, seed=55)
+        print(f"  CEM-OC {bsym} Min-DD...")
+        oc_mindd = port_cem_opp_cost(df, P, PR, bsym, "min_dd",
+                                      n_iter=8, pop=30, seed=99)
+
+        colors = (["#58a6ff", "#3fb950", "#f97316", "#a855f7"] if bsym == "SPY"
+                  else ["#38bdf8", "#22d3ee", "#fb923c", "#c084fc"])
+        run_oc(f"{bsym} — Default", df, PORT_DEFAULT, bsym, colors[0])
+        run_oc(f"{bsym} — CEM Sharpe", df, oc_sharpe, bsym, colors[1])
+        run_oc(f"{bsym} — CEM Max P&L", df, oc_maxpnl, bsym, colors[2])
+        run_oc(f"{bsym} — CEM Min-DD", df, oc_mindd, bsym, colors[3])
+
+    # Print opportunity-cost summary
+    print("\n  === Opportunity-Cost Results ===")
+    for r in opp_cost_results:
+        s = r["stats"]
+        print(f"  {r['name']:30s}  return={s['total_return']:+.2f}%  "
+              f"dd={s['max_dd']:.2f}%  trades={s['n_trades']}  "
+              f"txn_cost=${s['total_txn_cost']:.2f}  "
+              f"final=${s['final']:,.0f}")
+
     # ── Archetype breakdown ──
     tdf_all = run_backtest(df, P, PR, DEFAULT_POLICY)
     tdf_all = enrich(tdf_all, P)
@@ -590,6 +901,7 @@ def main():
         "price_paths": price_paths,
         "port_benchmark": port_benchmark,
         "experiment_log": exp_log,
+        "opp_cost": opp_cost_results,
     }
 
     print("Generating HTML...")
@@ -852,7 +1164,6 @@ tr.clickable:hover td {{ background:rgba(59,130,246,.08); }}
   <button onclick="showTab('risk')">Risk Metrics</button>
   <button onclick="showTab('rf')">RF Model</button>
   <button onclick="showTab('trades')">Trade Explorer</button>
-  <button onclick="showTab('explog')">Experiment History</button>
 </nav>
 
 <div id="overview" class="page active"></div>
@@ -902,7 +1213,7 @@ const STRAT_DESC = {{
   }},
   'Default+RF': {{
     title: 'Default + Random Forest Filter',
-    desc: 'The Default strategy with an additional ML filter: a Random Forest model trained on 7 lean features predicts trade return, and only trades with predicted return > 0 are taken. This filters out unpromising setups before entry. The RF\'s job is selection + magnitude, NOT direction (direction is a coin flip OOS).',
+    desc: 'The Default strategy with an additional ML filter: a Random Forest model trained on 7 lean features predicts trade return, and only trades with predicted return > 0 are taken. This filters out unpromising setups before entry. The RF\\'s job is selection + magnitude, NOT direction (direction is a coin flip OOS).',
     opt: 'RF filters to predicted-positive trades',
     color: '#79c0ff',
   }},
@@ -972,21 +1283,22 @@ const render = {{}};
 render.overview = function() {{
   const el = document.getElementById('overview');
   const exps = D.experiments;
+  const FRONT = ['All — Default','All — CEM Sharpe','All RF>0 — Default','All RF>0 — CEM Sharpe'];
+  const front = exps.filter(e => FRONT.includes(e.name));
   const test0 = exps[0]?.splits?.test || {{}};
-  const val0 = exps[0]?.splits?.val || {{}};
-  const bestTest = exps.reduce((a,e) => {{
+  const bestTest = front.reduce((a,e) => {{
     const s = e.splits?.test?.sharpe||0;
     return s > a.v ? {{v:s,n:e.name}} : a;
   }}, {{v:-999,n:''}});
-  const bestWin = exps.reduce((a,e) => {{
+  const bestWin = front.reduce((a,e) => {{
     const w = e.splits?.test?.win_pct||0;
     return w > a.v ? {{v:w,n:e.name}} : a;
   }}, {{v:0,n:''}});
 
   let html = `<div class="grid g5" style="margin-bottom:24px">
-    <div class="card"><h3>Experiments</h3><div class="val" style="color:var(--blue)">${{exps.length}}</div>
+    <div class="card"><h3>Experiments</h3><div class="val" style="color:var(--blue)">${{front.length}}</div>
       <div class="sub">${{D.n_candidates}} candidates</div></div>
-    <div class="card"><h3>Total Trades</h3><div class="val">${{exps[0]?.splits?.all?.n || 0}}</div>
+    <div class="card"><h3>Total Trades</h3><div class="val">${{front[0]?.splits?.all?.n || 0}}</div>
       <div class="sub">Default strategy</div></div>
     <div class="card"><h3>Best Test Sharpe</h3><div class="val pos">+${{bestTest.v.toFixed(2)}}</div>
       <div class="sub">${{bestTest.n}}</div></div>
@@ -996,14 +1308,47 @@ render.overview = function() {{
       <div class="sub">Default — Test set</div></div>
   </div>`;
 
-  // Comparison tables for both Val and Test
+  // Research summary
+  html += `<div class="info-box" style="margin-bottom:24px">
+    <h4 style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+      Research: Arbitraging the Information Diffusion Lag
+      <span style="float:right;font-size:10px;color:var(--text3)">click to expand</span>
+    </h4>
+    <div style="display:none;margin-top:10px;font-size:12px;line-height:1.7;color:var(--text2)">
+      <p><strong style="color:var(--text)">Thesis:</strong> Prediction-market probability crossings (Polymarket) flag cross-sectional equity mispricings during the information-diffusion lag. When a macro/geopolitical event resolves, ETF arbitrage forces uniform index moves while individual stocks take hours-to-days to reprice to their true fundamental sensitivity.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Implemented:</strong> Polymarket signal intake → LLM semantic router (asset mapping) → ATR trailing stops with stepped profit locks → CEM/RL policy optimization → Portfolio risk layer. RF model tested for trade filtering.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Key findings:</strong></p>
+      <ul style="margin:4px 0 0 16px">
+        <li>Direction prediction is a coin flip OOS — go long the beneficiary instead</li>
+        <li>Per-archetype modeling required (earnings ≠ macro ≠ geopolitical)</li>
+        <li>ATR-based stops eliminate the Wide Stop Trap overfitting</li>
+        <li>CEM converges on ~3x ATR, 70% entry bar, tight Poly exit</li>
+        <li>RF magnitude filtering has limited OOS value</li>
+        <li>The edge is small but consistent — test 63-68% win rate, 1.4-1.9% mean return</li>
+      </ul>
+    </div>
+  </div>`;
+
+  // Opportunity-Cost hero chart
+  const oc = D.opp_cost || [];
+  if(oc.length > 0) {{
+    html += `<h2>Strategy Alpha vs Index Buy-and-Hold <span class="badge">Opportunity Cost</span></h2>
+      <div style="margin-bottom:8px;display:flex;gap:8px">
+        <button class="oc-toggle" onclick="renderOC('SPY')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:inherit">SPY Base</button>
+        <button class="oc-toggle" onclick="renderOC('QQQ')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:inherit">QQQ Base</button>
+      </div>
+      <div class="chart-box" id="ov-opp-cost"></div>
+      <div class="grid g4" id="ov-oc-cards" style="margin-top:12px"></div>`;
+  }}
+
+  // Comparison tables — front page experiments only
   for(const [label, spKey] of [['Validation Set', 'val'], ['Test Set (OOS)', 'test']]) {{
     html += `<h2>${{label}}</h2>
     <div class="card"><table><thead><tr>
       <th>Experiment</th><th>N</th><th>Mean Return</th><th>Win%</th><th>Sharpe</th>
       <th>Sortino</th><th>Max DD</th><th>vs SPY</th><th>vs QQQ</th><th>Hold</th><th>PF</th>
     </tr></thead><tbody>`;
-    for(const e of exps) {{
+    for(const e of front) {{
       const v = e.splits[spKey];
       if(!v || !v.n) continue;
       html += `<tr>
@@ -1021,21 +1366,83 @@ render.overview = function() {{
     <div class="chart-box" id="ov-bar-ret"></div>
     <div class="chart-box" id="ov-bar-sharpe"></div>
   </div>`;
+
+  // Experiment timeline (moved from separate tab)
+  const lg = D.experiment_log || [];
+  if(lg.length > 0) {{
+    html += `<h2 style="cursor:pointer" onclick="document.getElementById('exp-timeline').style.display=document.getElementById('exp-timeline').style.display==='none'?'block':'none'">Experiment History <span class="badge">${{lg.reduce((a,p)=>a+p.experiments.length,0)}} experiments</span> <span style="font-size:11px;color:var(--text3);margin-left:8px">click to toggle</span></h2>`;
+    html += `<div id="exp-timeline" style="display:none"><div class="timeline">`;
+    for(const phase of lg) {{
+      html += `<div class="timeline-phase"><h3>${{phase.name}}</h3>`;
+      for(const exp of phase.experiments) {{
+        html += `<div class="timeline-exp" onclick="this.classList.toggle('open')">
+          <h4><span class="eid">${{exp.id}}</span> ${{exp.title}}</h4>
+          <div class="exp-body">`;
+        for(const f of ['what','why','data','changed_from','result','converged_policy','why_it_failed','why_it_worked','learned']) {{
+          if(exp[f]) html += `<div class="exp-field"><strong style="text-transform:capitalize">${{f.replace(/_/g,' ')}}:</strong> ${{exp[f]}}</div>`;
+        }}
+        if(!exp.what && exp.body_text) html += `<div style="white-space:pre-wrap;font-size:11px;color:var(--text3)">${{exp.body_text}}</div>`;
+        html += `</div></div>`;
+      }}
+      html += `</div>`;
+    }}
+    html += `</div></div>`;
+  }}
+
   el.innerHTML = html;
 
-  const names = exps.map(e=>e.name);
-  const colors = exps.map(e=>e.color);
+  // Render opp-cost chart
+  window.renderOC = function(bench) {{
+    const filtered = oc.filter(r => r.benchmark === bench);
+    if(!filtered.length) return;
+    const traces = filtered.map(r => ({{
+      x:r.equity.map(e=>e.date), y:r.equity.map(e=>e.equity),
+      name:r.name, mode:'lines', line:{{color:r.color, width:2}},
+    }}));
+    // Pure benchmark buy-and-hold
+    const benchEq = filtered[0].equity;
+    if(benchEq.length > 0) {{
+      const startDate = benchEq[0].date;
+      const endDate = benchEq[benchEq.length-1].date;
+      traces.push({{
+        x:benchEq.map(e=>e.date), y:benchEq.map((_,i)=>100000),
+        name:'Starting Capital', mode:'lines',
+        line:{{color:'#5a6b7f', width:1, dash:'dash'}},
+      }});
+    }}
+    Plotly.newPlot('ov-opp-cost', traces, {{...LAYOUT,
+      title:`Strategy Over ${{bench}} vs Pure ${{bench}} Hold`,
+      height:450, yaxis:{{...LAYOUT.yaxis, title:'Equity ($)', tickformat:'$,.0f'}},
+    }}, CFG);
+    // Summary cards
+    let cards = '';
+    for(const r of filtered) {{
+      const s = r.stats;
+      const cls = s.total_return > 0 ? 'pos' : 'neg';
+      cards += `<div class="card">
+        <h3>${{r.name.replace(bench+' — ','')}}</h3>
+        <div class="val ${{cls}}">${{s.total_return > 0 ? '+' : ''}}${{s.total_return.toFixed(2)}}%</div>
+        <div class="sub">Final: $$${{s.final.toLocaleString()}} · DD: ${{s.max_dd.toFixed(1)}}% · Trades: ${{s.n_trades}} · Txn: $$${{s.total_txn_cost.toFixed(0)}}</div>
+      </div>`;
+    }}
+    document.getElementById('ov-oc-cards').innerHTML = cards;
+  }};
+  if(oc.length > 0) renderOC('SPY');
+
+  // Overview bar charts — front page experiments only
+  const names = front.map(e=>e.name);
+  const colors = front.map(e=>e.color);
   Plotly.newPlot('ov-bar-ret', [
-    {{x:names, y:exps.map(e=>e.splits.val?.mean_ret||0), type:'bar', name:'Val', marker:{{color:colors, opacity:.85}}}},
-    {{x:names, y:exps.map(e=>e.splits.test?.mean_ret||0), type:'bar', name:'Test', marker:{{color:colors, opacity:.4}}}},
+    {{x:names, y:front.map(e=>e.splits.val?.mean_ret||0), type:'bar', name:'Val', marker:{{color:colors, opacity:.85}}}},
+    {{x:names, y:front.map(e=>e.splits.test?.mean_ret||0), type:'bar', name:'Test', marker:{{color:colors, opacity:.4}}}},
   ], {{...LAYOUT, title:'Mean Return by Experiment', barmode:'group', height:380,
-    xaxis:{{...LAYOUT.xaxis, tickangle:-25, tickfont:{{size:9}}}}}}, CFG);
+    xaxis:{{...LAYOUT.xaxis, type:'category', tickangle:-25, tickfont:{{size:9}}}}}}, CFG);
 
   Plotly.newPlot('ov-bar-sharpe', [
-    {{x:names, y:exps.map(e=>e.splits.val?.sharpe||0), type:'bar', name:'Val', marker:{{color:colors, opacity:.85}}}},
-    {{x:names, y:exps.map(e=>e.splits.test?.sharpe||0), type:'bar', name:'Test', marker:{{color:colors, opacity:.4}}}},
+    {{x:names, y:front.map(e=>e.splits.val?.sharpe||0), type:'bar', name:'Val', marker:{{color:colors, opacity:.85}}}},
+    {{x:names, y:front.map(e=>e.splits.test?.sharpe||0), type:'bar', name:'Test', marker:{{color:colors, opacity:.4}}}},
   ], {{...LAYOUT, title:'Sharpe Ratio by Experiment', barmode:'group', height:380,
-    xaxis:{{...LAYOUT.xaxis, tickangle:-25, tickfont:{{size:9}}}}}}, CFG);
+    xaxis:{{...LAYOUT.xaxis, type:'category', tickangle:-25, tickfont:{{size:9}}}}}}, CFG);
 }};
 
 // ═══════════════════════════════════════════
@@ -1115,6 +1522,7 @@ render.strategies = function() {{
       {{x:hd.map(h=>h.bucket), y:hd.map(h=>h.mean_ret), type:'scatter', mode:'lines+markers',
         name:'Mean Return %', marker:{{color:'#22c55e',size:8}}, line:{{color:'#22c55e',width:2}}, yaxis:'y2'}},
     ], {{...LAYOUT, title:'Holding Period Analysis', height:340,
+      xaxis:{{...LAYOUT.xaxis, type:'category'}},
       yaxis:{{...LAYOUT.yaxis, title:'# Trades'}},
       yaxis2:{{...LAYOUT.yaxis, title:'Mean Return %', overlaying:'y', side:'right', gridcolor:'transparent'}},
       legend:{{x:0, y:1.12, orientation:'h'}}}}, CFG);
@@ -1217,7 +1625,7 @@ render.earnings = function() {{
     {{x:earnTrades, type:'histogram', name:'Earnings', opacity:.6, marker:{{color:'#ef4444'}}, nbinsx:30}},
     {{x:otherTrades, type:'histogram', name:'Non-Earnings', opacity:.6, marker:{{color:'#a855f7'}}, nbinsx:30}},
   ], {{...LAYOUT, title:'Return Distribution: Earnings vs Non-Earnings', barmode:'overlay', height:350,
-    xaxis:{{...LAYOUT.xaxis, title:'Return %'}}, yaxis:{{...LAYOUT.yaxis, title:'Count'}}}}, CFG);
+    xaxis:{{...LAYOUT.xaxis, type:'linear', title:'Return %'}}, yaxis:{{...LAYOUT.yaxis, title:'Count'}}}}, CFG);
 
   const labels = ['Mean Ret', 'Win%/10', 'Sharpe', 'Excess SPY'];
   Plotly.newPlot('earn-compare-bar', [
@@ -1225,7 +1633,8 @@ render.earnings = function() {{
       type:'bar', name:'Earnings', marker:{{color:'#ef4444'}}}},
     {{x:labels, y:[other?.splits.val?.mean_ret||0, (other?.splits.val?.win_pct||0)/10, other?.splits.val?.sharpe||0, other?.splits.val?.excess_spy||0],
       type:'bar', name:'Non-Earnings', marker:{{color:'#a855f7'}}}},
-  ], {{...LAYOUT, title:'Key Metrics Comparison (Val)', barmode:'group', height:350}}, CFG);
+  ], {{...LAYOUT, title:'Key Metrics Comparison (Val)', barmode:'group', height:350,
+    xaxis:{{...LAYOUT.xaxis, type:'category'}}}}, CFG);
 }};
 
 // ═══════════════════════════════════════════
@@ -1328,7 +1737,7 @@ render.portfolio = function() {{
   Plotly.newPlot('port-pnl-dist', [
     {{x:allPnl, type:'histogram', nbinsx:40, marker:{{color:'#3b82f6', opacity:.7}}, name:'Trade Returns'}},
   ], {{...LAYOUT, title:'Trade Return Distribution (Default Portfolio)', height:320,
-    xaxis:{{...LAYOUT.xaxis, title:'Return %'}}, yaxis:{{...LAYOUT.yaxis, title:'Count'}},
+    xaxis:{{...LAYOUT.xaxis, type:'linear', title:'Return %'}}, yaxis:{{...LAYOUT.yaxis, title:'Count'}},
     shapes:[{{type:'line',x0:0,x1:0,y0:0,y1:1,yref:'paper',line:{{color:'#ef4444',width:1.5,dash:'dash'}}}}]}}, CFG);
 }};
 
@@ -1442,14 +1851,14 @@ render.risk = function() {{
     y:e.trades.map(t=>t.return_pct), type:'box', name:e.name.split(' — ')[0],
     marker:{{color:e.color}}, boxpoints:'outliers',
   }})), {{...LAYOUT, title:'Return Distribution by Experiment', height:380,
-    showlegend:false, xaxis:{{...LAYOUT.xaxis, tickangle:-20, tickfont:{{size:9}}}}}}, CFG);
+    showlegend:false, xaxis:{{...LAYOUT.xaxis, type:'category', tickangle:-20, tickfont:{{size:9}}}}}}, CFG);
 
   // VaR comparison
   Plotly.newPlot('risk-var', [
     {{x:exps.map(e=>e.name), y:exps.map(e=>e.splits.val?.var_95||0), type:'bar', name:'VaR 95%', marker:{{color:'#eab308'}}}},
     {{x:exps.map(e=>e.name), y:exps.map(e=>e.splits.val?.cvar_95||0), type:'bar', name:'CVaR 95%', marker:{{color:'#ef4444'}}}},
   ], {{...LAYOUT, title:'Value at Risk (Validation)', barmode:'group', height:380,
-    xaxis:{{...LAYOUT.xaxis, tickangle:-25, tickfont:{{size:9}}}},
+    xaxis:{{...LAYOUT.xaxis, type:'category', tickangle:-25, tickfont:{{size:9}}}},
     yaxis:{{...LAYOUT.yaxis, title:'Return %'}}}}, CFG);
 }};
 
@@ -1548,7 +1957,8 @@ render.rf = function() {{
     {{y:sorted.map(s=>s[0]), x:sorted.map(s=>s[1]), type:'bar', orientation:'h',
       marker:{{color:sorted.map(s=>s[1]), colorscale:[['0','#243044'],['1','#3b82f6']]}}}},
   ], {{...LAYOUT, title:'Feature Importance (Gini)', height:300,
-    xaxis:{{...LAYOUT.xaxis, title:'Importance', tickformat:'.1%'}},
+    xaxis:{{...LAYOUT.xaxis, type:'linear', title:'Importance', tickformat:'.1%'}},
+    yaxis:{{...LAYOUT.yaxis, type:'category'}},
     margin:{{...LAYOUT.margin, l:200}}}}, CFG);
 
   // RF comparison bar
@@ -1558,7 +1968,8 @@ render.rf = function() {{
       name:'No RF', marker:{{color:'#3b82f6', opacity:.7}}}},
     {{x:splits.map(s=>s.toUpperCase()), y:splits.map(s=>withRF?.splits[s]?.mean_ret||0), type:'bar',
       name:'With RF>0', marker:{{color:'#22c55e', opacity:.7}}}},
-  ], {{...LAYOUT, title:'Mean Return: RF Filter Impact by Split', barmode:'group', height:300}}, CFG);
+  ], {{...LAYOUT, title:'Mean Return: RF Filter Impact by Split', barmode:'group', height:300,
+    xaxis:{{...LAYOUT.xaxis, type:'category'}}}}, CFG);
 }};
 
 // ═══════════════════════════════════════════
@@ -1716,11 +2127,12 @@ function showTradeDetail(sym, mkt, entryDate) {{
   </h3>`;
 
   // Trade metadata
-  html += `<div class="grid g4" style="margin:16px 0">
+  html += `<div class="grid g5" style="margin:16px 0">
     <div class="card"><h3>Entry</h3><div style="font-size:14px;font-weight:600">$${{trade.entry_price}}</div><div class="sub">${{trade.entry_date}}</div></div>
     <div class="card"><h3>Exit</h3><div style="font-size:14px;font-weight:600">$${{trade.exit_price}}</div><div class="sub">${{trade.exit_date}} — ${{trade.exit_reason}}</div></div>
     <div class="card"><h3>vs Benchmarks</h3><div style="font-size:13px">SPY: ${{fmtPct(trade.excess_spy)}} &nbsp; QQQ: ${{fmtPct(trade.excess_qqq)}}</div></div>
     <div class="card"><h3>Details</h3><div style="font-size:12px">Hold: ${{trade.holding_days}}d &nbsp; Peak: ${{trade.peak_pct}}% &nbsp; Trough: ${{trade.trough_pct}}%</div></div>
+    <div class="card"><h3>Confidence</h3><div class="val" style="font-size:22px">${{(trade.entry_prob*100).toFixed(1)}}%</div><div class="sub">Polymarket Prob</div></div>
   </div>`;
 
   // World info
