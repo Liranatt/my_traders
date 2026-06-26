@@ -1,0 +1,2 @@
+run_id,market_id,event_id,question,created_at,end_at,final_outcome,probability_hour_count,probability_graph_path
+a64fa280-a0c1-4c13-854b-d09e19088eef,252645,902670,Will any major Iranian oil refinery be taken out by Nov 30?,2023-10-12 17:45:15.719000+00:00,2023-11-30 00:00:00+00:00,No,1155,

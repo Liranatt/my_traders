@@ -1,0 +1,5 @@
+run_id,stage,work_key,status,attempts,payload,result,error,started_at,finished_at
+a64fa280-a0c1-4c13-854b-d09e19088eef,event_filter,batch:1,complete,1,"{""market_ids"": [""252645"", ""252842"", ""252928"", ""253119"", ""253121""]}","{""market_count"": 5}",,2026-06-22 19:54:56.611085+00:00,2026-06-22 19:54:56.829097+00:00
+a64fa280-a0c1-4c13-854b-d09e19088eef,prices,all-price-bars,complete,1,"{""request_count"": 0, ""asset_symbol_count"": 0, ""sector_symbol_count"": 0}","{""request_count"": 0, ""no_data_window_count"": 0, ""pending_request_count"": 0, ""downloaded_window_count"": 0, ""retryable_failure_count"": 0}",,2026-06-22 19:54:58.127007+00:00,2026-06-22 19:54:58.134970+00:00
+a64fa280-a0c1-4c13-854b-d09e19088eef,probabilities,252645,complete,1,"{""market_id"": ""252645""}","{""hour_count"": 1155, ""pass_count"": 0, ""volume_error"": null, ""volume_status"": ""unknown""}",,2026-06-22 19:54:57.057594+00:00,2026-06-22 19:54:57.127318+00:00
+a64fa280-a0c1-4c13-854b-d09e19088eef,reports,run-reports,running,1,{},,,2026-06-22 19:54:58.692816+00:00,

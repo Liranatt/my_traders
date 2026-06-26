@@ -1,0 +1,25 @@
+[
+  {
+    "variant": "shorts_hedged",
+    "run_id": "0182b69b-ddbd-4af8-a0d5-75d137cd8312",
+    "elapsed_seconds": 66.9,
+    "overall_trades": 17,
+    "overall_net": -396.3884824715094,
+    "overall_return_pct": -0.7927769649430187,
+    "overall_win_rate": 0.17647058823529413,
+    "overall_profit_factor": 0.07791488139377256,
+    "ml_trades": null,
+    "ml_net": null,
+    "ml_return_pct": null,
+    "ml_win_rate": null,
+    "momentum_trades": 17,
+    "momentum_net": -396.3884824715094,
+    "fallback_net": null,
+    "return_on_peak_pct": -2.642589883143396,
+    "peak_capital": 15000.0,
+    "starting_capital": 50000.0,
+    "classification_accuracy": null,
+    "counterfactual_long_only_net": 0,
+    "overrides": "{\"enable_shorts\": true, \"hedge_ml_trades\": true}"
+  }
+]

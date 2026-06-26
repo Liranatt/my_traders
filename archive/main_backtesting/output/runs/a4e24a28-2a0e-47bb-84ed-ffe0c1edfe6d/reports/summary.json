@@ -1,0 +1,138 @@
+{
+  "run_id": "a4e24a28-2a0e-47bb-84ed-ffe0c1edfe6d",
+  "trade_count": 254,
+  "overall_performance": {
+    "trade_count": 254,
+    "total_net_profit": 1157.2969278716891,
+    "win_rate": 0.42913385826771655,
+    "average_winner": 53.42379539919587,
+    "average_loser": -32.17859841821145,
+    "payoff_ratio": 1.6602275433152711,
+    "profit_factor": 1.2480331187680314,
+    "expectancy": 4.556287117605075,
+    "largest_winner": 272.31606831173696,
+    "largest_loser": -135.18947511139774,
+    "maximum_consecutive_losses": 21
+  },
+  "equal_notional_signal_portfolio": {
+    "method": "daily_realized_executable_trade_returns",
+    "daily_realized_days": 193,
+    "sharpe_ratio": 0.5500251357889505,
+    "sortino_ratio": 1.0541303704065357,
+    "annualized_return_pct": 0.2437279890035214,
+    "annualized_volatility_pct": 0.44312154689788946,
+    "calmar_return_over_max_drawdown": 0.5683216131961472,
+    "total_return_pct_of_notional": 0.004556287117605076,
+    "cumulative_pnl_dollars": 1157.2969278716894,
+    "average_daily_return": 0.0009671745595377834,
+    "best_day_return": 0.1627662282719709,
+    "worst_day_return": -0.07481553398058252,
+    "positive_day_rate": 0.16062176165803108,
+    "maximum_drawdown_dollars": -2036.341573151234,
+    "maximum_drawdown_percent_of_total_signal_notional": -0.008017092807682024,
+    "total_signal_notional": 254000.0
+  },
+  "equal_notional_executable_signal_portfolio": {
+    "method": "daily_realized_executable_trade_returns",
+    "daily_realized_days": 193,
+    "sharpe_ratio": 0.5500251357889505,
+    "sortino_ratio": 1.0541303704065357,
+    "annualized_return_pct": 0.2437279890035214,
+    "annualized_volatility_pct": 0.44312154689788946,
+    "calmar_return_over_max_drawdown": 0.5683216131961472,
+    "total_return_pct_of_notional": 0.004556287117605076,
+    "cumulative_pnl_dollars": 1157.2969278716894,
+    "average_daily_return": 0.0009671745595377834,
+    "best_day_return": 0.1627662282719709,
+    "worst_day_return": -0.07481553398058252,
+    "positive_day_rate": 0.16062176165803108,
+    "maximum_drawdown_dollars": -2036.341573151234,
+    "maximum_drawdown_percent_of_total_signal_notional": -0.008017092807682024,
+    "total_signal_notional": 254000.0
+  },
+  "strategies": {
+    "machine_learning": {
+      "performance": {
+        "trade_count": 254,
+        "total_net_profit": 1157.2969278716891,
+        "win_rate": 0.42913385826771655,
+        "average_winner": 53.42379539919587,
+        "average_loser": -32.17859841821145,
+        "payoff_ratio": 1.6602275433152711,
+        "profit_factor": 1.2480331187680314,
+        "expectancy": 4.556287117605075,
+        "largest_winner": 272.31606831173696,
+        "largest_loser": -135.18947511139774,
+        "maximum_consecutive_losses": 21
+      },
+      "realized_portfolio": {
+        "method": "daily_realized_executable_trade_returns",
+        "daily_realized_days": 193,
+        "sharpe_ratio": 0.5500251357889505,
+        "sortino_ratio": 1.0541303704065357,
+        "annualized_return_pct": 0.2437279890035214,
+        "annualized_volatility_pct": 0.44312154689788946,
+        "calmar_return_over_max_drawdown": 0.5683216131961472,
+        "total_return_pct_of_notional": 0.004556287117605076,
+        "cumulative_pnl_dollars": 1157.2969278716894,
+        "average_daily_return": 0.0009671745595377834,
+        "best_day_return": 0.1627662282719709,
+        "worst_day_return": -0.07481553398058252,
+        "positive_day_rate": 0.16062176165803108,
+        "maximum_drawdown_dollars": -2036.341573151234,
+        "maximum_drawdown_percent_of_total_signal_notional": -0.008017092807682024,
+        "total_signal_notional": 254000.0
+      }
+    }
+  },
+  "strategy_resolutions": {
+    "machine_learning:1d": {
+      "trade_count": 254,
+      "total_net_profit": 1157.2969278716891,
+      "win_rate": 0.42913385826771655,
+      "average_winner": 53.42379539919587,
+      "average_loser": -32.17859841821145,
+      "payoff_ratio": 1.6602275433152711,
+      "profit_factor": 1.2480331187680314,
+      "expectancy": 4.556287117605075,
+      "largest_winner": 272.31606831173696,
+      "largest_loser": -135.18947511139774,
+      "maximum_consecutive_losses": 21
+    }
+  },
+  "portfolios": {
+    "machine_learning:1d": {
+      "trade_count": 254,
+      "total_net_profit": 1157.2969278716891,
+      "win_rate": 0.42913385826771655,
+      "average_winner": 53.42379539919587,
+      "average_loser": -32.17859841821145,
+      "payoff_ratio": 1.6602275433152711,
+      "profit_factor": 1.2480331187680314,
+      "expectancy": 4.556287117605075,
+      "largest_winner": 272.31606831173696,
+      "largest_loser": -135.18947511139774,
+      "maximum_consecutive_losses": 21
+    }
+  },
+  "machine_learning": {
+    "classification_observations": 2839,
+    "classification_accuracy": 0.45332863684395913,
+    "long_precision": 0.42362713428703275,
+    "long_recall": 0.7518427518427518,
+    "short_precision": 0.5491071428571429,
+    "short_recall": 0.2280593325092707,
+    "ridge_mean_absolute_error": 0.10610115224554585,
+    "ridge_root_mean_square_error": 0.14444099976680408,
+    "predicted_goal_hit_rate": 0.49594927791475873
+  },
+  "capital": {
+    "starting_capital": 50000.0,
+    "net_profit": 1157.2969278716891,
+    "return_on_starting_capital_pct": 2.3145938557433783,
+    "peak_concurrent_positions": 37,
+    "peak_capital_deployed": 37000.0,
+    "return_on_peak_capital_pct": 3.127829534788349,
+    "total_tickets_notional": 254000.0
+  }
+}

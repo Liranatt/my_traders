@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import sys
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -36,6 +37,8 @@ DEFAULT_POLICY = dict(
     enter_strong=0.75,         # instant entry threshold
     enter_floor=0.70,          # confirmation entry threshold
     hold_days=1,               # days to hold above enter_floor before entry
+    max_prob_surge=0.40,       # max prob surge from t0 to entry allowed
+    max_price_runup=0.10,      # max asset price runup from t0 to entry allowed
 )
 
 # ──────────── RL bounds (hard limits -- stop loss CANNOT be disabled) ────────────
@@ -46,17 +49,9 @@ RL_BOUNDS = dict(
     enter_strong=(0.60, 0.85),    # instant-entry probability
     enter_floor= (0.55, 0.80),    # confirmation-entry probability
     hold_days=   (1, 5),          # confirmation days (integer)
+    max_prob_surge=(0.20, 0.80),  # prob surge bound
+    max_price_runup=(0.02, 0.20), # price runup bound
 )
-
-
-def rf_model():
-    pre = ColumnTransformer([
-        ("num", SimpleImputer(strategy="median"), NUM),
-        ("cat", Pipeline([("imp", SimpleImputer(strategy="constant", fill_value="?")),
-                          ("oh", OneHotEncoder(handle_unknown="ignore", sparse_output=False))]), CAT),
-    ])
-    return Pipeline([("pre", pre), ("rf", RandomForestRegressor(
-        n_estimators=300, max_depth=6, min_samples_leaf=8, random_state=42, n_jobs=4))])
 
 
 async def price_prob_paths(df):
@@ -122,11 +117,28 @@ def entry_day(prob_path, t_theta, policy):
     return None
 
 
+def long_unfavorable(question: str) -> bool:
+    """Sentiment check: is the market's YES outcome BEARISH for the mapped (long) asset?
+    Long-only -> if YES means the asset falls, we cannot act, skip it. Best-effort; if we can't
+    tell, we keep the trade (most of the universe is YES=up: earnings beats, oil-on-conflict)."""
+    q = " " + (question or "").lower() + " "
+    # higher inflation / a rate HIKE -> rate-sensitive instruments fall -> bearish for a long
+    if (" above " in q or " hike" in q or " raise" in q) and ("inflation" in q or "cpi" in q or "rate" in q):
+        return True
+    return any(w in q for w in (" miss ", " misses ", " fall ", " decline", " crash", " fails to ", " reject"))
+
+
 def simulate_one(row, P, PR, policy):
     """Simulate a single trade using the given policy dict."""
     sym, mkt = row["symbol"], row["market_id"]
     t_theta = pd.Timestamp(row["t_theta"]).tz_convert("UTC")
     t_e = pd.Timestamp(row["t_e"]).tz_convert("UTC")
+    # (2) sentiment: long-only -> skip markets whose YES outcome is bearish for the asset
+    if long_unfavorable(str(row.get("question", ""))):
+        return None
+    # (2) earnings: we cannot predict beat/miss -> hold for the drift, exit 1 day before the
+    #     announcement; disable the profit-taking exits so we don't cut the run-up short.
+    is_earnings = "earnings" in str(row.get("feat_archetype", "")).lower()
     closes = P.get(sym, [])
     
     # Grab a wider window to calculate ATR before entry
@@ -138,6 +150,14 @@ def simulate_one(row, P, PR, policy):
     if ent is None:
         return None
     entry_ts = ent[0]
+    
+    # Runup filters: skip entry if it's already priced in too heavily
+    p_surge = row["feat_prob_surge_since_t0"]
+    r_surge = row["feat_runup_since_t0"]
+    if p_surge is not None and p_surge > policy.get("max_prob_surge", 999.0):
+        return None
+    if r_surge is not None and r_surge > policy.get("max_price_runup", 999.0):
+        return None
     
     entry_idx = next((i for i, b in enumerate(win) if b[0] >= entry_ts), -1)
     if entry_idx == -1: return None
@@ -154,8 +174,10 @@ def simulate_one(row, P, PR, policy):
     atr_pct = atr / entry_price
 
     prob_path = {t.normalize(): v for t, v in PR.get(mkt, [])}
+    
+    # Exit one day before resolution (especially critical for earnings)
+    # This prevents binary flip risk.
     resolution_cut = t_e - pd.Timedelta(days=1)
-    target = float(row["rf_target"])
     
     atr_mult = policy["atr_mult"]
     lock_activate = policy["lock_activate"]
@@ -171,26 +193,26 @@ def simulate_one(row, P, PR, policy):
         if i > 0:
             stop_dist = atr_mult * atr_pct
             
-            # 1. Did the low violate the trailing stop from previous peak?
-            if ret_l <= peak - stop_dist:
-                reason = f"trailing_{atr_mult:.1f}ATR"
-                c = max(l, entry_price * (1.0 + peak - stop_dist))
-                ret_c = c / entry_price - 1.0
-                
-            # 2. Or did the low violate the profit lock from previous peak?
-            elif peak >= lock_activate:
-                hard_floor_pct = int(peak * 100)
-                hard_floor = hard_floor_pct / 100.0
-                if ret_l < hard_floor:
-                    reason = f"profit_lock_{hard_floor_pct}%"
-                    c = max(l, entry_price * (1.0 + hard_floor))
+            # For earnings, disable profit taking and trailing stops. Just hold until 1d before resolution!
+            if not is_earnings:
+                # 1. Did the low violate the trailing stop from previous peak?
+                if ret_l <= peak - stop_dist:
+                    reason = f"trailing_{atr_mult:.1f}ATR"
+                    c = max(l, entry_price * (1.0 + peak - stop_dist))
                     ret_c = c / entry_price - 1.0
+                    
+                # 2. Or did the low violate the profit lock from previous peak?
+                elif peak >= lock_activate:
+                    hard_floor_pct = int(peak * 100)
+                    hard_floor = hard_floor_pct / 100.0
+                    if ret_l < hard_floor:
+                        reason = f"profit_lock_{hard_floor_pct}%"
+                        c = max(l, entry_price * (1.0 + hard_floor))
+                        ret_c = c / entry_price - 1.0
             
-            # 3. EOD exits
+            # 3. EOD exits (always active)
             if reason is None:
-                if ret_c >= target and target > 0:
-                    reason = "rf_target"
-                elif prob_path.get(t.normalize(), 1.0) < theta_out:
+                if prob_path.get(t.normalize(), 1.0) < theta_out:
                     reason = f"poly<{theta_out}"
                 elif t >= resolution_cut:
                     reason = "resolution-1d"
@@ -201,7 +223,7 @@ def simulate_one(row, P, PR, policy):
                         relevance=round(float(row[RELEVANCE]), 3), split=row["split"],
                         entry_date=str(entry_ts.date()), entry_prob=round(ent[1], 3),
                         entry_price=round(entry_price, 2), exit_date=str(t.date()),
-                        exit_price=round(c, 2), exit_reason=reason, rf_target=round(target, 4),
+                        exit_price=round(c, 2), exit_reason=reason,
                         peak_pct=round(peak * 100, 2), trough_pct=round(lo * 100, 2),
                         return_pct=round(ret_c * 100, 2))
 
@@ -217,7 +239,7 @@ def simulate_one(row, P, PR, policy):
                 relevance=round(float(row[RELEVANCE]), 3), split=row["split"],
                 entry_date=str(entry_ts.date()), entry_prob=round(ent[1], 3),
                 entry_price=round(entry_price, 2), exit_date=str(t.date()),
-                exit_price=round(c, 2), exit_reason="end_of_window", rf_target=round(target, 4),
+                exit_price=round(c, 2), exit_reason="end_of_window",
                 peak_pct=round(peak * 100, 2), trough_pct=round(lo * 100, 2),
                 return_pct=round(ret_c * 100, 2))
 
@@ -448,7 +470,9 @@ def compare_baselines(df, P, PR, spy, policy=DEFAULT_POLICY):
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     run_rl = "--rl" in sys.argv
-    path = next((a for a in sys.argv[1:] if not a.startswith("--")), "data/candidates.parquet")
+    project_root = Path(__file__).resolve().parents[1]
+    default_parquet = str(project_root / "data" / "candidates.parquet")
+    path = next((a for a in sys.argv[1:] if not a.startswith("--")), default_parquet)
 
     df = pd.read_parquet(path)
     df = df[df[RELEVANCE].astype(float) > 0.5].copy()
@@ -457,10 +481,6 @@ def main():
     tr = df[df["split"] == "train"]
     print(f"universe (relevance>0.5): {len(df)}  | train={len(tr)} val={(df.split=='val').sum()} test={(df.split=='test').sum()}")
 
-    model = rf_model()
-    model.fit(tr[NUM + CAT], tr[TARGET].astype(float))
-    df["rf_target"] = model.predict(df[NUM + CAT])
-
     P, PR = asyncio.run(price_prob_paths(df))
 
     # ── baseline run ──
@@ -468,7 +488,7 @@ def main():
     print("  BASELINE (hardcoded policy)")
     print("="*70)
     tdf = run_backtest(df, P, PR, DEFAULT_POLICY)
-    out_csv = "data/liran_trades_baseline.csv" if run_rl else "data/liran_trades.csv"
+    out_csv = str(project_root / ("data/liran_trades_baseline.csv" if run_rl else "data/liran_trades.csv"))
     tdf.to_csv(out_csv, index=False)
     print(f"trades taken: {len(tdf)}  -> {out_csv}\n")
     print_results(tdf)
@@ -499,12 +519,14 @@ def main():
 
     # ── save both sets of trades ──
     tdf_mr = run_backtest(df, P, PR, policy_mr)
-    tdf_mr.to_csv("data/liran_trades_rl_meanret.csv", index=False)
-    print(f"Mean-return RL trades saved: data/liran_trades_rl_meanret.csv ({len(tdf_mr)} trades)")
+    mr_path = str(project_root / "data/liran_trades_rl_meanret.csv")
+    tdf_mr.to_csv(mr_path, index=False)
+    print(f"Mean-return RL trades saved: {mr_path} ({len(tdf_mr)} trades)")
 
     tdf_sh = run_backtest(df, P, PR, policy_sh)
-    tdf_sh.to_csv("data/liran_trades_rl_sharpe.csv", index=False)
-    print(f"Sharpe RL trades saved: data/liran_trades_rl_sharpe.csv ({len(tdf_sh)} trades)")
+    sh_path = str(project_root / "data/liran_trades_rl_sharpe.csv")
+    tdf_sh.to_csv(sh_path, index=False)
+    print(f"Sharpe RL trades saved: {sh_path} ({len(tdf_sh)} trades)")
 
 
 if __name__ == "__main__":

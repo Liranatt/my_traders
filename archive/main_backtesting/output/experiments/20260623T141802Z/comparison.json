@@ -1,0 +1,53 @@
+[
+  {
+    "variant": "baseline",
+    "run_id": "16807cbf-6af5-4714-b901-36b936c4e892",
+    "elapsed_seconds": 2539.3,
+    "overall_trades": 335,
+    "overall_net": 883.3253004851613,
+    "overall_win_rate": 0.417910447761194,
+    "overall_profit_factor": 1.1427424469988559,
+    "ml_trades": 268,
+    "ml_net": 905.7401633197918,
+    "ml_win_rate": 0.4216417910447761,
+    "momentum_trades": 67,
+    "momentum_net": -22.414862834630544,
+    "classification_accuracy": 0.4406481155336386,
+    "counterfactual_long_only_net": -1165.1325488112916,
+    "overrides": "{}"
+  },
+  {
+    "variant": "query_window_features",
+    "run_id": "482fa15d-6a04-4adf-b5e9-3818d05f95b9",
+    "elapsed_seconds": 2596.3,
+    "overall_trades": 321,
+    "overall_net": 1134.8820650370587,
+    "overall_win_rate": 0.4236760124610592,
+    "overall_profit_factor": 1.1948655483972346,
+    "ml_trades": 254,
+    "ml_net": 1157.2969278716891,
+    "ml_win_rate": 0.42913385826771655,
+    "momentum_trades": 67,
+    "momentum_net": -22.414862834630544,
+    "classification_accuracy": 0.45332863684395913,
+    "counterfactual_long_only_net": -1165.1325488112916,
+    "overrides": "{\"ml_use_query_window_features\": true}"
+  },
+  {
+    "variant": "query_window_plus_winners",
+    "run_id": "38610cdf-0681-444b-afdb-0b6b5edd6ffc",
+    "elapsed_seconds": 2596.3,
+    "overall_trades": 334,
+    "overall_net": 2232.848797799317,
+    "overall_win_rate": 0.47305389221556887,
+    "overall_profit_factor": 1.3953052424682915,
+    "ml_trades": 268,
+    "ml_net": 2145.9080783741715,
+    "ml_win_rate": 0.48880597014925375,
+    "momentum_trades": 66,
+    "momentum_net": 86.9407194251453,
+    "classification_accuracy": 0.4216273335681578,
+    "counterfactual_long_only_net": -8021.471713020386,
+    "overrides": "{\"ml_use_query_window_features\": true, \"ml_stop_loss_pct\": 0.05, \"probability_exit_mode\": \"immediate_band\", \"probability_exit_band\": 0.45, \"ml_direction_mode\": \"regression_sign\"}"
+  }
+]

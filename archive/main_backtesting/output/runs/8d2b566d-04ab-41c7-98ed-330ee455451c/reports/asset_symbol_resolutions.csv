@@ -1,0 +1,1180 @@
+run_id,original_symbol,resolved_symbol,official_symbol,security_name,exchange,is_etf,match_method,rejection_reason,updated_at
+8d2b566d-04ab-41c7-98ed-330ee455451c,A,A,A,"Agilent Technologies, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.519340+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AAL,AAL,AAL,"American Airlines Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.533114+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AAP,AAP,AAP,Advance Auto Parts Inc.,NYSE,False,exact_symbol,,2026-06-23 16:41:22.539118+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AAPL,AAPL,AAPL,Apple Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.547232+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AAXJ,AAXJ,AAXJ,iShares MSCI All Country Asia ex Japan ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:22.555812+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AB,AB,AB,AllianceBernstein Holding L.P.  Units,NYSE,False,exact_symbol,,2026-06-23 16:41:22.563468+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ABBV,ABBV,ABBV,AbbVie Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.571072+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ABG,ABG,ABG,Asbury Automotive Group Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.579307+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ABNB,ABNB,ABNB,"Airbnb, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.589247+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ABT,ABT,ABT,Abbott Laboratories Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.611344+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ACI,ACI,ACI,"Albertsons Companies, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.617028+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ACM,ACM,ACM,AECOM Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.625674+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ACN,ACN,ACN,Accenture plc Class A Ordinary Shares (Ireland),NYSE,False,exact_symbol,,2026-06-23 16:41:22.631165+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ADBE,ADBE,ADBE,Adobe Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.639224+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ADI,ADI,ADI,"Analog Devices, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.647700+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ADM,ADM,ADM,Archer-Daniels-Midland Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.653444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ADP,ADP,ADP,"Automatic Data Processing, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.696182+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ADSK,ADSK,ADSK,"Autodesk, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.732138+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AEO,AEO,AEO,"American Eagle Outfitters, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.764112+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AEP,AEP,AEP,"American Electric Power Company, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.771553+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AFL,AFL,AFL,AFLAC Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.779198+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AFRM,AFRM,AFRM,"Affirm Holdings, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.787161+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AGCO,AGCO,AGCO,AGCO Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.795616+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AI,AI,AI,"C3.ai, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.804855+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AIG,AIG,AIG,"American International Group, Inc. New Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.813458+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AKAM,AKAM,AKAM,"Akamai Technologies, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.821124+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALB,ALB,ALB,Albemarle Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.827069+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALC,ALC,ALC,Alcon Inc. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:22.835361+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALHC,ALHC,ALHC,"Alignment Healthcare, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.841066+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALK,ALK,ALK,"Alaska Air Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.849239+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALKS,ALKS,ALKS,Alkermes plc - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.857243+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALL,ALL,ALL,Allstate Corporation (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.869286+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALLY,ALLY,ALLY,Ally Financial Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.877195+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALNY,ALNY,ALNY,"Alnylam Pharmaceuticals, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.887339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ALV,ALV,ALV,"Autoliv, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.897457+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AM,AM,AM,Antero Midstream Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:22.903106+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMAT,AMAT,AMAT,"Applied Materials, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.911374+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMC,AMC,AMC,"AMC Entertainment Holdings, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.919204+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMCX,AMCX,AMCX,AMC Global Media Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.925419+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMD,AMD,AMD,"Advanced Micro Devices, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.937396+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AME,AME,AME,"AMETEK, Inc.",NYSE,False,exact_symbol,,2026-06-23 16:41:22.945184+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMG,AMG,AMG,"Affiliated Managers Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.955408+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMGN,AMGN,AMGN,Amgen Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.965513+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMLP,AMLP,AMLP,Alerian MLP ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:22.971145+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMN,AMN,AMN,AMN Healthcare Services Inc,NYSE,False,exact_symbol,,2026-06-23 16:41:22.981393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMP,AMP,AMP,"Ameriprise Financial, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:22.989210+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMPL,AMPL,AMPL,"Amplitude, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:22.997410+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMTD,AMTD,AMTD,"AMTD IDEA Group American Depositary Shares, each representing six (6) Class A Ordinary Shares",NYSE,False,exact_symbol,,2026-06-23 16:41:23.005820+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMX,AMX,AMX,"America Movil, S.A.B. de C.V. American Depositary Shares (each representing the right to receive twenty (20) Series B Shares",NYSE,False,exact_symbol,,2026-06-23 16:41:23.017328+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AMZN,AMZN,AMZN,"Amazon.com, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.025100+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AN,AN,AN,"AutoNation, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.033516+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ANET,ANET,ANET,"Arista Networks, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.043266+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ANF,ANF,ANF,Abercrombie & Fitch Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.053144+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ANGI,ANGI,ANGI,Angi Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.061227+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AOS,AOS,AOS,A.O. Smith Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.071393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AOUT,AOUT,AOUT,"American Outdoor Brands, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.077205+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APA,APA,APA,APA Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.085487+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APAM,APAM,APAM,Artisan Partners Asset Management Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.097313+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APD,APD,APD,"Air Products and Chemicals, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.103757+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APLD,APLD,APLD,Applied Digital Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.121431+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APO,APO,APO,"Apollo Global Management, Inc. (New) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.129531+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APP,APP,APP,Applovin Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.135126+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,APTV,APTV,APTV,Aptiv PLC Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:23.141129+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARCC,ARCC,ARCC,Ares Capital Corporation - Closed End Fund,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.147420+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARE,ARE,ARE,"Alexandria Real Estate Equities, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.155158+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARES,ARES,ARES,Ares Management Corporation Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.161406+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARGX,ARGX,ARGX,argenx SE - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.167689+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARKW,ARKW,ARKW,ARK Next Generation Internet ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:23.173093+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARKX,ARKX,ARKX,ARK Space & Defense Innovation ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:23.180372+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ARM,ARM,ARM,Arm Holdings plc - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.189128+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AS,AS,AS,"Amer Sports, Inc. Ordinary Shares",NYSE,False,exact_symbol,,2026-06-23 16:41:23.195386+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ASAN,ASAN,ASAN,"Asana, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.201173+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ASML,ASML,ASML,ASML Holding N.V. - New York Registry Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.209194+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ASND,ASND,ASND,Ascendis Pharma A/S - Ordinary Share,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.215100+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ASO,ASO,ASO,"Academy Sports and Outdoors, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.223389+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ATAI,ATAI,ATAI,AtaiBeckley Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.231073+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ATO,ATO,ATO,Atmos Energy Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.239883+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AVGO,AVGO,AVGO,Broadcom Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.247195+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AVNS,AVNS,AVNS,"Avanos Medical, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.255193+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AVXL,AVXL,AVXL,Anavex Life Sciences Corp. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.263488+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AWAY,AWAY,AWAY,Amplify Travel Tech ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.272739+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AWK,AWK,AWK,"American Water Works Company, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.279528+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AXP,AXP,AXP,American Express Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.289100+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AXSM,AXSM,AXSM,"Axsome Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.297134+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AYI,AYI,AYI,Acuity Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.303408+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AZN,AZN,AZN,AstraZeneca PLC Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:23.309546+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AZO,AZO,AZO,"AutoZone, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.316733+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,AZZ,AZZ,AZZ,AZZ Inc.,NYSE,False,exact_symbol,,2026-06-23 16:41:23.329810+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BA,BA,BA,Boeing Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.337092+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BABA,BABA,BABA,Alibaba Group Holding Limited American Depositary Shares each representing eight Ordinary share,NYSE,False,exact_symbol,,2026-06-23 16:41:23.345434+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BAC,BAC,BAC,Bank of America Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.353181+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BAH,BAH,BAH,Booz Allen Hamilton Holding Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.365363+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BALY,BALY,BALY,Bally's Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.371699+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BAM,BAM,BAM,Brookfield Asset Management Inc Class A Limited Voting Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:23.381441+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BAND,BAND,BAND,Bandwidth Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.387129+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BATRA,BATRA,BATRA,"Atlanta Braves Holdings, Inc. - Series A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.395823+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BAX,BAX,BAX,Baxter International Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.403120+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BB,BB,BB,BlackBerry Limited Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.413269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BBAI,BBAI,BBAI,"BigBear.ai, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.421399+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BBBY,BBBY,BBBY,"Bed Bath & Beyond, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.429229+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BBW,BBW,BBW,"Build-A-Bear Workshop, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.435183+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BBWI,BBWI,BBWI,"Bath & Body Works, Inc.",NYSE,False,exact_symbol,,2026-06-23 16:41:23.441522+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BBY,BBY,BBY,"Best Buy Co., Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.455475+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BC,BC,BC,Brunswick Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.461284+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BCS,BCS,BCS,Barclays PLC Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.469139+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BDRY,BDRY,BDRY,Breakwave Dry Bulk Shipping ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.477336+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BDX,BDX,BDX,"Becton, Dickinson and Company Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.483373+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BEAM,BEAM,BEAM,Beam Therapeutics Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.489390+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BEN,BEN,BEN,"Franklin Resources, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.495163+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BETZ,BETZ,BETZ,Roundhill Sports Betting & iGaming ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.503497+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BFAM,BFAM,BFAM,Bright Horizons Family Solutions Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.517213+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BF B,BF-B,BF.B,Brown Forman Inc Class B Common Stock,NYSE,False,asset_name,,2026-06-23 16:41:23.511272+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BFC,BFC,BFC,Bank First Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.525174+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BGC,BGC,BGC,"BGC Group, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.531168+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BIDU,BIDU,BIDU,"Baidu, Inc. - American Depositary Shares, each representing 8 ordinary share",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.537100+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BIIB,BIIB,BIIB,Biogen Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.545184+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BIRD,BIRD,BIRD,"Allbirds, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.553293+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BITO,BITO,BITO,ProShares Bitcoin ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.559144+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BIZD,BIZD,BIZD,VanEck BDC Income ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.565541+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BJ,BJ,BJ,"BJ's Wholesale Club Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.571079+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BJRI,BJRI,BJRI,"BJ's Restaurants, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.577134+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BKNG,BKNG,BKNG,Booking Holdings Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.585209+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BKR,BKR,BKR,Baker Hughes Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.591386+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BLK,BLK,BLK,"BlackRock, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.611811+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BLOK,BLOK,BLOK,Amplify Blockchain Technology ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.619192+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BLSH,BLSH,BLSH,Bullish Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:23.625187+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BMBL,BMBL,BMBL,Bumble Inc. - common stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.631478+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BMRN,BMRN,BMRN,BioMarin Pharmaceutical Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.637331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BMY,BMY,BMY,Bristol-Myers Squibb Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.645218+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BNO,BNO,BNO,"United States Brent Oil Fund, LP ETV",NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.651152+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BNTX,BNTX,BNTX,BioNTech SE - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.659385+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BOH,BOH,BOH,Bank of Hawaii Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.665062+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BOIL,BOIL,BOIL,ProShares Ultra Bloomberg Natural Gas,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:23.669209+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BOX,BOX,BOX,"Box, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.676320+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BP,BP,BP,BP p.l.c. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.682914+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BRBR,BRBR,BRBR,"BellRing Brands, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.689124+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BRCC,BRCC,BRCC,BRC Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.695832+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BRK B,BRK-B,BRK.B,Berkshire Hathaway Inc. New Common Stock,NYSE,False,asset_name,,2026-06-23 16:41:23.703074+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BROS,BROS,BROS,Dutch Bros Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.711146+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BSX,BSX,BSX,Boston Scientific Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.717159+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BTI,BTI,BTI,"British American Tobacco  Industries, p.l.c. Common Stock ADR",NYSE,False,exact_symbol,,2026-06-23 16:41:23.725744+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BUD,BUD,BUD,Anheuser-Busch Inbev SA Sponsored ADR (Belgium),NYSE,False,exact_symbol,,2026-06-23 16:41:23.731143+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BURL,BURL,BURL,"Burlington Stores, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.737747+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BWA,BWA,BWA,BorgWarner Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.743421+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BWXT,BWXT,BWXT,"BWX Technologies, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.751480+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BX,BX,BX,Blackstone Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.757296+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BXP,BXP,BXP,"BXP, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.763251+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BXSL,BXSL,BXSL,Blackstone Secured Lending Fund Common Shares of Beneficial Interest,NYSE,False,exact_symbol,,2026-06-23 16:41:23.769239+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BYD,BYD,BYD,Boyd Gaming Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.777406+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BYND,BYND,BYND,"Beyond Meat, Inc. - Common stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.784899+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BYRN,BYRN,BYRN,"Byrna Technologies, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.791291+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BZFD,BZFD,BZFD,"BuzzFeed, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.797034+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,BZZ,BZZ,BZZ,Corgi Drones & Urban Air Mobility ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:23.803446+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,C,C,C,"Citigroup, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.809030+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CABO,CABO,CABO,"Cable One, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.815556+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CACI,CACI,CACI,"CACI International, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.823023+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAG,CAG,CAG,"ConAgra Brands, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.835419+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAH,CAH,CAH,"Cardinal Health, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.843236+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAKE,CAKE,CAKE,The Cheesecake Factory Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.853297+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAL,CAL,CAL,"Caleres, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.859374+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAPL,CAPL,CAPL,CrossAmerica Partners LP Common Units representing limited partner interests,NYSE,False,exact_symbol,,2026-06-23 16:41:23.867246+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAR,CAR,CAR,"Avis Budget Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.875306+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CARG,CARG,CARG,"CarGurus, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.883162+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CARR,CARR,CARR,Carrier Global Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.897188+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CARZ,CARZ,CARZ,First Trust S-Network Future Vehicles & Technology ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:23.905294+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CASH,CASH,CASH,"Pathward Financial, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.913318+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CASY,CASY,CASY,"Caseys General Stores, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.919227+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAT,CAT,CAT,"Caterpillar, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.927363+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CAVA,CAVA,CAVA,"CAVA Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:23.937157+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CB,CB,CB,Chubb Limited  Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.945240+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CBOE,CBOE,CBOE,"Cboe Global Markets, Inc. Common Stock",Cboe BZX,False,exact_symbol,,2026-06-23 16:41:23.951285+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CBRE,CBRE,CBRE,CBRE Group Inc Common Stock Class A,NYSE,False,exact_symbol,,2026-06-23 16:41:23.957324+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CBRL,CBRL,CBRL,"Cracker Barrel Old Country Store, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.963218+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CBRS,CBRS,CBRS,Cerebras Systems Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.969446+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CBT,CBT,CBT,Cabot Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.975211+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CCEP,CCEP,CCEP,Coca-Cola Europacific Partners plc - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.981214+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CCJ,CCJ,CCJ,Cameco Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:23.987191+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CCL,CCL,CCL,Carnival Corporation Ltd. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:23.993444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CDNS,CDNS,CDNS,"Cadence Design Systems, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:23.999339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CDW,CDW,CDW,CDW Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.003195+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CE,CE,CE,Celanese Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.009185+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CELH,CELH,CELH,"Celsius Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.015396+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CFG,CFG,CFG,"Citizens Financial Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.023266+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CG,CG,CG,The Carlyle Group Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.029298+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CGBD,CGBD,CGBD,"Carlyle Secured Lending, Inc. - Closed End Fund",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.037281+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHD,CHD,CHD,"Church & Dwight Company, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.045172+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHDN,CHDN,CHDN,"Churchill Downs, Incorporated - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.051182+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHEF,CHEF,CHEF,"The Chefs' Warehouse, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.059140+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHGG,CHGG,CHGG,"Chegg, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.065136+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHH,CHH,CHH,"Choice Hotels International, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.077380+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHKP,CHKP,CHKP,Check Point Software Technologies Ltd. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.087256+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHRW,CHRW,CHRW,"C.H. Robinson Worldwide, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.095261+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHTR,CHTR,CHTR,"Charter Communications, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.101228+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CHWY,CHWY,CHWY,"Chewy, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.109567+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CI,CI,CI,The Cigna Group Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.140793+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CIBR,CIBR,CIBR,First Trust NASDAQ Cybersecurity ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:24.168263+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CIEN,CIEN,CIEN,Ciena Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.207228+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CINF,CINF,CINF,Cincinnati Financial Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.220502+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CING,CING,CING,Cingulate Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.227884+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CL,CL,CL,Colgate-Palmolive Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.287223+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CLFD,CLFD,CLFD,"Clearfield, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.330239+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CLOU,CLOU,CLOU,Global X Cloud Computing ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:24.341674+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CLSK,CLSK,CLSK,"CleanSpark, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.350481+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CLX,CLX,CLX,Clorox Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.357171+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CMCSA,CMCSA,CMCSA,Comcast Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.365430+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CME,CME,CME,CME Group Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.373174+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CMG,CMG,CMG,"Chipotle Mexican Grill, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.379099+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CMI,CMI,CMI,Cummins Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.388024+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CMPS,CMPS,CMPS,COMPASS Pathways Plc - American Depository Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.393293+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNC,CNC,CNC,Centene Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.401192+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNI,CNI,CNI,Canadian National Railway Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.407254+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNK,CNK,CNK,"Cinemark Holdings Inc Cinemark Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.415420+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNP,CNP,CNP,"CenterPoint Energy, Inc (Holding Co) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.421677+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNS,CNS,CNS,Cohen & Steers Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.429449+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNTX,CNTX,CNTX,Context Therapeutics Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.437331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CNXC,CNXC,CNXC,Concentrix Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.449223+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COCO,COCO,COCO,"The Vita Coco Company, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.457397+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COF,COF,COF,Capital One Financial Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.465210+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COHR,COHR,COHR,Coherent Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.471397+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COIN,COIN,COIN,"Coinbase Global, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.478016+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COKE,COKE,COKE,"Coca-Cola Consolidated, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.483465+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COLB,COLB,COLB,"Columbia Banking System, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.491162+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COLD,COLD,COLD,"Americold Realty Trust, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.497268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COLM,COLM,COLM,Columbia Sportswear Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.505382+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COMP,COMP,COMP,"Compass, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.513205+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COO,COO,COO,"The Cooper Companies, Inc.  - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.521308+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COP,COP,COP,ConocoPhillips Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.527372+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CORZ,CORZ,CORZ,"Core Scientific, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.535326+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COST,COST,COST,Costco Wholesale Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.545107+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COTY,COTY,COTY,Coty Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.549320+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,COUR,COUR,COUR,"Coursera, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.555111+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CP,CP,CP,Canadian Pacific Kansas City Limited Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:24.563279+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CPB,CPB,CPB,The Campbell's Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.569153+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CPNG,CPNG,CPNG,"Coupang, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.577215+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CPRI,CPRI,CPRI,Capri Holdings Limited Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:24.583192+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CRAI,CRAI,CRAI,"CRA International,Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.589157+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CRL,CRL,CRL,"Charles River Laboratories International, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.596062+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CRM,CRM,CRM,"Salesforce, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.606711+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CROX,CROX,CROX,"Crocs, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.611191+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CRSP,CRSP,CRSP,CRISPR Therapeutics AG - Common Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.617147+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CRUS,CRUS,CRUS,"Cirrus Logic, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.625921+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CRWD,CRWD,CRWD,"CrowdStrike Holdings, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.633155+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CSCO,CSCO,CSCO,"Cisco Systems, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.639881+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CSGP,CSGP,CSGP,"CoStar Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.647410+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CSX,CSX,CSX,CSX Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.655632+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CTAS,CTAS,CTAS,Cintas Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.665387+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CTRE,CTRE,CTRE,"CareTrust REIT, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.673781+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CTS,CTS,CTS,CTS Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.681260+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CTSH,CTSH,CTSH,Cognizant Technology Solutions Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.689231+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CTVA,CTVA,CTVA,"Corteva, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.697753+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CTXR,CTXR,CTXR,"Citius Pharmaceuticals, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.706377+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CUBE,CUBE,CUBE,CubeSmart Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:24.711178+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CUBI,CUBI,CUBI,"Customers Bancorp, Inc Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.719405+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CVI,CVI,CVI,CVR Energy Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.727372+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CVLT,CVLT,CVLT,"Commvault Systems, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.735585+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CVNA,CVNA,CVNA,Carvana Co. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.745263+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CVS,CVS,CVS,CVS Health Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.753351+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CVX,CVX,CVX,Chevron Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.761218+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CWK,CWK,CWK,Cushman & Wakefield Ltd. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:24.769364+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CXM,CXM,CXM,"Sprinklr, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.775465+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CYTK,CYTK,CYTK,"Cytokinetics, Incorporated - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.781528+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,CZR,CZR,CZR,"Caesars Entertainment, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.789257+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,D,D,D,"Dominion Energy, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.795352+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DAC,DAC,DAC,Danaos Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.803329+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DAL,DAL,DAL,"Delta Air Lines, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.813433+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DASH,DASH,DASH,"DoorDash, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.819270+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DB,DB,DB,Deutsche Bank AG Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.825373+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DBEF,DBEF,DBEF,Xtrackers MSCI EAFE Hedged Equity ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:24.833227+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DBI,DBI,DBI,Designer Brands Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.841521+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DBX,DBX,DBX,"Dropbox, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.849182+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DD,DD,DD,"DuPont de Nemours, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.859446+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DDOG,DDOG,DDOG,"Datadog, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.865458+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DDS,DDS,DDS,"Dillard's, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.873251+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DE,DE,DE,Deere & Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.879326+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DECK,DECK,DECK,Deckers Outdoor Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.887751+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DELL,DELL,DELL,Dell Technologies Inc. Class C Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.895586+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DEO,DEO,DEO,Diageo plc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.904412+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DFEN,DFEN,DFEN,Direxion Daily Aerospace & Defense Bull 3X ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:24.909466+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DG,DG,DG,Dollar General Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.917614+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DGX,DGX,DGX,Quest Diagnostics Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.924407+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DH,DH,DH,Definitive Healthcare Corp. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.932729+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DHI,DHI,DHI,"D.R. Horton, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.942871+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DHR,DHR,DHR,Danaher Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.951447+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DHT,DHT,DHT,"DHT Holdings, Inc.",NYSE,False,exact_symbol,,2026-06-23 16:41:24.959257+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DIA,DIA,DIA,State Street SPDR Dow Jones Industrial Average ETF Trust,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:24.965411+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DIN,DIN,DIN,"Dine Brands Global, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:24.973303+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DIOD,DIOD,DIOD,Diodes Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.979260+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DIS,DIS,DIS,Walt Disney Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:24.985410+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DJCO,DJCO,DJCO,Daily Journal Corp. (S.C.) - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:24.993399+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DJT,DJT,DJT,Trump Media & Technology Group Corp. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.001190+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DK,DK,DK,"Delek US Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.011371+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DKNG,DKNG,DKNG,DraftKings Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.017276+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DKS,DKS,DKS,Dick's Sporting Goods Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.025220+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DLB,DLB,DLB,Dolby Laboratories Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.031726+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DLR,DLR,DLR,"Digital Realty Trust, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.039441+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DLTR,DLTR,DLTR,"Dollar Tree, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.045301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DNUT,DNUT,DNUT,"Krispy Kreme, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.053347+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DOCU,DOCU,DOCU,"DocuSign, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.061185+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DOW,DOW,DOW,Dow Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.067198+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DPST,DPST,DPST,Direxion Daily Regional Banks Bull 3X ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.073280+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DPZ,DPZ,DPZ,Domino's Pizza Inc - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.079268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DRI,DRI,DRI,"Darden Restaurants, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.085255+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DRIV,DRIV,DRIV,Global X Autonomous & Electric Vehicles ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.091327+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DT,DT,DT,"Dynatrace, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.097115+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DUK,DUK,DUK,Duke Energy Corporation (Holding Company) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.107274+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DUOL,DUOL,DUOL,"Duolingo, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.116035+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DV,DV,DV,"DoubleVerify Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.121134+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DVN,DVN,DVN,Devon Energy Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.129132+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,DY,DY,DY,"Dycom Industries, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.137290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EA,EA,EA,Electronic Arts Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.145144+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EAT,EAT,EAT,"Brinker International, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.153115+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EBAY,EBAY,EBAY,eBay Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.157185+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ED,ED,ED,"Consolidated Edison, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.165184+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EDIT,EDIT,EDIT,"Editas Medicine, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.171145+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EDU,EDU,EDU,"New Oriental Education & Technology Group, Inc. Sponsored ADR representing 10 Ordinary Share (Cayman Islands)",NYSE,False,exact_symbol,,2026-06-23 16:41:25.179115+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EEM,EEM,EEM,iShares MSCI Emerging Index Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.189364+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EFX,EFX,EFX,"Equifax, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.199647+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EGBN,EGBN,EGBN,"Eagle Bancorp, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.207864+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EGHT,EGHT,EGHT,8x8 Inc - Common stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.215337+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EGLE,EGLE,EGLE,Global X S&P 500 U.S. Revenue Leaders ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.221224+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EIDO,EIDO,EIDO,iShares MSCI Indonesia ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.229403+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EIS,EIS,EIS,iShares MSCI Israel ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.239186+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EIX,EIX,EIX,Edison International Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.243177+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EL,EL,EL,"Estee Lauder Companies, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.249144+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ELAN,ELAN,ELAN,Elanco Animal Health Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.257261+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ELF,ELF,ELF,"e.l.f. Beauty, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.265173+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ELV,ELV,ELV,"Elevance Health, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.273127+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EME,EME,EME,"EMCOR Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.281203+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EMN,EMN,EMN,Eastman Chemical Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.289209+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EMR,EMR,EMR,Emerson Electric Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.297484+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EOG,EOG,EOG,"EOG Resources, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.305109+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EPAM,EPAM,EPAM,"EPAM Systems, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.313362+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EPD,EPD,EPD,Enterprise Products Partners L.P. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.325126+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EPHE,EPHE,EPHE,iShares MSCI Philippines ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.331129+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EPI,EPI,EPI,WisdomTree India Earnings Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.341155+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EQIX,EQIX,EQIX,"Equinix, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.349148+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ERX,ERX,ERX,Direxion Energy Bull 2X ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.358160+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ERY,ERY,ERY,Direxion Daily Energy Bear 2X ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.367285+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ESLT,ESLT,ESLT,Elbit Systems Ltd. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.373301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ESTC,ESTC,ESTC,Elastic N.V. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:25.379218+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ET,ET,ET,Energy Transfer LP Common Units,NYSE,False,exact_symbol,,2026-06-23 16:41:25.387582+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ETH,ETH,ETH,Grayscale Ethereum Staking Mini ETF Shares,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.393180+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ETHW,ETHW,ETHW,Bitwise Ethereum ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.399464+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ETN,ETN,ETN,"Eaton Corporation, PLC Ordinary Shares",NYSE,False,exact_symbol,,2026-06-23 16:41:25.407149+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ETSY,ETSY,ETSY,"Etsy, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.415208+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EVH,EVH,EVH,"Evolent Health, Inc Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.421283+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EVR,EVR,EVR,Evercore Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.427189+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EVRG,EVRG,EVRG,"Evergy, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.435350+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EW,EW,EW,Edwards Lifesciences Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.445910+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EWBC,EWBC,EWBC,"East West Bancorp, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.451151+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EWG,EWG,EWG,iShares MSCI Germany Index Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.455380+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EWM,EWM,EWM,iShares MSCI Malaysia Index Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.463188+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EWQ,EWQ,EWQ,iShares MSCI France Index Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.471272+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EWW,EWW,EWW,iShares MSCI Mexico ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.481032+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EWY,EWY,EWY,iShares MSCI South Korea ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.487124+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EXC,EXC,EXC,Exelon Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.493225+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EXEL,EXEL,EXEL,"Exelixis, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.501366+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EXLS,EXLS,EXLS,"ExlService Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.509423+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EXPD,EXPD,EXPD,"Expeditors International of Washington, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.517509+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EXPE,EXPE,EXPE,"Expedia Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.525590+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EXR,EXR,EXR,Extra Space Storage Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.533196+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EYE,EYE,EYE,"National Vision Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.542104+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,EZU,EZU,EZU,iShares MSCI Eurozone ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:25.555350+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,F,F,F,Ford Motor Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.563281+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FAF,FAF,FAF,First American Corporation (New) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.583934+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FAST,FAST,FAST,Fastenal Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.591616+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FBL,FBL,FBL,GraniteShares 2x Long META Daily ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.601251+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FBTC,FBTC,FBTC,Fidelity Wise Origin Bitcoin Fund,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:25.610489+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FCN,FCN,FCN,"FTI Consulting, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.620209+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FCNCA,FCNCA,FCNCA,"First Citizens BancShares, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.630424+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FCOM,FCOM,FCOM,Fidelity MSCI Communication Services Index ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.642015+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FDN,FDN,FDN,First Trust DJ Internet Index Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.649225+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FDS,FDS,FDS,FactSet Research Systems Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.665384+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FDX,FDX,FDX,FedEx Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.674725+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FE,FE,FE,FirstEnergy Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.680107+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FEMS,FEMS,FEMS,First Trust Emerging Markets Small Cap AlphaDEX Fund,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.687266+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FENG,FENG,FENG,"Phoenix New Media Limited American Depositary Shares, each representing 48 Class A ordinary shares.",NYSE,False,exact_symbol,,2026-06-23 16:41:25.693312+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FEZ,FEZ,FEZ,State Street SPDR EURO STOXX 50 ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.702487+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FHI,FHI,FHI,"Federated Hermes, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.708020+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FHN,FHN,FHN,First Horizon Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.715291+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FICO,FICO,FICO,Fair Isaac Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.723905+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FINX,FINX,FINX,Global X FinTech ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.731372+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FIS,FIS,FIS,"Fidelity National Information Services, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.737926+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FISV,FISV,FISV,"Fiserv, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.743278+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FITB,FITB,FITB,Fifth Third Bancorp - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.751264+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FIVE,FIVE,FIVE,"Five Below, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.759545+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FIZZ,FIZZ,FIZZ,National Beverage Corp. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.765437+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLEX,FLEX,FLEX,Flex Ltd. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.771225+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLIN,FLIN,FLIN,Franklin FTSE India ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.781423+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLNG,FLNG,FLNG,FLEX LNG Ltd. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:25.788210+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLOT,FLOT,FLOT,iShares Floating Rate Bond ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:25.793267+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLOW,FLOW,FLOW,Global X U.S. Cash Flow Kings 100 ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.801324+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLR,FLR,FLR,Fluor Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.809480+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FLUT,FLUT,FLUT,Flutter Entertainment plc Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:25.817705+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FMC,FMC,FMC,FMC Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.823220+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FN,FN,FN,Fabrinet Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:25.832790+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FNB,FNB,FNB,F.N.B. Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.837241+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FND,FND,FND,"Floor & Decor Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.843186+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FNF,FNF,FNF,"Fidelity National Financial, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.851718+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FNKO,FNKO,FNKO,"Funko, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.859266+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FOUR,FOUR,FOUR,"Shift4 Payments, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:25.866285+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FOX,FOX,FOX,Fox Corporation - Class B Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.875610+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FOXA,FOXA,FOXA,Fox Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.883270+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FRO,FRO,FRO,Frontline Plc Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:25.890585+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FRPT,FRPT,FRPT,"Freshpet, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.895426+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FRSH,FRSH,FRSH,Freshworks Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.901521+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FSK,FSK,FSK,FS KKR Capital Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.905293+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FSLY,FSLY,FSLY,"Fastly, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.913325+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FSTA,FSTA,FSTA,Fidelity MSCI Consumer Staples Index ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.919400+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FTCS,FTCS,FTCS,First Trust Capital Strength ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.927630+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FTDR,FTDR,FTDR,"Frontdoor, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.933255+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FTI,FTI,FTI,TechnipFMC plc Ordinary Share,NYSE,False,exact_symbol,,2026-06-23 16:41:25.939130+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FTNT,FTNT,FTNT,"Fortinet, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.945241+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FTXG,FTXG,FTXG,First Trust Nasdaq Food & Beverage ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.951300+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FTXO,FTXO,FTXO,First Trust Nasdaq Bank ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:25.956695+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FUBO,FUBO,FUBO,FuboTV Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:25.963276+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FUN,FUN,FUN,Six Flags Entertainment Corporation Common Stock New,NYSE,False,exact_symbol,,2026-06-23 16:41:25.971730+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FUTU,FUTU,FUTU,Futu Holdings Limited - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.979082+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FXE,FXE,FXE,Invesco CurrencyShares Euro Currency Trust,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.985407+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,FXI,FXI,FXI,iShares China Large-Cap ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:25.993454+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GAMB,GAMB,GAMB,Gambling.com Group Limited - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:25.997304+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GAMR,GAMR,GAMR,Amplify Video Game Leaders ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.003189+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GAP,GAP,GAP,"Gap, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.011268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GBCI,GBCI,GBCI,"Glacier Bancorp, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.017694+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GBDC,GBDC,GBDC,"Golub Capital BDC, Inc. - Closed End Fund",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.023496+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GBTC,GBTC,GBTC,Grayscale Bitcoin Trust (BTC),NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.031241+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GD,GD,GD,General Dynamics Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.039346+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GDDY,GDDY,GDDY,GoDaddy Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.045265+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GE,GE,GE,GE Aerospace Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.053422+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GEHC,GEHC,GEHC,GE HealthCare Technologies Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.059368+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GEN,GEN,GEN,Gen Digital Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.065748+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GENI,GENI,GENI,Genius Sports Limited Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:26.074054+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GETY,GETY,GETY,"Getty Images Holdings, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.100580+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GFS,GFS,GFS,GlobalFoundries Inc. - Ordinary Share,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.113384+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GHRS,GHRS,GHRS,GH Research PLC - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.119420+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GILD,GILD,GILD,"Gilead Sciences, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.125349+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GIS,GIS,GIS,"General Mills, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.131250+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GL,GL,GL,Globe Life Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.137255+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GLD,GLD,GLD,SPDR Gold Shares,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.143228+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GLNG,GLNG,GLNG,Golar LNG Limited - Common Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.147237+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GLOB,GLOB,GLOB,Globant S.A. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:26.153272+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GLP,GLP,GLP,Global Partners LP Common Units representing Limited Partner Interests,NYSE,False,exact_symbol,,2026-06-23 16:41:26.163057+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GM,GM,GM,General Motors Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.169315+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GME,GME,GME,GameStop Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.177241+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GNK,GNK,GNK,Genco Shipping & Trading Limited Ordinary Shares New (Marshall Islands),NYSE,False,exact_symbol,,2026-06-23 16:41:26.185358+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GOOG,GOOG,GOOG,Alphabet Inc. - Class C Capital Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.191230+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GOOGL,GOOGL,GOOGL,Alphabet Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.198400+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GPC,GPC,GPC,Genuine Parts Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.203210+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GPI,GPI,GPI,"Group 1 Automotive, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.209223+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GPN,GPN,GPN,Global Payments Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.215194+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GPRO,GPRO,GPRO,"GoPro, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.223328+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GRAB,GRAB,GRAB,Grab Holdings Limited - Class A Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.231765+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GRMN,GRMN,GRMN,Garmin Ltd. Common Stock (Switzerland),NYSE,False,exact_symbol,,2026-06-23 16:41:26.237300+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GRPN,GRPN,GRPN,"Groupon, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.245441+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GS,GS,GS,"Goldman Sachs Group, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.253269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GSK,GSK,GSK,GSK plc American Depositary Shares (Each representing two Ordinary Shares),NYSE,False,exact_symbol,,2026-06-23 16:41:26.258404+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GSL,GSL,GSL,Global Ship Lease Inc New Class A Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:26.263461+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GT,GT,GT,The Goodyear Tire & Rubber Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.269317+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GTLB,GTLB,GTLB,GitLab Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.275407+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,GWW,GWW,GWW,"W.W. Grainger, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.285968+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,H,H,H,Hyatt Hotels Corporation Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.291213+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HACK,HACK,HACK,Amplify Cybersecurity ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.297600+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HAFC,HAFC,HAFC,Hanmi Financial Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.303407+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HAL,HAL,HAL,Halliburton Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.309204+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HAS,HAS,HAS,"Hasbro, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.315221+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HBAN,HBAN,HBAN,Huntington Bancshares Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.319303+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HCKT,HCKT,HCKT,"The Hackett Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.325351+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HD,HD,HD,"Home Depot, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.331271+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HDB,HDB,HDB,HDFC Bank Limited Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.341495+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HEI,HEI,HEI,Heico Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.349434+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HELE,HELE,HELE,Helen of Troy Limited - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.355409+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HERO,HERO,HERO,Global X Video Games & Esports ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:26.363343+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HESM,HESM,HESM,Hess Midstream LP Class A Representing Limited Partner Interests,NYSE,False,exact_symbol,,2026-06-23 16:41:26.369430+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HGV,HGV,HGV,Hilton Grand Vacations Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.375400+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HHH,HHH,HHH,Howard Hughes Holdings Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.383320+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HIG,HIG,HIG,"The Hartford Insurance Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.393355+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HII,HII,HII,"Huntington Ingalls Industries, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.399305+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HIMS,HIMS,HIMS,"Hims & Hers Health, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.405452+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HIMX,HIMX,HIMX,"Himax Technologies, Inc. - American depositary shares, each of which represents two ordinary shares.",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.411312+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HLI,HLI,HLI,"Houlihan Lokey, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.415668+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HLT,HLT,HLT,Hilton Worldwide Holdings Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.422799+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HMC,HMC,HMC,"Honda Motor Company, Ltd. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.431840+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HNI,HNI,HNI,HNI Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.439527+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HOG,HOG,HOG,"Harley-Davidson, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.443330+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HOLO,HOLO,HOLO,MicroCloud Hologram Inc. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.449296+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HOMB,HOMB,HOMB,"Home BancShares, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.455232+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HON,HON,HON,Honeywell International Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.463906+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HOOD,HOOD,HOOD,"Robinhood Markets, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.469897+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HP,HP,HP,"Helmerich & Payne, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.477662+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HPE,HPE,HPE,Hewlett Packard Enterprise Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.485614+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HPP,HPP,HPP,"Hudson Pacific Properties, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.491292+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HPQ,HPQ,HPQ,HP Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.499446+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HQY,HQY,HQY,"HealthEquity, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.505297+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HRB,HRB,HRB,"H&R Block, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.509416+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HRL,HRL,HRL,Hormel Foods Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.515318+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HST,HST,HST,"Host Hotels & Resorts, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.523418+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HSY,HSY,HSY,The Hershey Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.531375+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HTGC,HTGC,HTGC,"Hercules Capital, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.539339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HTZ,HTZ,HTZ,"Hertz Global Holdings, Inc - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.549727+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HUBB,HUBB,HUBB,Hubbell Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.557317+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HUBS,HUBS,HUBS,"HubSpot, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.567242+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HUM,HUM,HUM,Humana Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.575877+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HUN,HUN,HUN,Huntsman Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.583560+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HWM,HWM,HWM,Howmet Aerospace Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.593826+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HXL,HXL,HXL,Hexcel Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.601326+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HYG,HYG,HYG,iShares iBoxx $ High Yield Corporate Bond ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.609335+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,HYLN,HYLN,HYLN,Hyliion Holdings Corp. Class A Common Stock,NYSE American,False,exact_symbol,,2026-06-23 16:41:26.617404+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IAI,IAI,IAI,iShares U.S. Broker-Dealers & Securities Exchanges ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.625311+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IART,IART,IART,Integra LifeSciences Holdings Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.633267+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IBB,IBB,IBB,iShares Biotechnology ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:26.639328+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IBIT,IBIT,IBIT,iShares Bitcoin Trust ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:26.647426+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IBKR,IBKR,IBKR,"Interactive Brokers Group, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.655463+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IBM,IBM,IBM,International Business Machines Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.664766+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IBN,IBN,IBN,ICICI Bank Limited Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.669422+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IBUY,IBUY,IBUY,Amplify Online Retail ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.675369+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ICE,ICE,ICE,Intercontinental Exchange Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.683331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ICFI,ICFI,ICFI,"ICF International, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.691336+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ICL,ICL,ICL,ICL Group Ltd. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:26.699354+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ICUI,ICUI,ICUI,"ICU Medical, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.707345+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IDU,IDU,IDU,iShares U.S. Utilities ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.715367+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IDXX,IDXX,IDXX,"IDEXX Laboratories, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.724158+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IEP,IEP,IEP,Icahn Enterprises L.P. - Depositary Units representing Limited Partner Interests,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.729308+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IEUR,IEUR,IEUR,iShares Core MSCI Europe ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.737629+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IGV,IGV,IGV,iShares Expanded Tech-Software Sector ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:26.745409+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IHE,IHE,IHE,iShares U.S. Pharmaceutical ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.754239+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IHF,IHF,IHF,iShares U.S. Health Care Providers ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.759547+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IHG,IHG,IHG,Intercontinental Hotels Group American Depositary Shares (Each representing one Ordinary Share),NYSE,False,exact_symbol,,2026-06-23 16:41:26.767254+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IHI,IHI,IHI,iShares U.S. Medical Devices ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.775394+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ILF,ILF,ILF,iShares Latin America 40 ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.783642+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ILMN,ILMN,ILMN,"Illumina, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.791281+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IMAX,IMAX,IMAX,Imax Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.801387+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IMKTA,IMKTA,IMKTA,"Ingles Markets, Incorporated - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.809872+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INCY,INCY,INCY,Incyte Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.817399+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INDA,INDA,INDA,iShares MSCI India ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:26.825257+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INDY,INDY,INDY,iShares India 50 ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:26.834258+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INFO,INFO,INFO,Harbor PanAgora Dynamic Large Cap Core ETF,NYSE,True,exact_symbol,,2026-06-23 16:41:26.841422+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INFY,INFY,INFY,Infosys Limited American Depositary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:26.849935+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INSM,INSM,INSM,Insmed Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.863536+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INTC,INTC,INTC,Intel Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.869368+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,INTU,INTU,INTU,Intuit Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.877395+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IONQ,IONQ,IONQ,"IonQ, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.890450+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IONS,IONS,IONS,"Ionis Pharmaceuticals, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.900250+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IOT,IOT,IOT,Samsara Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.905386+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IPAY,IPAY,IPAY,Amplify Digital Payments ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.911325+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IPGP,IPGP,IPGP,IPG Photonics Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:26.917522+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IQV,IQV,IQV,"IQVIA Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:26.923466+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ISRA,ISRA,ISRA,VanEck Israel ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.931302+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ITA,ITA,ITA,iShares U.S. Aerospace & Defense ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:26.939186+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ITB,ITB,ITB,iShares U.S. Home Construction ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:26.947292+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ITW,ITW,ITW,Illinois Tool Works Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.953236+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IVV,IVV,IVV,iShares Core S&P 500 ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.963332+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IVZ,IVZ,IVZ,Invesco Ltd Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:26.971336+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IWD,IWD,IWD,iShares Russell 1000 Value ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.979443+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IWM,IWM,IWM,iShares Russell 2000 Index Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.991448+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IXC,IXC,IXC,iShares Global Energy ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:26.999513+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYC,IYC,IYC,iShares U.S. Consumer Discretionary ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.007426+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYE,IYE,IYE,iShares U.S. Energy ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.015321+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYF,IYF,IYF,iShares U.S. Financial ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.023393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYG,IYG,IYG,iShares U.S. Financial Services ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.031317+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYJ,IYJ,IYJ,iShares U.S. Industrials ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:27.039307+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYK,IYK,IYK,iShares U.S. Consumer Staples ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.047363+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYR,IYR,IYR,iShares U.S. Real Estate ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.055770+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYT,IYT,IYT,iShares U.S. Transportation ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:27.063380+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYW,IYW,IYW,iShares U.S. Technology ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.071296+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYY,IYY,IYY,iShares Dow Jones U.S. ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.079809+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IYZ,IYZ,IYZ,iShares U.S. Telecommunications ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:27.087740+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,IZRL,IZRL,IZRL,ARK Israel Innovative Technology ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:27.095284+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,J,J,J,Jacobs Solutions Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.104638+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JACK,JACK,JACK,Jack In The Box Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.111341+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JAKK,JAKK,JAKK,"JAKKS Pacific, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.117331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JBL,JBL,JBL,Jabil Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.125422+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JBLU,JBLU,JBLU,JetBlue Airways Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.131304+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JCI,JCI,JCI,Johnson Controls International plc Ordinary Share,NYSE,False,exact_symbol,,2026-06-23 16:41:27.139290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JD,JD,JD,"JD.com, Inc. - American Depositary Shares",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.145307+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JEF,JEF,JEF,Jefferies Financial Group Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.153419+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JETS,JETS,JETS,U.S. Global Jets ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.161432+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JKHY,JKHY,JKHY,"Jack Henry & Associates, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.169937+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JLL,JLL,JLL,Jones Lang LaSalle Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.177377+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JNJ,JNJ,JNJ,Johnson & Johnson Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.185193+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JOE,JOE,JOE,St. Joe Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.193265+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,JPM,JPM,JPM,JP Morgan Chase & Co. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.201526+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KBE,KBE,KBE,State Street SPDR S&P Bank ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.209356+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KBH,KBH,KBH,KB Home Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.237548+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KBR,KBR,KBR,"KBR, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.243397+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KBWD,KBWD,KBWD,Invesco KBW High Dividend Yield Financial ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:27.251440+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KCE,KCE,KCE,State Street SPDR S&P Capital Markets ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.261397+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KDP,KDP,KDP,Keurig Dr Pepper Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.300361+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KEX,KEX,KEX,Kirby Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.309460+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KEY,KEY,KEY,KeyCorp Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.318606+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KFY,KFY,KFY,Korn Ferry Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.327376+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KHC,KHC,KHC,The Kraft Heinz Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.335413+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KIE,KIE,KIE,State Street SPDR S&P Insurance ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.345445+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KKR,KKR,KKR,KKR & Co. Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.353331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KLAC,KLAC,KLAC,KLA Corporation  - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.361686+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KMB,KMB,KMB,Kimberly-Clark Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.369157+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KMI,KMI,KMI,"Kinder Morgan, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.373351+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KMT,KMT,KMT,Kennametal Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.381312+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KMX,KMX,KMX,CarMax Inc,NYSE,False,exact_symbol,,2026-06-23 16:41:27.395394+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KNDI,KNDI,KNDI,"Kandi Technologies Group, Inc. - Ordinary Shares",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.401841+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KO,KO,KO,Coca-Cola Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.409317+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KOLD,KOLD,KOLD,ProShares UltraShort Bloomberg Natural Gas,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.423485+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KR,KR,KR,Kroger Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.429382+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KRC,KRC,KRC,Kilroy Realty Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.435294+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KRE,KRE,KRE,State Street SPDR S&P Regional Banking ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.444110+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KSA,KSA,KSA,iShares MSCI Saudi Arabia ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.451577+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KSS,KSS,KSS,Kohl's Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.457483+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KVUE,KVUE,KVUE,Kenvue Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.463568+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,KWEB,KWEB,KWEB,KraneShares CSI China Internet ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.471673+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LAC,LAC,LAC,Lithium Americas Corp. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:27.477324+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LAD,LAD,LAD,"Lithia Motors, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.483286+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LAZ,LAZ,LAZ,"Lazard, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.489251+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LB,LB,LB,LandBridge Company LLC Class A Shares Representing Limited Liability Company Interests,NYSE,False,exact_symbol,,2026-06-23 16:41:27.497482+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LC,LC,LC,LendingClub Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.505181+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LCID,LCID,LCID,"Lucid Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.511331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LDI,LDI,LDI,"loanDepot, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.519393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LDOS,LDOS,LDOS,"Leidos Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.527221+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LEA,LEA,LEA,Lear Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.533256+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LEE,LEE,LEE,"Lee Enterprises, Incorporated - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.539618+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LEG,LEG,LEG,"Leggett & Platt, Incorporated Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.545208+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LEN,LEN,LEN,Lennar Corporation Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.551305+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LENZ,LENZ,LENZ,"LENZ Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.557137+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LEU,LEU,LEU,Centrus Energy Corp. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.565234+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LEVI,LEVI,LEVI,Levi Strauss & Co Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.571216+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LH,LH,LH,Labcorp Holdings Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.577406+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LHX,LHX,LHX,"L3Harris Technologies, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.581249+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LI,LI,LI,Li Auto Inc. - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.587307+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LIN,LIN,LIN,Linde plc - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.595269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LIND,LIND,LIND,Lindblad Expeditions Holdings Inc.  - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.599704+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LIT,LIT,LIT,Global X Lithium & Battery Tech ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.605224+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LITE,LITE,LITE,Lumentum Holdings Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.611323+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LLY,LLY,LLY,Eli Lilly and Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.619427+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LMT,LMT,LMT,Lockheed Martin Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.625464+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LNC,LNC,LNC,Lincoln National Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.633243+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LNG,LNG,LNG,"Cheniere Energy, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.641422+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LOCO,LOCO,LOCO,"El Pollo Loco Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.649398+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LOGI,LOGI,LOGI,Logitech International S.A. - Registered Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.657215+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LOPE,LOPE,LOPE,"Grand Canyon Education, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.666196+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LOW,LOW,LOW,"Lowe's Companies, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.676234+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LPL,LPL,LPL,"LG Display Co, Ltd AMERICAN DEPOSITORY SHARES",NYSE,False,exact_symbol,,2026-06-23 16:41:27.683257+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LPLA,LPLA,LPLA,LPL Financial Holdings Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.691537+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LRCX,LRCX,LRCX,Lam Research Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.702052+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LRN,LRN,LRN,"Stride, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.709639+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LULU,LULU,LULU,lululemon athletica inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.717699+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LUV,LUV,LUV,Southwest Airlines Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.725451+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LVS,LVS,LVS,Las Vegas Sands Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.733902+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LW,LW,LW,"Lamb Weston Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.741431+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LYB,LYB,LYB,LyondellBasell Industries NV Ordinary Shares Class A (Netherlands),NYSE,False,exact_symbol,,2026-06-23 16:41:27.749479+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LYFT,LYFT,LYFT,"Lyft, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.755440+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LYV,LYV,LYV,"Live Nation Entertainment, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.763179+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,LZB,LZB,LZB,La-Z-Boy Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.771290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,M,M,M,Macy's Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.779306+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MA,MA,MA,Mastercard Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.785232+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MAIN,MAIN,MAIN,Main Street Capital Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.791327+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MAN,MAN,MAN,ManpowerGroup Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.799299+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MAR,MAR,MAR,Marriott International - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.807444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MARA,MARA,MARA,"MARA Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.815269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MAS,MAS,MAS,Masco Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.823434+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MAT,MAT,MAT,"Mattel, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.829242+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MATX,MATX,MATX,"Matson, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.837551+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MBWM,MBWM,MBWM,Mercantile Bank Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.845209+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MC,MC,MC,Moelis & Company Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.853530+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCD,MCD,MCD,McDonald's Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.861294+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCHI,MCHI,MCHI,iShares MSCI China ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:27.867237+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCHP,MCHP,MCHP,Microchip Technology Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.875211+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCHX,MCHX,MCHX,"Marchex, Inc. - Class B Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.883407+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCK,MCK,MCK,McKesson Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.891372+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCO,MCO,MCO,Moody's Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.899310+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MCS,MCS,MCS,Marcus Corporation (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.907377+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MDB,MDB,MDB,"MongoDB, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.915337+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MDLZ,MDLZ,MDLZ,"Mondelez International, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.923792+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MDT,MDT,MDT,Medtronic plc. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:27.931312+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MDV,MDV,MDV,"Modiv Industrial, Inc. Class C Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.937874+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MED,MED,MED,MEDIFAST INC Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.945252+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MEDP,MEDP,MEDP,"Medpace Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.949240+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MELI,MELI,MELI,"MercadoLibre, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.955347+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MEME,MEME,MEME,Roundhill Meme Stock ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.963283+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MET,MET,MET,"MetLife, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.967688+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,META,META,META,"Meta Platforms, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.975615+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MGA,MGA,MGA,"Magna International, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:27.981428+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MGM,MGM,MGM,MGM Resorts International Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:27.987305+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MGNI,MGNI,MGNI,"Magnite, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:27.993216+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MJ,MJ,MJ,Amplify Alternative Harvest ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:27.999523+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MKC,MKC,MKC,"McCormick & Company, Incorporated Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.006319+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MKTX,MKTX,MKTX,"MarketAxess Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.015335+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MLCO,MLCO,MLCO,Melco Resorts & Entertainment Limited - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.023232+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MLKN,MLKN,MLKN,"MillerKnoll, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.033321+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MLM,MLM,MLM,"Martin Marietta Materials, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.041793+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MMM,MMM,MMM,3M Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.047270+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MMYT,MMYT,MMYT,MakeMyTrip Limited - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.053249+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MNDY,MNDY,MNDY,monday.com Ltd. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.061235+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MNKD,MNKD,MNKD,MannKind Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.067284+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MNRO,MNRO,MNRO,"Monro, Inc.  - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.074215+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MNST,MNST,MNST,Monster Beverage Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.079271+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MO,MO,MO,"Altria Group, Inc.",NYSE,False,exact_symbol,,2026-06-23 16:41:28.087615+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MOG A,MOG-A,MOG.A,Moog Inc. Class A Common Stock,NYSE,False,asset_name,,2026-06-23 16:41:28.095321+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MOG B,MOG-B,MOG.B,Moog Inc. Class B Common Stock,NYSE,False,asset_name,,2026-06-23 16:41:28.102631+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MOH,MOH,MOH,Molina Healthcare Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.107219+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MP,MP,MP,MP Materials Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.113539+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MPC,MPC,MPC,Marathon Petroleum Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.119939+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MPLX,MPLX,MPLX,MPLX LP Common Units Representing Limited Partner Interests,NYSE,False,exact_symbol,,2026-06-23 16:41:28.125578+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MPWR,MPWR,MPWR,"Monolithic Power Systems, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.133297+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MRK,MRK,MRK,"Merck & Company, Inc. Common Stock (new)",NYSE,False,exact_symbol,,2026-06-23 16:41:28.139390+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MRNA,MRNA,MRNA,"Moderna, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.147339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MRVL,MRVL,MRVL,"Marvell Technology, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.153188+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MRX,MRX,MRX,Marex Group plc - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.161893+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MS,MS,MS,Morgan Stanley Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.167145+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MSCI,MSCI,MSCI,MSCI Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.175265+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MSFT,MSFT,MSFT,Microsoft Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.181280+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MSGE,MSGE,MSGE,Madison Square Garden Entertainment Corp. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.189182+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MSGS,MSGS,MSGS,Madison Square Garden Sports Corp. Class A Common Stock (New),NYSE,False,exact_symbol,,2026-06-23 16:41:28.195249+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MSM,MSM,MSM,"MSC Industrial Direct Company, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.201191+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MSTR,MSTR,MSTR,Strategy Inc - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.207210+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MTB,MTB,MTB,M&T Bank Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.213124+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MTCH,MTCH,MTCH,"Match Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.217182+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MTG,MTG,MTG,MGIC Investment Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.225151+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MTN,MTN,MTN,"Vail Resorts, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.233306+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MTSI,MTSI,MTSI,"MACOM Technology Solutions Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.241244+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MTZ,MTZ,MTZ,"MasTec, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.249203+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MU,MU,MU,"Micron Technology, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.255115+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MUSA,MUSA,MUSA,Murphy USA Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.263174+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MYGN,MYGN,MYGN,"Myriad Genetics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.269117+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,MYRG,MYRG,MYRG,"MYR Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.275121+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NAT,NAT,NAT,Nordic American Tankers Limited Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.283220+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NCLH,NCLH,NCLH,Norwegian Cruise Line Holdings Ltd. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:28.294036+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NCMI,NCMI,NCMI,"National CineMedia, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.301327+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NDAQ,NDAQ,NDAQ,"Nasdaq, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.309355+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NEE,NEE,NEE,"NextEra Energy, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.316433+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NEM,NEM,NEM,Newmont Corporation,NYSE,False,exact_symbol,,2026-06-23 16:41:28.321273+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NEO,NEO,NEO,"NeoGenomics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.327511+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NEOG,NEOG,NEOG,Neogen Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.335268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NET,NET,NET,"Cloudflare, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.341388+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NFLX,NFLX,NFLX,"Netflix, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.347273+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NI,NI,NI,NiSource Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.353379+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NICE,NICE,NICE,NICE Ltd - American Depositary Shares each representing one Ordinary Share,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.363465+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NIO,NIO,NIO,"NIO Inc. American depositary shares, each  representing one Class A ordinary share",NYSE,False,exact_symbol,,2026-06-23 16:41:28.369448+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NKE,NKE,NKE,"Nike, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.375315+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NLR,NLR,NLR,VanEck Uranium and Nuclear ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:28.379546+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NMFC,NMFC,NMFC,New Mountain Finance Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.385315+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NMRK,NMRK,NMRK,"Newmark Group, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.393417+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NNE,NNE,NNE,Nano Nuclear Energy Inc. - common stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.399297+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NOC,NOC,NOC,Northrop Grumman Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.403656+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NOV,NOV,NOV,NOV Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.411256+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NOW,NOW,NOW,"ServiceNow, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.417820+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NRIX,NRIX,NRIX,"Nurix Therapeutics, Inc. - Common stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.426553+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NSC,NSC,NSC,Norfolk Southern Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.435736+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NTAP,NTAP,NTAP,"NetApp, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.443290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NTES,NTES,NTES,"NetEase, Inc. - American Depositary Shares, each representing 5 ordinary shares",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.449592+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NTLA,NTLA,NTLA,"Intellia Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.457198+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NTRS,NTRS,NTRS,Northern Trust Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.463297+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NU,NU,NU,Nu Holdings Ltd. Class A Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:28.473271+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NUE,NUE,NUE,Nucor Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.481575+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NVAX,NVAX,NVAX,"Novavax, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.487663+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NVDA,NVDA,NVDA,NVIDIA Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.495222+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NVO,NVO,NVO,Novo Nordisk A/S Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.505276+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NVR,NVR,NVR,"NVR, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.511187+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NVS,NVS,NVS,Novartis AG Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.519365+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NVTS,NVTS,NVTS,Navitas Semiconductor Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.525290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NWL,NWL,NWL,Newell Brands Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.531941+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NWS,NWS,NWS,News Corporation - Class B Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.541301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NWSA,NWSA,NWSA,News Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.549446+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NXPI,NXPI,NXPI,NXP Semiconductors N.V. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.557481+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,NYT,NYT,NYT,New York Times Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.563200+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ODFL,ODFL,ODFL,"Old Dominion Freight Line, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.569189+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OGE,OGE,OGE,OGE Energy Corp Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.575189+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OIH,OIH,OIH,VanEck Oil Services ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:28.581237+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OILK,OILK,OILK,ProShares K-1 Free Crude Oil ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:28.589397+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OKE,OKE,OKE,"ONEOK, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.595261+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OKLO,OKLO,OKLO,Oklo Inc. Class A common stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.601206+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OKTA,OKTA,OKTA,"Okta, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.607318+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OLN,OLN,OLN,Olin Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.613211+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OMC,OMC,OMC,Omnicom Group Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.617336+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ON,ON,ON,ON Semiconductor Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.623368+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ONON,ONON,ONON,On Holding AG Class A Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:28.631435+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OPEN,OPEN,OPEN,Opendoor Technologies Inc  - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.641847+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OPK,OPK,OPK,"Opko Health, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.651687+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OR,OR,OR,OR Royalties Inc. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:28.657460+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ORCL,ORCL,ORCL,Oracle Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.665379+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ORI,ORI,ORI,Old Republic International Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.673255+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ORLY,ORLY,ORLY,"O'Reilly Automotive, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.681416+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OSCR,OSCR,OSCR,"Oscar Health, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.689690+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OSK,OSK,OSK,Oshkosh Corporation (Holding Company)Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.700041+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OTEX,OTEX,OTEX,Open Text Corporation - Common Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.709350+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OTIS,OTIS,OTIS,Otis Worldwide Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.717268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OTLK,OTLK,OTLK,"Outlook Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.725754+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OTLY,OTLY,OTLY,Oatly Group AB - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.731332+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,OXY,OXY,OXY,Occidental Petroleum Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.739984+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PAA,PAA,PAA,"Plains All American Pipeline, L.P. - Common Units representing Limited Partner Interests",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.751349+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PAG,PAG,PAG,"Penske Automotive Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.759878+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PAHC,PAHC,PAHC,Phibro Animal Health Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.765382+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PANW,PANW,PANW,"Palo Alto Networks, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.773339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PAR,PAR,PAR,PAR Technology Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.779443+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PATH,PATH,PATH,"UiPath, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.787400+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PAYC,PAYC,PAYC,"Paycom Software, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.795534+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PAYX,PAYX,PAYX,"Paychex, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.803207+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PBF,PBF,PBF,PBF Energy Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.807396+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PBJ,PBJ,PBJ,Invesco Food & Beverage ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:28.815310+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PBR,PBR,PBR,Petroleo Brasileiro S.A. Petrobras ADS,NYSE,False,exact_symbol,,2026-06-23 16:41:28.823480+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PCAR,PCAR,PCAR,PACCAR Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.831339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PCG,PCG,PCG,Pacific Gas & Electric Co. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.837332+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PCTY,PCTY,PCTY,Paylocity Holding Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.847290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PD,PD,PD,"PagerDuty, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.855415+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PDD,PDD,PDD,PDD Holdings Inc. - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.863443+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PEB,PEB,PEB,Pebblebrook Hotel Trust Common Shares of Beneficial Interest,NYSE,False,exact_symbol,,2026-06-23 16:41:28.869324+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PEBO,PEBO,PEBO,Peoples Bancorp Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.875436+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PECO,PECO,PECO,"Phillips Edison & Company, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.883364+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PEG,PEG,PEG,Public Service Enterprise Group Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.891292+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PEGA,PEGA,PEGA,Pegasystems Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.901169+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PEJ,PEJ,PEJ,Invesco Leisure and Entertainment ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:28.923528+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PENN,PENN,PENN,"PENN Entertainment, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.931648+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PEP,PEP,PEP,"PepsiCo, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.940111+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PETS,PETS,PETS,"PetMed Express, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.951086+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PFE,PFE,PFE,"Pfizer, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:28.959363+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PFG,PFG,PFG,Principal Financial Group Inc - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.967932+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PFGC,PFGC,PFGC,Performance Food Group Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.975338+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PG,PG,PG,Procter & Gamble Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:28.983449+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PGEN,PGEN,PGEN,"Precigen, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:28.991276+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PGR,PGR,PGR,Progressive Corporation (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.003335+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PH,PH,PH,Parker-Hannifin Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.011591+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PHM,PHM,PHM,"PulteGroup, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.017453+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PHR,PHR,PHR,"Phreesia, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.025249+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PII,PII,PII,Polaris Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.034084+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PINS,PINS,PINS,"Pinterest, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.041483+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PIPR,PIPR,PIPR,Piper Sandler Companies Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.057636+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PJT,PJT,PJT,PJT Partners Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.063316+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PLAY,PLAY,PLAY,"Dave & Buster's Entertainment, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.071391+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PLBY,PLBY,PLBY,"Playboy, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.079430+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PLCE,PLCE,PLCE,"Children's Place, Inc. (The) - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.087434+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PLD,PLD,PLD,"Prologis, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.095334+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PLNT,PLNT,PLNT,"Planet Fitness, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.103344+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PLTR,PLTR,PLTR,Palantir Technologies Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.113735+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PM,PM,PM,Philip Morris International Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.123352+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PNC,PNC,PNC,"PNC Financial Services Group, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.131451+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PNFP,PNFP,PNFP,"Pinnacle Financial Partners, Inc. Common stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.139498+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,POST,POST,POST,"Post Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.147313+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,POWL,POWL,POWL,"Powell Industries, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.155870+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,POWW,POWW,POWW,Outdoor Holding Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.163340+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PPA,PPA,PPA,Invesco Aerospace & Defense ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:29.171426+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PPC,PPC,PPC,Pilgrim's Pride Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.177328+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PPG,PPG,PPG,"PPG Industries, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.185240+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PPL,PPL,PPL,PPL Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.193416+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PRG,PRG,PRG,"PROG Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.203339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PRGS,PRGS,PRGS,Progress Software Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.209224+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PRLD,PRLD,PRLD,Prelude Therapeutics Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.217260+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PRU,PRU,PRU,"Prudential Financial, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.223253+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PSA,PSA,PSA,Public Storage Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.229608+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PSEC,PSEC,PSEC,Prospect Capital Corporation - Closed End Fund,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.235243+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PSO,PSO,PSO,"Pearson, Plc Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.241407+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PSP,PSP,PSP,Invesco Global Listed Private Equity ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:29.248546+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PSX,PSX,PSX,Phillips 66 Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.253449+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PTC,PTC,PTC,PTC Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.261304+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PTCT,PTCT,PTCT,"PTC Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.267405+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PTGX,PTGX,PTGX,"Protagonist Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.273296+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PTON,PTON,PTON,"Peloton Interactive, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.279334+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PUBM,PUBM,PUBM,"PubMatic, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.285310+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PVH,PVH,PVH,PVH Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.291549+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PWR,PWR,PWR,"Quanta Services, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.301804+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PXE,PXE,PXE,Invesco Energy Exploration & Production ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:29.314704+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PXLW,PXLW,PXLW,"Pixelworks, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.337479+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PYPL,PYPL,PYPL,"PayPal Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.348036+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,PZZA,PZZA,PZZA,"Papa John's International, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.358315+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QCOM,QCOM,QCOM,QUALCOMM Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.367492+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QLD,QLD,QLD,ProShares Ultra QQQ,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:29.375271+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QLYS,QLYS,QLYS,"Qualys, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.383835+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QQQ,QQQ,QQQ,"Invesco QQQ Trust, Series 1",NASDAQ,True,exact_symbol,,2026-06-23 16:41:29.393524+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QRVO,QRVO,QRVO,"Qorvo, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.401381+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QSR,QSR,QSR,Restaurant Brands International Inc. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:29.409538+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QTUM,QTUM,QTUM,Defiance Quantum ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:29.420016+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,QUBT,QUBT,QUBT,Quantum Computing Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.427317+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,R,R,R,"Ryder System, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.435511+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RBLX,RBLX,RBLX,Roblox Corporation Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.443466+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RBRK,RBRK,RBRK,"Rubrik, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.451376+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RCL,RCL,RCL,Royal Caribbean Cruises Ltd. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.457587+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RDDT,RDDT,RDDT,"Reddit, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.467285+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RDN,RDN,RDN,Radian Group Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.475773+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,REAL,REAL,REAL,"The RealReal, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.483298+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,REGN,REGN,REGN,"Regeneron Pharmaceuticals, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.491368+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RELL,RELL,RELL,"Richardson Electronics, Ltd. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.499333+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,REMX,REMX,REMX,VanEck Rare Earth and Strategic Metals ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:29.507876+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RF,RF,RF,Regions Financial Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.515304+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RGEN,RGEN,RGEN,Repligen Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.525445+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RGP,RGP,RGP,"Resources Connection, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.533279+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RGR,RGR,RGR,"Sturm, Ruger & Company, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.542463+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RGTI,RGTI,RGTI,"Rigetti Computing, Inc.  - Common stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.551341+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RH,RH,RH,RH Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.564406+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RHI,RHI,RHI,Robert Half Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.571393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RIGL,RIGL,RIGL,"Rigel Pharmaceuticals, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.577343+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RING,RING,RING,iShares MSCI Global Gold Miners ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:29.583343+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RIOT,RIOT,RIOT,"Riot Platforms, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.589427+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RIVN,RIVN,RIVN,"Rivian Automotive, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.601714+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RJF,RJF,RJF,"Raymond James Financial, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.609559+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RKLB,RKLB,RKLB,Rocket Lab Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.617496+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RL,RL,RL,Ralph Lauren Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.623294+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RMD,RMD,RMD,ResMed Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.632709+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RMNI,RMNI,RMNI,"Rimini Street, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.641390+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RNG,RNG,RNG,"RingCentral, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.649881+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RNST,RNST,RNST,Renasant Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.658370+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ROIV,ROIV,ROIV,Roivant Sciences Ltd. - Common Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.670598+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ROK,ROK,ROK,"Rockwell Automation, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.677419+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ROKU,ROKU,ROKU,"Roku, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.685301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ROST,ROST,ROST,"Ross Stores, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.697389+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RRGB,RRGB,RRGB,"Red Robin Gourmet Burgers, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.705237+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RSI,RSI,RSI,"Rush Street Interactive, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.713363+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RTH,RTH,RTH,VanEck Retail ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:29.721268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RTX,RTX,RTX,RTX Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.727280+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RUM,RUM,RUM,Rumble Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.733438+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RVLV,RVLV,RVLV,"Revolve Group, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.743492+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RXRX,RXRX,RXRX,"Recursion Pharmaceuticals, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.749228+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,RXT,RXT,RXT,"Rackspace Technology, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.757486+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,S,S,S,"SentinelOne, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.765716+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SAH,SAH,SAH,"Sonic Automotive, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.773726+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SAIA,SAIA,SAIA,"Saia, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.779500+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SAM,SAM,SAM,"Boston Beer Company, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.785301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SANM,SANM,SANM,Sanmina Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.791287+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SAP,SAP,SAP,SAP  SE ADS,NYSE,False,exact_symbol,,2026-06-23 16:41:29.801450+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SBLK,SBLK,SBLK,Star Bulk Carriers Corp. - Common Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.807289+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SBUX,SBUX,SBUX,Starbucks Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.813761+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SCHL,SCHL,SCHL,Scholastic Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.819601+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SCHW,SCHW,SCHW,Charles Schwab Corporation (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.827251+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SCO,SCO,SCO,ProShares UltraShort Bloomberg Crude Oil,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:29.833860+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SDRL,SDRL,SDRL,Seadrill Limited Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:29.839265+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SE,SE,SE,"Sea Limited American Depositary Shares, each representing one Class A Ordinary Share",NYSE,False,exact_symbol,,2026-06-23 16:41:29.853379+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SEAT,SEAT,SEAT,Vivid Seats Inc. - Class A common stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.860182+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SEIC,SEIC,SEIC,SEI Investments Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.869735+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SF,SF,SF,Stifel Financial Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.875444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SFBS,SFBS,SFBS,"ServisFirst Bancshares, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.881313+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SFL,SFL,SFL,SFL Corporation Ltd,NYSE,False,exact_symbol,,2026-06-23 16:41:29.887563+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SFM,SFM,SFM,"Sprouts Farmers Market, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.895404+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SG,SG,SG,"Sweetgreen, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.901319+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SHAK,SHAK,SHAK,"Shake Shack, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.909444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SHEL,SHEL,SHEL,Shell PLC American Depositary Shares (each representing two (2) Ordinary Shares),NYSE,False,exact_symbol,,2026-06-23 16:41:29.915266+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SHOP,SHOP,SHOP,Shopify Inc. - Class A Subordinate Voting Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.921252+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SHW,SHW,SHW,Sherwin-Williams Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.929356+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SI,SI,SI,"Shoulder Innovations, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:29.937398+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SJM,SJM,SJM,The J.M. Smucker Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.945451+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SKYY,SKYY,SKYY,First Trust Cloud Computing ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:29.956571+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SLB,SLB,SLB,SLB Limited Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:29.975444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SLG,SLG,SLG,SL Green Realty Corp Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:29.981458+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SMCI,SMCI,SMCI,"Super Micro Computer, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:29.991493+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SMH,SMH,SMH,VanEck Semiconductor ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:29.997351+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SMR,SMR,SMR,NuScale Power Corporation Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.006278+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SMTC,SMTC,SMTC,Semtech Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.013506+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNA,SNA,SNA,Snap-On Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.021382+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNAP,SNAP,SNAP,Snap Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.031454+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNBR,SNBR,SNBR,Sleep Number Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.039738+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNDR,SNDR,SNDR,"Schneider National, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.047269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNDX,SNDX,SNDX,"Syndax Pharmaceuticals, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.055353+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNEX,SNEX,SNEX,StoneX Group Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.063301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNOW,SNOW,SNOW,Snowflake Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.071609+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNPS,SNPS,SNPS,"Synopsys, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.085375+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNTG,SNTG,SNTG,Sentage Holdings Inc. - Class A Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.093822+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SNY,SNY,SNY,Sanofi - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.099767+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SO,SO,SO,Southern Company (The) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.110196+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SOCL,SOCL,SOCL,Global X Social Media ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:30.144493+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SOFI,SOFI,SOFI,"SoFi Technologies, Inc.  - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.172049+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SONO,SONO,SONO,"Sonos, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.227382+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SONY,SONY,SONY,Sony Group Corporation American Depositary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.260719+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SOUN,SOUN,SOUN,"SoundHound AI, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.267447+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SOXX,SOXX,SOXX,iShares PHLX SOX Semiconductor Sector Index Fund,NASDAQ,True,exact_symbol,,2026-06-23 16:41:30.275485+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SPCE,SPCE,SPCE,"Virgin Galactic Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.283457+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SPG,SPG,SPG,"Simon Property Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.289366+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SPGI,SPGI,SPGI,S&P Global Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.300335+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SPOT,SPOT,SPOT,Spotify Technology S.A. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.307353+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SPY,SPY,SPY,State Street SPDR S&P 500 ETF Trust,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:30.315623+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SRAD,SRAD,SRAD,Sportradar Group AG - Class A Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.323328+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SRE,SRE,SRE,DBA Sempra Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.331372+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SRG,SRG,SRG,Seritage Growth Properties Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.341318+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SRPT,SRPT,SRPT,"Sarepta Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.349377+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SSNC,SSNC,SSNC,"SS&C Technologies Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.357329+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SSP,SSP,SSP,E.W. Scripps Company (The) - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.365310+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SSTK,SSTK,SSTK,"Shutterstock, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.373398+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STBA,STBA,STBA,"S&T Bancorp, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.381314+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STC,STC,STC,Stewart Information Services Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.389403+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STE,STE,STE,STERIS plc (Ireland) Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.398175+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STLA,STLA,STLA,Stellantis N.V. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.405435+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STLD,STLD,STLD,"Steel Dynamics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.413279+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STM,STM,STM,STMicroelectronics N.V. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.421238+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STNG,STNG,STNG,Scorpio Tankers Inc. Common Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.429399+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STRA,STRA,STRA,"Strategic Education, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.437251+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STT,STT,STT,State Street Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.443643+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STUB,STUB,STUB,"StubHub Holdings, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.451718+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STX,STX,STX,Seagate Technology Holdings PLC - Ordinary Shares (Ireland),NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.459282+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,STZ,STZ,STZ,"Constellation Brands, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.467467+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SUN,SUN,SUN,Sunoco LP Common Units representing limited partner interests,NYSE,False,exact_symbol,,2026-06-23 16:41:30.474279+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SWBI,SWBI,SWBI,"Smith & Wesson Brands, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.481339+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SWKS,SWKS,SWKS,"Skyworks Solutions, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.491577+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SYF,SYF,SYF,Synchrony Financial Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.497276+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SYK,SYK,SYK,Stryker Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.503424+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SYNA,SYNA,SYNA,Synaptics Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.511415+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,SYY,SYY,SYY,Sysco Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.519410+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,T,T,T,AT&T Inc.,NYSE,False,exact_symbol,,2026-06-23 16:41:30.529461+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TAL,TAL,TAL,TAL Education Group American Depositary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.535610+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TAP,TAP,TAP,Molson Coors Beverage Company Class B Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.543985+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TBPH,TBPH,TBPH,"Theravance Biopharma, Inc. - Ordinary Shares",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.553331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TCOM,TCOM,TCOM,Trip.com Group Limited - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.561409+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TCPC,TCPC,TCPC,BlackRock TCP Capital Corp. - Closed End Fund,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.569352+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TDG,TDG,TDG,Transdigm Group Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.577436+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TDOC,TDOC,TDOC,"Teladoc Health, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.586547+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TEAM,TEAM,TEAM,Atlassian Corporation  - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.593434+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TEM,TEM,TEM,"Tempus AI, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.600555+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TENB,TENB,TENB,"Tenable Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.607297+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TEVA,TEVA,TEVA,Teva Pharmaceutical Industries Limited American Depositary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.615332+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TEX,TEX,TEX,Terex Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.622831+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TFC,TFC,TFC,Truist Financial Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.633470+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TFX,TFX,TFX,Teleflex Incorporated Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.646014+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TGT,TGT,TGT,Target Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.655855+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,THD,THD,THD,iShares MSCI Thailand ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:30.661534+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TIP,TIP,TIP,iShares TIPS Bond ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:30.671364+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TJX,TJX,TJX,"TJX Companies, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.679980+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TKO,TKO,TKO,"TKO Group Holdings, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.685491+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TLT,TLT,TLT,iShares 20+ Year Treasury Bond ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:30.693393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TLX,TLX,TLX,Telix Pharmaceuticals Limited - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.703118+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TM,TM,TM,Toyota Motor Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.709270+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TMO,TMO,TMO,Thermo Fisher Scientific Inc Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.715302+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TMUS,TMUS,TMUS,"T-Mobile US, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.719567+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TNDM,TNDM,TNDM,"Tandem Diabetes Care, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.725327+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TNK,TNK,TNK,Teekay Tankers Ltd.,NYSE,False,exact_symbol,,2026-06-23 16:41:30.733678+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TNL,TNL,TNL,Travel   Leisure Co. Common  Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.741685+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TNXP,TNXP,TNXP,Tonix Pharmaceuticals Holding Corp. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.749501+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TOL,TOL,TOL,"Toll Brothers, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.761150+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TOST,TOST,TOST,"Toast, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.769632+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TPR,TPR,TPR,"Tapestry, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.775871+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TRGP,TRGP,TRGP,"Targa Resources, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.784742+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TRI,TRI,TRI,Thomson Reuters Corp - Common Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.790950+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TRIP,TRIP,TRIP,"TripAdvisor, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.799431+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TROW,TROW,TROW,"T. Rowe Price Group, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.811409+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TRU,TRU,TRU,TransUnion Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.819260+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TRV,TRV,TRV,"The Travelers Companies, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.827432+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TSCO,TSCO,TSCO,Tractor Supply Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.833327+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TSEM,TSEM,TSEM,Tower Semiconductor Ltd. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.841840+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TSLA,TSLA,TSLA,"Tesla, Inc.  - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.850192+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TSLL,TSLL,TSLL,Direxion Daily TSLA Bull 2X ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:30.857247+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TSM,TSM,TSM,Taiwan Semiconductor Manufacturing Company Ltd.,NYSE,False,exact_symbol,,2026-06-23 16:41:30.863823+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TSN,TSN,TSN,"Tyson Foods, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.869389+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TT,TT,TT,Trane Technologies plc,NYSE,False,exact_symbol,,2026-06-23 16:41:30.879393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TTD,TTD,TTD,"The Trade Desk, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.891313+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TTE,TTE,TTE,TotalEnergies SE Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:30.901075+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TTEC,TTEC,TTEC,"TTEC Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.908674+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TTEK,TTEK,TTEK,"Tetra Tech, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.913414+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TTWO,TTWO,TTWO,"Take-Two Interactive Software, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.921302+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TUR,TUR,TUR,iShares MSCI Turkey ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:30.927260+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TVTX,TVTX,TVTX,"Travere Therapeutics, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.933234+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TW,TW,TW,Tradeweb Markets Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.942143+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TXN,TXN,TXN,Texas Instruments Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.947252+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TXRH,TXRH,TXRH,"Texas Roadhouse, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.955319+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,TXT,TXT,TXT,Textron Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.963361+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,U,U,U,Unity Software Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:30.971323+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UA,UA,UA,"Under Armour, Inc. Class C Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.979299+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UAA,UAA,UAA,"Under Armour, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.986594+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UAL,UAL,UAL,"United Airlines Holdings, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:30.993288+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UBER,UBER,UBER,"Uber Technologies, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:30.999388+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UBS,UBS,UBS,UBS Group AG Registered Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:31.005518+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UBSI,UBSI,UBSI,"United Bankshares, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.013278+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UCO,UCO,UCO,ProShares Ultra Bloomberg Crude Oil,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.019463+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UEC,UEC,UEC,Uranium Energy Corp. Common Stock,NYSE American,False,exact_symbol,,2026-06-23 16:41:31.025274+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UEIC,UEIC,UEIC,Universal Electronics Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.029508+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UFO,UFO,UFO,Procure Space ETF,NASDAQ,True,exact_symbol,,2026-06-23 16:41:31.035211+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UGA,UGA,UGA,United States Gasoline Fund LP,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.043291+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UHAL,UHAL,UHAL,U-Haul Holding Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.049619+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UL,UL,UL,Unilever PLC American Depositary Shares (each representing One Ordinary Share),NYSE,False,exact_symbol,,2026-06-23 16:41:31.057763+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ULTA,ULTA,ULTA,"Ulta Beauty, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.065462+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UMC,UMC,UMC,United Microelectronics Corporation (NEW) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.076126+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNF,UNF,UNF,Unifirst Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.085290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNFI,UNFI,UNFI,"United Natural Foods, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.093423+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNG,UNG,UNG,United States Natural Gas Fund LP,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.101536+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNH,UNH,UNH,UnitedHealth Group Incorporated Common Stock (DE),NYSE,False,exact_symbol,,2026-06-23 16:41:31.109195+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNM,UNM,UNM,Unum Group Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.117425+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNP,UNP,UNP,Union Pacific Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.125202+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UNTY,UNTY,UNTY,"Unity Bancorp, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.131439+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UPS,UPS,UPS,"United Parcel Service, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.139282+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UPST,UPST,UPST,"Upstart Holdings, Inc. - Common stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.145303+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,URA,URA,URA,Global X Uranium ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.153432+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,URBN,URBN,URBN,"Urban Outfitters, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.159290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,URI,URI,URI,"United Rentals, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.167384+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,USB,USB,USB,U.S. Bancorp Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.175967+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,USFD,USFD,USFD,US Foods Holding Corp. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.183301+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,USO,USO,USO,United States Oil Fund,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.189223+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UUP,UUP,UUP,Invesco DB USD Index Bullish Fund ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.197271+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UUUU,UUUU,UUUU,Energy Fuels Inc Ordinary Shares (Canada),NYSE American,False,exact_symbol,,2026-06-23 16:41:31.205718+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UVV,UVV,UVV,Universal Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.213269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,UWMC,UWMC,UWMC,UWM Holdings Corporation Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.221176+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,V,V,V,Visa Inc.,NYSE,False,exact_symbol,,2026-06-23 16:41:31.229314+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VAC,VAC,VAC,Marriott Vacations Worldwide Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.237294+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VALE,VALE,VALE,VALE S.A.  American Depositary Shares Each Representing one common share,NYSE,False,exact_symbol,,2026-06-23 16:41:31.245440+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VC,VC,VC,Visteon Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.253426+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VDC,VDC,VDC,Vanguard Consumer Staples ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.261895+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VDE,VDE,VDE,Vanguard Energy ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.267254+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VFC,VFC,VFC,V.F. Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.277656+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VGK,VGK,VGK,Vanguard FTSEEuropean ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.285771+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VHT,VHT,VHT,Vanguard Health Care ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.289679+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VIK,VIK,VIK,Viking Holdings Ltd Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:31.297293+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VIRT,VIRT,VIRT,"Virtu Financial, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.303300+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VIV,VIV,VIV,Telefonica Brasil S.A. American Depositary Shares (Each representing One Common Share),NYSE,False,exact_symbol,,2026-06-23 16:41:31.313265+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VIXY,VIXY,VIXY,VIX Short-Term Futures ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:31.319504+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VLO,VLO,VLO,Valero Energy Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.332061+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VLY,VLY,VLY,Valley National Bancorp - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.341582+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VMC,VMC,VMC,Vulcan Materials Company (Holding Company) Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.351752+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VNM,VNM,VNM,VanEck Vietnam ETF,Cboe BZX,True,exact_symbol,,2026-06-23 16:41:31.357126+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VNO,VNO,VNO,Vornado Realty Trust Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.365199+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VNQ,VNQ,VNQ,Vanguard Real Estate ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.371656+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VOYA,VOYA,VOYA,"Voya Financial, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.379863+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VRM,VRM,VRM,"Vroom, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.389532+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VRTX,VRTX,VRTX,Vertex Pharmaceuticals Incorporated - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.397176+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VTRS,VTRS,VTRS,Viatris Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.411541+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VUZI,VUZI,VUZI,Vuzix Corporation  - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.421218+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,VZ,VZ,VZ,Verizon Communications Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.429800+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,W,W,W,Wayfair Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.437291+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WAFD,WAFD,WAFD,"WaFd, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.442444+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WAL,WAL,WAL,Western Alliance Bancorporation Common Stock (DE),NYSE,False,exact_symbol,,2026-06-23 16:41:31.447546+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WAY,WAY,WAY,Waystar Holding Corp. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.455328+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WB,WB,WB,Weibo Corporation - American Depositary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.464729+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WBD,WBD,WBD,"Warner Bros. Discovery, Inc. - Series A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.471272+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WCC,WCC,WCC,"WESCO International, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.477484+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WDAY,WDAY,WDAY,"Workday, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.483209+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WDC,WDC,WDC,Western Digital Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.491394+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WDFC,WDFC,WDFC,WD-40 Company - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.499282+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WEAT,WEAT,WEAT,Teucrium Wheat Fund ETV,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.509282+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WEC,WEC,WEC,"WEC Energy Group, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.517533+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WEN,WEN,WEN,Wendy's Company (The) - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.525249+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WFC,WFC,WFC,Wells Fargo & Company Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.533404+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WH,WH,WH,"Wyndham Hotels & Resorts, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.541472+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WING,WING,WING,Wingstop Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.549603+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WIT,WIT,WIT,Wipro Limited Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.559555+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WIX,WIX,WIX,Wix.com Ltd. - Ordinary Shares,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.569679+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WK,WK,WK,Workiva Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.577312+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WLK,WLK,WLK,Westlake Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.587290+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WMB,WMB,WMB,"Williams Companies, Inc. (The) Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.595539+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WMT,WMT,WMT,Walmart Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.604096+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WOOF,WOOF,WOOF,"Petco Health and Wellness Company, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.613506+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WPP,WPP,WPP,WPP plc American Depositary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:31.621338+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WRB,WRB,WRB,W.R. Berkley Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.629433+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WRBY,WRBY,WRBY,Warby Parker Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.637426+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WSM,WSM,WSM,"Williams-Sonoma, Inc. Common Stock (DE)",NYSE,False,exact_symbol,,2026-06-23 16:41:31.645331+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WST,WST,WST,"West Pharmaceutical Services, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.653520+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WTFC,WTFC,WTFC,Wintrust Financial Corporation - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.661366+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WULF,WULF,WULF,TeraWulf Inc. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.671308+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WWD,WWD,WWD,"Woodward, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.679234+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,WYNN,WYNN,WYNN,"Wynn Resorts, Limited - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.687288+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XAR,XAR,XAR,State Street SPDR S&P Aerospace & Defense ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.695674+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XBI,XBI,XBI,State Street SPDR S&P Biotech ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.703175+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XES,XES,XES,State Street SPDR S&P Oil & Gas Equipment & Services ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.715268+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XHB,XHB,XHB,State Street SPDR S&P Homebuilders ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.723269+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XHE,XHE,XHE,State Street SPDR S&P Health Care Equipment ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.731284+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLB,XLB,XLB,State Street Materials Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.737270+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLC,XLC,XLC,State Street Communication Services Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.743962+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLE,XLE,XLE,State Street Energy Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.751485+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLF,XLF,XLF,State Street Financial Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.759296+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLI,XLI,XLI,State Street Industrial Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.767405+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLK,XLK,XLK,State Street Technology Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.777281+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLP,XLP,XLP,State Street Consumer Staples Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.783366+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLRE,XLRE,XLRE,State Street Real Estate Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.791308+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLU,XLU,XLU,State Street Utilities Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.799391+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLV,XLV,XLV,State Street Health Care Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.808616+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XLY,XLY,XLY,State Street Consumer Discretionary Select Sector SPDR ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.813392+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XOM,XOM,XOM,Exxon Mobil Corporation Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.821264+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XOP,XOP,XOP,State Street SPDR S&P Oil & Gas Exploration & Production ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.830141+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XP,XP,XP,XP Inc. - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.835406+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XPER,XPER,XPER,Xperi Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.843393+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XPEV,XPEV,XPEV,"XPeng Inc. American depositary shares, each representing two Class A ordinary shares",NYSE,False,exact_symbol,,2026-06-23 16:41:31.851276+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XPO,XPO,XPO,"XPO, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.855333+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XPOF,XPOF,XPOF,"Xponential Fitness, Inc. Class A Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.865412+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XRT,XRT,XRT,State Street SPDR S&P Retail ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.871410+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XTL,XTL,XTL,State Street SPDR S&P Telecom ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.877286+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,XTN,XTN,XTN,State Street SPDR S&P Transportation ETF,NYSE Arca,True,exact_symbol,,2026-06-23 16:41:31.883324+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,YALA,YALA,YALA,"Yalla Group Limited American Depositary Shares, each representing one Class A Ordinary Share",NYSE,False,exact_symbol,,2026-06-23 16:41:31.891377+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,YELP,YELP,YELP,Yelp Inc. Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.899317+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,YETI,YETI,YETI,"YETI Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.905305+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,YUM,YUM,YUM,"Yum! Brands, Inc.",NYSE,False,exact_symbol,,2026-06-23 16:41:31.917404+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,YUMC,YUMC,YUMC,"Yum China Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.925858+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,Z,Z,Z,"Zillow Group, Inc. - Class C Capital Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.935871+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZBH,ZBH,ZBH,"Zimmer Biomet Holdings, Inc. Common Stock",NYSE,False,exact_symbol,,2026-06-23 16:41:31.941592+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZBRA,ZBRA,ZBRA,Zebra Technologies Corporation - Class A Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.949469+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZETA,ZETA,ZETA,Zeta Global Holdings Corp. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:31.957429+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZG,ZG,ZG,"Zillow Group, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.963460+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZIM,ZIM,ZIM,ZIM Integrated Shipping Services Ltd. Ordinary Shares,NYSE,False,exact_symbol,,2026-06-23 16:41:31.969286+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZION,ZION,ZION,Zions Bancorporation N.A. - Common Stock,NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.977424+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZM,ZM,ZM,"Zoom Communications, Inc. - Class A Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.983260+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZS,ZS,ZS,"Zscaler, Inc. - Common Stock",NASDAQ,False,exact_symbol,,2026-06-23 16:41:31.991439+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZTO,ZTO,ZTO,"ZTO Express (Cayman) Inc. American Depositary Shares, each representing one Class A ordinary share.",NYSE,False,exact_symbol,,2026-06-23 16:41:31.997257+00:00
+8d2b566d-04ab-41c7-98ed-330ee455451c,ZTS,ZTS,ZTS,Zoetis Inc. Class A Common Stock,NYSE,False,exact_symbol,,2026-06-23 16:41:32.003433+00:00

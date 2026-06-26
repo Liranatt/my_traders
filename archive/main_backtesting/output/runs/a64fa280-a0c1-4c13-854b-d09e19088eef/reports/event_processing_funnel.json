@@ -1,0 +1,9 @@
+{
+  "candidate_markets_filtered": 5,
+  "llm_accepted_markets": 2,
+  "llm_deleted_markets": 3,
+  "processed_markets": 1,
+  "markets_with_probability_passes": 0,
+  "asset_worlds": 0,
+  "trades": 0
+}

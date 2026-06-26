@@ -1,0 +1,10 @@
+failure_id,run_id,stage,work_key,error_type,error,created_at
+20,5fb1a1cd-7513-4085-a0c4-499d66c205ab,asset_worlds,batch:4,ValueError,Gemini returned no locally IB-tradable symbols for relevant request 566027:1: ['APLS'],2026-06-24 18:05:19.561547+00:00
+21,5fb1a1cd-7513-4085-a0c4-499d66c205ab,asset_worlds,batch:61,RuntimeError,"Gemini HTTP 429: {
+  ""error"": {
+    ""code"": 429,
+    ""message"": ""Your project has exceeded its monthly spending cap. Please go to AI Studio at https://ai.studio/spend to manage your project spend cap. Learn more at https://ai.google.dev/gemini-api/docs/billing#project-spend-caps. "",
+    ""status"": ""RESOURCE_EXHAUSTED""
+  }
+}
+",2026-06-25 06:59:18.906389+00:00

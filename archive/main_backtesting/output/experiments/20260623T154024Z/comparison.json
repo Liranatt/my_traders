@@ -1,0 +1,25 @@
+[
+  {
+    "variant": "fallback_hold_to_resolution",
+    "run_id": "93c60fc2-f4cc-47cf-9c01-b9ed5a62f581",
+    "elapsed_seconds": 26.1,
+    "overall_trades": 0,
+    "overall_net": 0,
+    "overall_return_pct": 0.0,
+    "overall_win_rate": null,
+    "overall_profit_factor": null,
+    "ml_trades": null,
+    "ml_net": null,
+    "ml_return_pct": null,
+    "ml_win_rate": null,
+    "momentum_trades": null,
+    "momentum_net": null,
+    "fallback_net": null,
+    "return_on_peak_pct": null,
+    "peak_capital": 0.0,
+    "starting_capital": 50000.0,
+    "classification_accuracy": null,
+    "counterfactual_long_only_net": 0,
+    "overrides": "{\"fallback_strategy\": \"hold_to_resolution\"}"
+  }
+]

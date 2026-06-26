@@ -1,0 +1,4 @@
+market_id,event_id,event_title,market_question,reason,model_name,prompt_version,processed_at
+252842,902780,Will US attack Iran by Nov 30?,Will US attack Iran by Nov 30?,No concrete economic channel,llama3:latest,historical-market-filter-v3,2026-06-13 19:39:55.193059+00:00
+253119,902880,OpenAI permanent CEO by Dec 31?,OpenAI permanent CEO by Dec 31?,No concrete economic channel,llama3:latest,historical-market-filter-v3,2026-06-13 19:39:55.193059+00:00
+253121,902882,Was Sam Altman fired for sexually abusing his sister?,Was Sam Altman fired for sexually abusing his sister?,No concrete economic channel,llama3:latest,historical-market-filter-v3,2026-06-13 19:39:55.193059+00:00

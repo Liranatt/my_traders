@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from main_backtesting.models import PriceBar
+
+@dataclass(frozen=True)
+class PriceBar:
+    timestamp: datetime
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: float
 
 Resolution = Literal["1h", "1d"]
 

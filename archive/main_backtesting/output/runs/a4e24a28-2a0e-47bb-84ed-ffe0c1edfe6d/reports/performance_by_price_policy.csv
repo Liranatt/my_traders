@@ -1,0 +1,2 @@
+price_policy,trade_count,total_net_profit,win_rate,average_winner,average_loser,payoff_ratio,profit_factor,expectancy,largest_winner,largest_loser,maximum_consecutive_losses
+daily_close_to_close,254,1157.2969278716891,0.42913385826771655,53.42379539919587,-32.17859841821145,1.6602275433152711,1.2480331187680314,4.556287117605075,272.31606831173696,-135.18947511139774,18

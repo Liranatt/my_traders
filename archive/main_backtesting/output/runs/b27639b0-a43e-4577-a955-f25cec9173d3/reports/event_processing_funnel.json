@@ -1,0 +1,9 @@
+{
+  "candidate_markets_filtered": 13486,
+  "llm_accepted_markets": 7080,
+  "llm_deleted_markets": 6406,
+  "processed_markets": 1816,
+  "markets_with_probability_passes": 1277,
+  "asset_worlds": 1277,
+  "trades": 501
+}

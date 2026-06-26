@@ -1,0 +1,11 @@
+{
+  "classification_observations": 1046,
+  "classification_accuracy": 0.4043977055449331,
+  "long_precision": 0.5108433734939759,
+  "long_recall": 0.33544303797468356,
+  "short_precision": 0.33438985736925514,
+  "short_recall": 0.5096618357487923,
+  "ridge_mean_absolute_error": 0.12141213921174103,
+  "ridge_root_mean_square_error": 0.20078561294288547,
+  "predicted_goal_hit_rate": 0.5439770554493308
+}

@@ -1,0 +1,47 @@
+{
+  "run_id": "c8cde8a7-1710-47e5-85d2-1da6f793c6a5",
+  "trade_count": 0,
+  "overall_performance": {
+    "trade_count": 0,
+    "total_net_profit": 0,
+    "win_rate": null,
+    "average_winner": null,
+    "average_loser": null,
+    "payoff_ratio": null,
+    "profit_factor": null,
+    "expectancy": null,
+    "maximum_consecutive_losses": 0
+  },
+  "equal_notional_signal_portfolio": {
+    "method": "daily_realized_executable_trade_returns",
+    "daily_realized_days": 0,
+    "sharpe_ratio": null,
+    "sortino_ratio": null,
+    "maximum_drawdown_dollars": 0.0,
+    "maximum_drawdown_percent_of_total_signal_notional": null,
+    "total_signal_notional": 0.0
+  },
+  "equal_notional_executable_signal_portfolio": {
+    "method": "daily_realized_executable_trade_returns",
+    "daily_realized_days": 0,
+    "sharpe_ratio": null,
+    "sortino_ratio": null,
+    "maximum_drawdown_dollars": 0.0,
+    "maximum_drawdown_percent_of_total_signal_notional": null,
+    "total_signal_notional": 0.0
+  },
+  "strategies": {},
+  "strategy_resolutions": {},
+  "portfolios": {},
+  "machine_learning": {
+    "classification_observations": 0,
+    "classification_accuracy": null,
+    "long_precision": null,
+    "long_recall": null,
+    "short_precision": null,
+    "short_recall": null,
+    "ridge_mean_absolute_error": null,
+    "ridge_root_mean_square_error": null,
+    "predicted_goal_hit_rate": null
+  }
+}

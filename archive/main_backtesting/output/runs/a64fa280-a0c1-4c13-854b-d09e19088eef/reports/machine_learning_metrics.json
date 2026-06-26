@@ -1,0 +1,11 @@
+{
+  "classification_observations": 0,
+  "classification_accuracy": null,
+  "long_precision": null,
+  "long_recall": null,
+  "short_precision": null,
+  "short_recall": null,
+  "ridge_mean_absolute_error": null,
+  "ridge_root_mean_square_error": null,
+  "predicted_goal_hit_rate": null
+}

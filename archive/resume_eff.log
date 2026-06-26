@@ -1,0 +1,50 @@
+[world batch 33] worlds=20
+[world batch 34] worlds=20
+[world] no IB-tradable symbol for 1321401:1: ['ZI'] -> empty world
+[world batch 35] worlds=20
+[world batch 36] worlds=20
+[world batch 37] worlds=20
+[world batch 38] worlds=20
+[world batch 39] worlds=20
+[world] no IB-tradable symbol for 1387100:1: ['EB'] -> empty world
+[world batch 40] worlds=20
+[world batch 41] worlds=20
+[world] no IB-tradable symbol for 1404328:1: ['VSCO'] -> empty world
+[world batch 42] worlds=20
+[world batch 43] worlds=20
+[world batch 44] worlds=20
+[world batch 45] worlds=20
+[world batch 46] worlds=20
+[world batch 47] worlds=20
+[world batch 48] worlds=20
+[world batch 49] worlds=20
+[world batch 50] worlds=20
+[world] no IB-tradable symbol for 1692998:1: ['CHYHY'] -> empty world
+[world batch 51] worlds=20
+[world batch 52] worlds=20
+[world batch 53] worlds=20
+[world batch 54] worlds=20
+[world batch 55] worlds=20
+[world] no IB-tradable symbol for 1891433:1: ['BK'] -> empty world
+[world batch 56] worlds=20
+[world batch 57] worlds=20
+[world batch 58] worlds=20
+[world batch 59] worlds=20
+[world batch 60] worlds=20
+[world batch 61] worlds=20
+[world batch 62] worlds=20
+[world batch 63] worlds=20
+[world batch 64] worlds=20
+[world batch 65] worlds=20
+[world batch 66] worlds=20
+[world] no IB-tradable symbol for 2110076:1: ['ZI'] -> empty world
+[world batch 67] worlds=20
+[world batch 68] worlds=20
+[world] no IB-tradable symbol for 2312784:1: ['VSCO'] -> empty world
+[world batch 69] worlds=20
+[world batch 70] worlds=17
+[security master] loaded cached symbols=12762
+[asset validation] original=429 resolved=429 rejected=0
+[prices] completed=9/9 no_data_windows=0
+[counterfactual long-only ML] trades=879 net=27673.66 win_rate=0.480
+[complete] run_id=a9666b11-b6b5-499a-8faf-4b9fe03fec62

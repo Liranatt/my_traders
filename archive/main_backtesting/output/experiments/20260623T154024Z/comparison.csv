@@ -1,0 +1,2 @@
+variant,overall_net,overall_return_pct,ml_net,ml_return_pct,fallback_net,counterfactual_long_only_net,return_on_peak_pct,peak_capital,starting_capital,classification_accuracy,overall_trades,ml_trades,momentum_trades,overall_win_rate,ml_win_rate,overall_profit_factor,elapsed_seconds,run_id,overrides,momentum_net
+fallback_hold_to_resolution,0,0.0,,,,0,,0.0,50000.0,,0,,,,,,26.1,93c60fc2-f4cc-47cf-9c01-b9ed5a62f581,"{""fallback_strategy"": ""hold_to_resolution""}",

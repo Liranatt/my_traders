@@ -1,0 +1,7 @@
+run_id,market_id,event_id,question,created_at,end_at,final_outcome,probability_hour_count,probability_graph_path
+c8cde8a7-1710-47e5-85d2-1da6f793c6a5,252645,902670,Will any major Iranian oil refinery be taken out by Nov 30?,2023-10-12 17:45:15.719000+00:00,2023-11-30 00:00:00+00:00,No,1155,
+c8cde8a7-1710-47e5-85d2-1da6f793c6a5,253269,902973,Will US attack Iran in 2023?,2023-12-04 17:40:51.046000+00:00,2023-12-31 00:00:00+00:00,No,629,
+c8cde8a7-1710-47e5-85d2-1da6f793c6a5,253984,903283,Will Iran or Pakistan declare war against the other in January?,2024-01-18 16:59:27.694000+00:00,2024-01-31 00:00:00+00:00,No,293,
+c8cde8a7-1710-47e5-85d2-1da6f793c6a5,254097,903328,Will Israel attack Iran by February 15?,2024-01-24 23:54:38.403000+00:00,2024-02-15 00:00:00+00:00,No,483,
+c8cde8a7-1710-47e5-85d2-1da6f793c6a5,254243,903377,Will the Fed decrease interest rates by 50+ bps after its March 2024 meeting?,2024-01-31 20:13:58.242000+00:00,2024-03-18 00:00:00+00:00,No,1105,
+c8cde8a7-1710-47e5-85d2-1da6f793c6a5,254245,903377,Will the Fed decrease interest rates by 25 bps after its 2024 March meeting?,2024-01-31 20:13:58.429000+00:00,2024-03-18 00:00:00+00:00,No,1105,

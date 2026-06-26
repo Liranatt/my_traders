@@ -1,0 +1,25 @@
+[
+  {
+    "variant": "baseline",
+    "run_id": null,
+    "error": "DeadlockDetectedError: deadlock detected\nDETAIL:  Process 104150 waits for AccessExclusiveLock on relation 132851 of database 65543; blocked by process 104149.\nProcess 104149 waits for RowExclusiveLock on relation 132585 of database 65543; blocked by process 104150.\nHINT:  See server log for query details.",
+    "overrides": "{}"
+  },
+  {
+    "variant": "momentum_off",
+    "run_id": "61a474d4-620d-4370-9f02-b21832dc8d24",
+    "elapsed_seconds": 2.9,
+    "overall_trades": 0,
+    "overall_net": 0,
+    "overall_win_rate": null,
+    "overall_profit_factor": null,
+    "ml_trades": null,
+    "ml_net": null,
+    "ml_win_rate": null,
+    "momentum_trades": null,
+    "momentum_net": null,
+    "classification_accuracy": null,
+    "counterfactual_long_only_net": 0,
+    "overrides": "{\"momentum_entry_mode\": \"none\"}"
+  }
+]

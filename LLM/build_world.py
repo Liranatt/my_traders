@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 import re
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import (
     BaseModel,
@@ -12,7 +13,41 @@ from pydantic import (
     model_validator,
 )
 
-from main_backtesting.models import Asset, IBTradableAsset, SourceMarket
+
+@dataclass(frozen=True)
+class SourceMarket:
+    market_id: str
+    event_id: str
+    event_title: str
+    question: str
+    created_at: datetime
+    end_at: datetime
+    tags: list[str]
+    raw_market: dict[str, Any]
+    yes_token_id: str
+    condition_id: str | None
+    final_outcome: str | None
+
+
+@dataclass(frozen=True)
+class Asset:
+    symbol: str
+    asset_name: str
+    asset_class: str
+    reason: str
+    connection_strength: float | None = None
+
+
+@dataclass(frozen=True)
+class IBTradableAsset:
+    symbol: str
+    asset_name: str
+    asset_class: Literal["stock", "etf"]
+    primary_exchange: str
+    stock_type: str
+    industry: str | None = None
+    category: str | None = None
+    subcategory: str | None = None
 
 
 class AssetCandidate(BaseModel):

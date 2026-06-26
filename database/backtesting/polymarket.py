@@ -1,12 +1,36 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from typing import Any
 
 import httpx
 import pandas as pd
 
-from main_backtesting.models import ProbabilityPoint, SourceMarket
+
+@dataclass(frozen=True)
+class ProbabilityPoint:
+    timestamp: datetime
+    probability: float
+    source_timestamp: datetime | None = None
+    available_at: datetime | None = None
+    volume_usdc: float | None = None
+
+
+@dataclass(frozen=True)
+class SourceMarket:
+    market_id: str
+    event_id: str
+    event_title: str
+    question: str
+    created_at: datetime
+    end_at: datetime
+    tags: list[str]
+    raw_market: dict[str, Any]
+    yes_token_id: str
+    condition_id: str | None
+    final_outcome: str | None
 
 CLOB_PRICE_HISTORY_URL = "https://clob.polymarket.com/prices-history"
 DATA_TRADES_URL = "https://data-api.polymarket.com/trades"

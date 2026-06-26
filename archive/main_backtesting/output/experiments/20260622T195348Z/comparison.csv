@@ -1,0 +1,6 @@
+variant,overall_net,ml_net,counterfactual_long_only_net,classification_accuracy,overall_trades,ml_trades,momentum_trades,overall_win_rate,ml_win_rate,overall_profit_factor,elapsed_seconds,run_id,error,overrides,momentum_net
+baseline,,,,,,,,,,,,,"DeadlockDetectedError: deadlock detected
+DETAIL:  Process 104150 waits for AccessExclusiveLock on relation 132851 of database 65543; blocked by process 104149.
+Process 104149 waits for RowExclusiveLock on relation 132585 of database 65543; blocked by process 104150.
+HINT:  See server log for query details.",{},
+momentum_off,0,,0,,0,,,,,,2.9,61a474d4-620d-4370-9f02-b21832dc8d24,,"{""momentum_entry_mode"": ""none""}",

@@ -1,0 +1,2 @@
+variant,overall_net,overall_return_pct,ml_net,ml_return_pct,fallback_net,counterfactual_long_only_net,return_on_peak_pct,peak_capital,starting_capital,classification_accuracy,overall_trades,ml_trades,momentum_trades,overall_win_rate,ml_win_rate,overall_profit_factor,elapsed_seconds,run_id,overrides,momentum_net
+shorts_hedged,-396.3884824715094,-0.7927769649430187,,,,0,-2.642589883143396,15000.0,50000.0,,17,,17,0.17647058823529413,,0.07791488139377256,66.9,0182b69b-ddbd-4af8-a0d5-75d137cd8312,"{""enable_shorts"": true, ""hedge_ml_trades"": true}",-396.3884824715094

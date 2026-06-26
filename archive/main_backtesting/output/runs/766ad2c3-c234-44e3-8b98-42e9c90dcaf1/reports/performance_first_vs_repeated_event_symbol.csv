@@ -1,0 +1,2 @@
+event_symbol_sequence,trade_count,total_net_profit,win_rate,average_winner,average_loser,payoff_ratio,profit_factor,expectancy,largest_winner,largest_loser,maximum_consecutive_losses
+first_trade,321,103.6770550642676,0.43613707165109034,46.03611927540923,-35.03524664913273,1.3139944392698835,1.0163492900430038,0.3229814799509894,271.823315690525,-147.48715791671225,15

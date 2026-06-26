@@ -1,0 +1,4 @@
+input_hash,market_id,event_id,event_title,market_question,model_name,prompt_version,relevant,reason,processed_at
+8375fba8c1d9672e13cd300e51cd1f17614ff0332d1d9ddd4b995f4b699230eb,252842,902780,Will US attack Iran by Nov 30?,Will US attack Iran by Nov 30?,llama3:latest,historical-market-filter-v3,False,No concrete economic channel,2026-06-13 19:39:55.193059+00:00
+e728e8ea351b6a56e8aa957cacfce3439f317a9255f2adbee00b7aabab242450,253119,902880,OpenAI permanent CEO by Dec 31?,OpenAI permanent CEO by Dec 31?,llama3:latest,historical-market-filter-v3,False,No concrete economic channel,2026-06-13 19:39:55.193059+00:00
+beb539c5507110dd10cdc9d880d015c9a5fd7ab9217c0941c47b86725d27a07f,253121,902882,Was Sam Altman fired for sexually abusing his sister?,Was Sam Altman fired for sexually abusing his sister?,llama3:latest,historical-market-filter-v3,False,No concrete economic channel,2026-06-13 19:39:55.193059+00:00

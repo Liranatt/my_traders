@@ -1,0 +1,10 @@
+{
+  "description": "Analysis only (not persisted). Every ML-eligible candidate traded LONG with a 3% hard stop and a one-day-before-resolution exit, ignoring the directional classifier and its gating. Compare against strategies.machine_learning in summary.json.",
+  "trade_count": 2255,
+  "total_net_profit": -15585.546816098136,
+  "win_rate": 0.3458980044345898,
+  "average_trade": -6.911550694500282,
+  "profit_factor": 0.7959999584350735,
+  "gross_profit": 60814.17691208439,
+  "gross_loss": -76399.72372818252
+}
