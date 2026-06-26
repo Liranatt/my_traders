@@ -1,2 +1,0 @@
-window,start,end,train_pool_rows,known_labels,oof_predictions,cem_candidates,rf_fit_rows,selected_candidates,cem_objective,internal_train_windows,policy_json
-1,2026-04-10,2026-04-29,748,748,638,462,748,23,-1.7669420689466255,2,"{""atr_mult"": 2.818205564704005, ""enter_floor"": 0.7640112626297392, ""enter_strong"": 0.7797101190697779, ""hold_days"": 1, ""lock_activate"": 0.02, ""max_concurrent"": 14, ""max_price_runup"": 0.09478414926851178, ""max_prob_surge"": 0.39620826876604776, ""position_size_pct"": 0.05761708414766485, ""theta_out"": 0.5686984968410665}"
