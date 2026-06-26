@@ -3,7 +3,9 @@ Leakage-safe 8-experiment comparison:
   T1 = realized-friction penalty inside the CEM objective
        (this is NOT a live entry gate because this non-RF runner has no
         point-in-time expected-return estimate);
-  T2 = rolling, train-only CEM evaluation windows;
+  T2 = expanding walk-forward CEM folds:
+       each fold fits only on rows whose outcome was complete before that
+       fold starts (t_e < fold start), then evaluates the next time block;
   T3 = half-Kelly position sizing from realised, fully net historical trades.
 
 Key corrections relative to the original runner:
@@ -11,9 +13,12 @@ Key corrections relative to the original runner:
   * Validation candidates are evaluated after training and before the test
     boundary. They can be used to choose an experiment family; test remains the
     untouched final holdout.
-  * T2 windows are built only from the train split.
-  * Every CEM window is valuated at its own end date; it cannot use prices
-    after that window.
+  * T2 uses genuine expanding walk-forward folds. Fold i fits on every
+    train-split row with t_e < fold_i_start, then evaluates the next block
+    of candidates by t_theta. A candidate's t_theta alone never makes it
+    eligible for fitting.
+  * Every fit/evaluation simulation is valuated at its own cutoff date; it
+    cannot use prices after that cutoff.
   * Finite-horizon simulations truncate price/probability paths before trade
     generation, so entry/exit decisions cannot inspect later observations.
   * OOS metrics come from a separate, frozen-policy portfolio simulation on
@@ -35,6 +40,7 @@ CSV is preserved:
     data/experiment_results_clean.csv
     data/experiment_trade_logs_clean/
     data/experiment_equity_logs_clean/
+    data/experiment_walkforward_folds_clean.csv
 """
 from __future__ import annotations
 
@@ -65,6 +71,7 @@ REL_COL = "feat_connection_strength"
 RESULTS_CSV = PROJECT / "data" / "experiment_results_clean.csv"
 TRADE_LOG_DIR = PROJECT / "data" / "experiment_trade_logs_clean"
 EQUITY_LOG_DIR = PROJECT / "data" / "experiment_equity_logs_clean"
+WF_FOLD_AUDIT_CSV = PROJECT / "data" / "experiment_walkforward_folds_clean.csv"
 
 INITIAL_CAPITAL = 100_000.0
 
@@ -93,13 +100,12 @@ HURDLE_PENALTY = 2.0
 
 WF_EVAL_MON = 3
 WF_STEP_MON = 3
-WF_BUFFER_DAYS = 7
-WF_MIN_CANDS = 8
+WF_MIN_TRAIN_CANDS = 8
+WF_MIN_EVAL_CANDS = 8
+WF_MIN_FOLDS = 2
 
-# The train simulation is marked to market / liquidated before the test split.
-# The buffer lets the longest policy hold (currently bounded to 5 days) settle
-# without reading any test-period price or probability observation.
-TRAIN_SETTLEMENT_BUFFER_DAYS = 7
+# Every CEM fit is clipped at the next fold/stage boundary. The t_e rule decides
+# whether a row is eligible to fit; the horizon rule prevents path-level leaks.
 
 KELLY_MIN_N = 10
 KELLY_LOOKBACK_N = 30
@@ -264,48 +270,127 @@ def kelly_size(completed_history: list[dict], base: float) -> float:
     return float(np.clip(half_kelly, KELLY_MIN_SZ, KELLY_MAX_SZ))
 
 
-# ── Train-only rolling evaluation windows ────────────────────────────────────
+# ── Expanding walk-forward folds ─────────────────────────────────────────────
+
+def _as_utc_timestamp(value: Any) -> pd.Timestamp:
+    """Convert a timestamp-like value to UTC without discarding its time."""
+    ts = pd.Timestamp(value)
+    if ts.tz is None:
+        return ts.tz_localize("UTC")
+    return ts.tz_convert("UTC")
+
 
 def _frame_bounds(df: pd.DataFrame) -> tuple[pd.Timestamp, pd.Timestamp]:
     ts = pd.to_datetime(df["t_theta"], utc=True)
     return as_utc_day(ts.min()), as_utc_day(ts.max())
 
 
-def create_wf_windows(train_df: pd.DataFrame, train_eval_end: pd.Timestamp) -> list[dict[str, Any]]:
+def rows_completed_before(df: pd.DataFrame, cutoff: Any) -> pd.DataFrame:
     """
-    Build rolling evaluation windows using TRAIN rows only.
+    Return the rows legally available for fitting at `cutoff`.
 
-    Candidates near a window boundary are excluded so a position has a short
-    settlement interval before the portfolio is valuated at the window end.
+    This is deliberately based on t_e (label/outcome completion), not t_theta
+    (candidate/entry time). The comparison is strict: completion on the fold
+    start is not "before" the fold start.
+    """
+    cutoff_ts = _as_utc_timestamp(cutoff)
+    completed_at = pd.to_datetime(df["t_e"], utc=True)
+    return df.loc[completed_at < cutoff_ts].copy()
+
+
+def assert_rows_completed_before(
+    df: pd.DataFrame,
+    cutoff: Any,
+    *,
+    context: str,
+) -> None:
+    """Fail closed if a CEM fit contains any label incomplete at its cutoff."""
+    if df.empty:
+        raise ValueError(f"{context}: no rows are available for fitting.")
+
+    cutoff_ts = _as_utc_timestamp(cutoff)
+    completed_at = pd.to_datetime(df["t_e"], utc=True)
+    invalid = completed_at >= cutoff_ts
+    if invalid.any():
+        first_bad = completed_at.loc[invalid].min()
+        raise ValueError(
+            f"{context}: {int(invalid.sum())} fit row(s) have t_e >= "
+            f"{cutoff_ts.isoformat()}; earliest invalid t_e={first_bad.isoformat()}. "
+            "Training eligibility must be determined by t_e < fold start."
+        )
+
+
+def create_expanding_wf_folds(
+    train_df: pd.DataFrame,
+    final_fit_cutoff: pd.Timestamp,
+) -> list[dict[str, Any]]:
+    """
+    Construct expanding, label-complete walk-forward folds from the train split.
+
+    Fold i:
+      fit rows  = every train-split candidate with t_e < fold_i.eval_start
+      eval rows = candidates with t_theta in [eval_start, eval_end_exclusive)
+
+    `t_e`, not `t_theta`, controls fit eligibility. Evaluation is still blocked
+    by `t_theta` because it represents the time at which a candidate becomes
+    tradeable. The fold's portfolio simulation is truncated at eval_end, so
+    neither fit nor evaluation reads data beyond its own decision horizon.
     """
     if train_df.empty:
         return []
 
-    ts = pd.to_datetime(train_df["t_theta"], utc=True)
-    start = as_utc_day(ts.min())
-    last_candidate_day = as_utc_day(ts.max())
-    end = min(as_utc_day(train_eval_end), last_candidate_day)
+    theta = pd.to_datetime(train_df["t_theta"], utc=True)
+    t_e = pd.to_datetime(train_df["t_e"], utc=True)
+    final_cutoff = as_utc_day(final_fit_cutoff)
 
-    windows: list[dict[str, Any]] = []
-    cur = start
-    buffer = pd.Timedelta(days=WF_BUFFER_DAYS)
+    first_candidate_day = as_utc_day(theta.min())
+    # The split itself is already chronological, but use the earliest of its
+    # final fit cutoff and last candidate day + 1 to make the end exclusive.
+    last_eval_exclusive = min(
+        final_cutoff,
+        as_utc_day(theta.max()) + pd.Timedelta(days=1),
+    )
 
-    while cur + pd.DateOffset(months=WF_EVAL_MON) <= end + pd.Timedelta(days=15):
-        window_end = min(
-            as_utc_day(cur + pd.DateOffset(months=WF_EVAL_MON)),
-            as_utc_day(train_eval_end),
+    folds: list[dict[str, Any]] = []
+    eval_start = first_candidate_day
+
+    while eval_start < last_eval_exclusive:
+        eval_end_exclusive = min(
+            as_utc_day(eval_start + pd.DateOffset(months=WF_EVAL_MON)),
+            last_eval_exclusive,
         )
-        mask = (ts >= cur + buffer) & (ts < window_end - buffer)
-        frame = train_df.loc[mask].copy()
-        if len(frame) >= WF_MIN_CANDS:
-            windows.append({"df": frame, "start": cur, "end": window_end})
-        cur = as_utc_day(cur + pd.DateOffset(months=WF_STEP_MON))
+        if eval_end_exclusive <= eval_start:
+            break
 
-    if len(windows) >= 2:
-        return windows
+        fit_df = train_df.loc[t_e < eval_start].copy()
+        eval_df = train_df.loc[
+            (theta >= eval_start) & (theta < eval_end_exclusive)
+        ].copy()
 
-    train_start, _ = _frame_bounds(train_df)
-    return [{"df": train_df.copy(), "start": train_start, "end": as_utc_day(train_eval_end)}]
+        if len(fit_df) >= WF_MIN_TRAIN_CANDS and len(eval_df) >= WF_MIN_EVAL_CANDS:
+            assert_rows_completed_before(
+                fit_df,
+                eval_start,
+                context=f"walk-forward fold {len(folds) + 1}",
+            )
+            fit_start, _ = _frame_bounds(fit_df)
+            folds.append(
+                {
+                    "fold": len(folds) + 1,
+                    "fit_df": fit_df,
+                    "fit_start": fit_start,
+                    "fit_cutoff": eval_start,
+                    "fit_end": eval_start - pd.Timedelta(days=1),
+                    "eval_df": eval_df,
+                    "eval_start": eval_start,
+                    "eval_end": eval_end_exclusive - pd.Timedelta(days=1),
+                    "eval_end_exclusive": eval_end_exclusive,
+                }
+            )
+
+        eval_start = as_utc_day(eval_start + pd.DateOffset(months=WF_STEP_MON))
+
+    return folds
 
 
 # ── Core portfolio simulator ─────────────────────────────────────────────────
@@ -705,28 +790,28 @@ def cem_reward(trades: pd.DataFrame, equity_df: pd.DataFrame, stats: dict, use_h
     return float(score)
 
 
-def cem_search(
-    train_df: pd.DataFrame,
+def _cem_fit_policy(
+    fit_df: pd.DataFrame,
     prices: dict,
     probs: dict,
     *,
     bench_sym: str,
     use_hurdle: bool,
-    use_wf: bool,
     use_kelly: bool,
-    train_eval_end: pd.Timestamp,
-    n_iter: int = CEM_ITERS,
-    pop: int = CEM_POP,
-    seed: int = CEM_BASE_SEED,
-) -> tuple[dict, float, list[dict[str, Any]]]:
+    fit_cutoff: pd.Timestamp,
+    fit_eval_end: pd.Timestamp,
+    n_iter: int,
+    pop: int,
+    seed: int,
+    phase_tag: str,
+) -> tuple[dict, float]:
     """
-    Tune one frozen policy using train data only.
+    Fit a CEM policy on one information set.
 
-    T2 uses several train-only rolling windows. Every window ends at its own
-    date, so both its reward and its equity path remain isolated from test.
+    `fit_df` must already satisfy t_e < fit_cutoff. The independent
+    fit_eval_end horizon then truncates market paths before the next block.
     """
-    if train_df.empty:
-        raise ValueError("CEM received an empty train frame.")
+    assert_rows_completed_before(fit_df, fit_cutoff, context=phase_tag)
 
     rng = np.random.default_rng(seed)
     names = list(PORTFOLIO_BOUNDS.keys())
@@ -738,17 +823,9 @@ def cem_search(
         dtype=float,
     )
 
-    if use_wf:
-        windows = create_wf_windows(train_df, train_eval_end)
-        mode_tag = f"[TrainWindows:{len(windows)}]"
-    else:
-        train_start, _ = _frame_bounds(train_df)
-        windows = [{"df": train_df, "start": train_start, "end": train_eval_end}]
-        mode_tag = "[TrainFull]"
-
+    fit_start, _ = _frame_bounds(fit_df)
     tags = (
         (f"[Friction={HURDLE_MULT:.0f}x]" if use_hurdle else "")
-        + mode_tag
         + ("[Kelly]" if use_kelly else "")
     )
 
@@ -761,26 +838,18 @@ def cem_search(
         scores: list[float] = []
 
         for policy in policies:
-            window_scores: list[float] = []
-            for window in windows:
-                trades, equity, stats, _ = sim_opp_cost(
-                    window["df"],
-                    prices,
-                    probs,
-                    policy,
-                    bench_sym=bench_sym,
-                    initial=INITIAL_CAPITAL,
-                    use_kelly=use_kelly,
-                    start_date=window["start"],
-                    end_date=window["end"],
-                )
-                window_scores.append(cem_reward(trades, equity, stats, use_hurdle))
-
-            # Equal-length windows receive equal weight. Any invalid window
-            # invalidates the policy rather than allowing a single easy slice
-            # to hide a non-trading / sparse-trading failure elsewhere.
-            score = INVALID_SCORE if any(s <= INVALID_SCORE / 2 for s in window_scores) else float(np.mean(window_scores))
-            scores.append(score)
+            trades, equity, stats, _ = sim_opp_cost(
+                fit_df,
+                prices,
+                probs,
+                policy,
+                bench_sym=bench_sym,
+                initial=INITIAL_CAPITAL,
+                use_kelly=use_kelly,
+                start_date=fit_start,
+                end_date=fit_eval_end,
+            )
+            scores.append(cem_reward(trades, equity, stats, use_hurdle))
 
         score_array = np.asarray(scores, dtype=float)
         elite_idx = np.argsort(score_array)[-elite_count:]
@@ -795,18 +864,176 @@ def cem_search(
             best_policy = policies[iteration_best_idx]
 
         print(
-            f"    {bench_sym}|Objective{tags} iter {iteration + 1}/{n_iter}  "
+            f"    {bench_sym}|{phase_tag}{tags} iter {iteration + 1}/{n_iter}  "
             f"best={iteration_best_score:+.3f}  global={best_score:+.3f}",
             flush=True,
         )
 
     if best_policy is None or best_score <= INVALID_SCORE / 2:
         raise RuntimeError(
-            f"No valid CEM policy for {bench_sym}. "
-            "Increase available train data, reduce window strictness, or inspect candidate generation."
+            f"No valid CEM policy for {bench_sym} in {phase_tag}. "
+            "Increase completed train data, reduce window strictness, or inspect candidate generation."
         )
 
-    return best_policy, float(best_score), windows
+    return best_policy, float(best_score)
+
+
+def cem_search(
+    train_split_df: pd.DataFrame,
+    prices: dict,
+    probs: dict,
+    *,
+    bench_sym: str,
+    use_hurdle: bool,
+    use_wf: bool,
+    use_kelly: bool,
+    train_fit_cutoff: pd.Timestamp,
+    n_iter: int = CEM_ITERS,
+    pop: int = CEM_POP,
+    seed: int = CEM_BASE_SEED,
+) -> tuple[dict, float, list[dict[str, Any]]]:
+    """
+    Fit the policy used for validation/test, optionally with true walk-forward T2.
+
+    Without T2, CEM fits once on every row completed before the validation
+    boundary. With T2, each fold independently fits CEM on its own expanding
+    `t_e < fold_start` history and then scores that frozen policy on the next
+    `t_theta` block. Evaluation rows come from the full chronological train
+    split and are not pre-filtered by t_e. After those OOF diagnostics, CEM is
+    re-fit once on all rows completed before `train_fit_cutoff` for the frozen
+    validation/test policy. The returned objective is the mean fold OOF score
+    for T2, not the in-fold training score.
+    """
+    if train_split_df.empty:
+        raise ValueError("CEM received an empty train frame.")
+
+    train_fit_cutoff = as_utc_day(train_fit_cutoff)
+    final_fit_df = rows_completed_before(train_split_df, train_fit_cutoff)
+    assert_rows_completed_before(
+        final_fit_df,
+        train_fit_cutoff,
+        context="final train fit",
+    )
+    final_fit_end = train_fit_cutoff - pd.Timedelta(days=1)
+
+    if not use_wf:
+        policy, train_score = _cem_fit_policy(
+            final_fit_df,
+            prices,
+            probs,
+            bench_sym=bench_sym,
+            use_hurdle=use_hurdle,
+            use_kelly=use_kelly,
+            fit_cutoff=train_fit_cutoff,
+            fit_eval_end=final_fit_end,
+            n_iter=n_iter,
+            pop=pop,
+            seed=seed,
+            phase_tag="TrainFull",
+        )
+        return policy, train_score, []
+
+    folds = create_expanding_wf_folds(train_split_df, train_fit_cutoff)
+    if len(folds) < WF_MIN_FOLDS:
+        raise RuntimeError(
+            "T2 needs at least "
+            f"{WF_MIN_FOLDS} expanding label-complete folds, but only {len(folds)} "
+            "could be formed. Lower WF_MIN_TRAIN_CANDS / WF_MIN_EVAL_CANDS, "
+            "expand the train period, or disable T2."
+        )
+
+    fold_audits: list[dict[str, Any]] = []
+    oof_scores: list[float] = []
+
+    for fold in folds:
+        fold_id = int(fold["fold"])
+        phase_tag = f"WF-F{fold_id}-Fit"
+        # Same benchmark-specific CEM seed for every fold and ablation. This
+        # keeps variation attributable to the available historical data, not
+        # a different random initial CEM population.
+        fold_policy, fit_score = _cem_fit_policy(
+            fold["fit_df"],
+            prices,
+            probs,
+            bench_sym=bench_sym,
+            use_hurdle=use_hurdle,
+            use_kelly=use_kelly,
+            fit_cutoff=fold["fit_cutoff"],
+            fit_eval_end=fold["fit_end"],
+            n_iter=n_iter,
+            pop=pop,
+            seed=seed,
+            phase_tag=phase_tag,
+        )
+
+        eval_trades, eval_equity, eval_stats, _ = sim_opp_cost(
+            fold["eval_df"],
+            prices,
+            probs,
+            fold_policy,
+            bench_sym=bench_sym,
+            initial=INITIAL_CAPITAL,
+            use_kelly=use_kelly,
+            start_date=fold["eval_start"],
+            end_date=fold["eval_end"],
+        )
+        eval_score = cem_reward(eval_trades, eval_equity, eval_stats, use_hurdle)
+        if eval_score <= INVALID_SCORE / 2:
+            raise RuntimeError(
+                f"Walk-forward fold {fold_id} for {bench_sym} has no valid OOF "
+                "portfolio score. The block may be too sparse for the current "
+                "minimum-trade/Sharpe requirements."
+            )
+
+        fit_t_e = pd.to_datetime(fold["fit_df"]["t_e"], utc=True)
+        fold_audits.append(
+            {
+                "fold": fold_id,
+                "fit_start_date": str(fold["fit_start"].date()),
+                "fit_label_cutoff": str(fold["fit_cutoff"].date()),
+                "fit_eval_end_date": str(fold["fit_end"].date()),
+                "fit_candidates": int(len(fold["fit_df"])),
+                "fit_latest_t_e": str(as_utc_day(fit_t_e.max()).date()),
+                "fit_cem_score": round(fit_score, 6),
+                "eval_start_date": str(fold["eval_start"].date()),
+                "eval_end_date": str(fold["eval_end"].date()),
+                "eval_candidates": int(len(fold["eval_df"])),
+                "eval_oof_score": round(eval_score, 6),
+                "eval_return_pct": eval_stats["total_return"],
+                "eval_benchmark_return_pct": eval_stats["benchmark_return"],
+                "eval_excess_return_pct": eval_stats["excess_return"],
+                "eval_max_dd_pct": eval_stats["max_dd"],
+                "eval_trades": eval_stats["n_trades"],
+                "eval_policy_json": json.dumps(fold_policy, sort_keys=True),
+            }
+        )
+        oof_scores.append(float(eval_score))
+
+        print(
+            f"    {bench_sym}|WF-F{fold_id}  "
+            f"fit_n={len(fold['fit_df'])} (t_e < {fold['fit_cutoff'].date()})  "
+            f"eval_n={len(fold['eval_df'])} ({fold['eval_start'].date()}—"
+            f"{fold['eval_end'].date()})  OOF={eval_score:+.3f}",
+            flush=True,
+        )
+
+    print(f"    {bench_sym}|WF final refit on all completed train rows", flush=True)
+    final_policy, _final_fit_score = _cem_fit_policy(
+        final_fit_df,
+        prices,
+        probs,
+        bench_sym=bench_sym,
+        use_hurdle=use_hurdle,
+        use_kelly=use_kelly,
+        fit_cutoff=train_fit_cutoff,
+        fit_eval_end=final_fit_end,
+        n_iter=n_iter,
+        pop=pop,
+        seed=seed,
+        phase_tag="WF-FinalRefit",
+    )
+
+    return final_policy, float(np.mean(oof_scores)), fold_audits
 
 
 # ── Database loading ─────────────────────────────────────────────────────────
@@ -922,14 +1149,48 @@ def save_audit_logs(
     equity_df.to_csv(EQUITY_LOG_DIR / f"{stem}.csv", index=False)
 
 
-def _print_windows(windows: list[dict[str, Any]]) -> None:
-    print(f"\n  Train-only rolling windows: {len(windows)}", flush=True)
-    for i, window in enumerate(windows, start=1):
+def _print_folds(folds: list[dict[str, Any]]) -> None:
+    print(
+        f"\n  Expanding label-complete walk-forward folds: {len(folds)} "
+        "(fit eligibility: t_e < fold start)",
+        flush=True,
+    )
+    for fold in folds:
         print(
-            f"    W{i}: {window['start'].date()} — {window['end'].date()}  "
-            f"({len(window['df'])} candidates)",
+            f"    F{fold['fold']}: fit={len(fold['fit_df'])} "
+            f"(t_e < {fold['fit_cutoff'].date()})  →  "
+            f"eval={len(fold['eval_df'])} "
+            f"({fold['eval_start'].date()} — {fold['eval_end'].date()})",
             flush=True,
         )
+
+
+def completed_trade_history_before(
+    trades: pd.DataFrame,
+    cutoff: Any,
+) -> list[dict[str, Any]]:
+    """
+    Return realised trade history usable at a stage boundary.
+
+    Kelly uses realised, net trade returns, but this boundary check is still
+    conservative: a candidate may enter the history only when its associated
+    outcome timestamp t_e is before the next stage begins.
+    """
+    if trades.empty:
+        return []
+
+    completed = trades.loc[
+        trades["realized_exit_reason"] != "evaluation_end_liquidation"
+    ].copy()
+    if completed.empty:
+        return []
+
+    if "candidate_t_e" not in completed.columns:
+        raise ValueError("Trade log is missing candidate_t_e required for Kelly eligibility.")
+
+    cutoff_ts = _as_utc_timestamp(cutoff)
+    completed_at = pd.to_datetime(completed["candidate_t_e"], utc=True)
+    return completed.loc[completed_at < cutoff_ts].to_dict("records")
 
 
 def _print_table(results: list[dict[str, Any]], *, prefix: str, label: str) -> None:
@@ -993,7 +1254,7 @@ def main() -> None:
 
     print("=" * 78)
     print("  CLEAN 8-EXPERIMENT COMPARISON")
-    print("  Train-only CEM | Validation + frozen-policy test | Fully net trade costs")
+    print("  Label-complete CEM | Expanding walk-forward T2 | Fully net trade costs")
     print("=" * 78)
 
     candidates_path = PROJECT / "data" / "candidates.parquet"
@@ -1008,21 +1269,45 @@ def main() -> None:
     df["t_theta"] = pd.to_datetime(df["t_theta"], utc=True)
     df["t_e"] = pd.to_datetime(df["t_e"], utc=True)
 
-    print(f"\n  {len(df)} relevance-filtered candidates loaded", flush=True)
-    train_df, val_df, test_df, val_start, test_start = split_train_val_test(df)
+    invalid_time_order = df["t_e"] < df["t_theta"]
+    if invalid_time_order.any():
+        sample = df.loc[invalid_time_order, ["symbol", "market_id", "t_theta", "t_e"]].head(5)
+        raise ValueError(
+            "Found candidate rows with t_e earlier than t_theta; cannot enforce "
+            f"label-complete walk-forward training. Examples:\n{sample.to_string(index=False)}"
+        )
 
-    train_max_day = as_utc_day(train_df["t_theta"].max())
-    train_eval_end = min(
-        val_start - pd.Timedelta(days=1),
-        train_max_day + pd.Timedelta(days=TRAIN_SETTLEMENT_BUFFER_DAYS),
+    print(f"\n  {len(df)} relevance-filtered candidates loaded", flush=True)
+    train_split_df, val_df, test_df, val_start, test_start = split_train_val_test(df)
+
+    # Final policy fitting for validation obeys the same rule as every T2 fold:
+    # a row is usable only after its outcome/label has completed. Keep the full
+    # train split separately because T2 evaluation blocks are selected by t_theta.
+    train_df = rows_completed_before(train_split_df, val_start)
+    excluded_pending_train = len(train_split_df) - len(train_df)
+    if train_df.empty:
+        raise ValueError(
+            "No train rows have t_e before the validation start. "
+            "A label-complete policy cannot be fitted."
+        )
+    assert_rows_completed_before(
+        train_df,
+        val_start,
+        context="validation-boundary train fit",
     )
+
+    # Path-level training is also clipped at the day before validation begins.
+    train_eval_end = val_start - pd.Timedelta(days=1)
     if train_eval_end < as_utc_day(train_df["t_theta"].min()):
-        raise ValueError("Train evaluation horizon ends before the first train candidate.")
+        raise ValueError("Train evaluation horizon ends before the first completed train candidate.")
 
     print(
-        f"  train={len(train_df)}  val={len(val_df)}  test={len(test_df)}  "
-        f"val starts={val_start.date()}  test starts={test_start.date()}  "
-        f"train CEM ends={train_eval_end.date()}",
+        f"  train split={len(train_split_df)}  train complete before val={len(train_df)}  "
+        f"pending train rows excluded={excluded_pending_train}  "
+        f"val={len(val_df)}  test={len(test_df)}\n"
+        f"  val starts={val_start.date()}  test starts={test_start.date()}  "
+        f"train CEM cutoff=t_e < {val_start.date()}  "
+        f"train path ends={train_eval_end.date()}",
         flush=True,
     )
 
@@ -1054,10 +1339,11 @@ def main() -> None:
         flush=True,
     )
 
-    preview_windows = create_wf_windows(train_df, train_eval_end)
-    _print_windows(preview_windows)
+    preview_folds = create_expanding_wf_folds(train_split_df, val_start)
+    _print_folds(preview_folds)
 
     all_results: list[dict[str, Any]] = []
+    fold_audit_rows: list[dict[str, Any]] = []
 
     for experiment_number, experiment in enumerate(EXPERIMENTS, start=1):
         label = experiment["label"]
@@ -1071,7 +1357,7 @@ def main() -> None:
         if use_hurdle:
             flags.append(f"realised friction penalty={HURDLE_MULT:.0f}x")
         if use_wf:
-            flags.append(f"train-only windows={len(preview_windows)}")
+            flags.append(f"expanding t_e-complete folds={len(preview_folds)}")
         if use_kelly:
             flags.append("half-Kelly sizing")
         print(f"  Techniques: {', '.join(flags) if flags else 'none'}", flush=True)
@@ -1079,19 +1365,29 @@ def main() -> None:
 
         for benchmark in ("SPY", "QQQ"):
             print(f"\n  [Train CEM search — {benchmark}]", flush=True)
-            policy, objective, used_windows = cem_search(
-                train_df,
+            policy, objective, fold_audits = cem_search(
+                train_split_df,
                 prices,
                 probs,
                 bench_sym=benchmark,
                 use_hurdle=use_hurdle,
                 use_wf=use_wf,
                 use_kelly=use_kelly,
-                train_eval_end=train_eval_end,
+                train_fit_cutoff=val_start,
                 n_iter=CEM_ITERS,
                 pop=CEM_POP,
                 seed=CEM_BASE_SEED + BENCHMARK_SEED_OFFSET[benchmark],
             )
+            for fold_audit in fold_audits:
+                fold_audit_rows.append(
+                    {
+                        "experiment": label,
+                        "benchmark": benchmark,
+                        "hurdle_realized_fitness_penalty": use_hurdle,
+                        "kelly": use_kelly,
+                        **fold_audit,
+                    }
+                )
 
             # This is only a training diagnostic. It is never combined with OOS.
             train_trades, train_equity, train_stats, _ = sim_opp_cost(
@@ -1109,10 +1405,8 @@ def main() -> None:
             # Validation/test simulations use fresh capital. Kelly can use only
             # completed history available before each evaluation stage starts.
             kelly_train_history = (
-                train_trades.loc[
-                    train_trades["realized_exit_reason"] != "evaluation_end_liquidation"
-                ].to_dict("records")
-                if use_kelly and not train_trades.empty
+                completed_trade_history_before(train_trades, val_start)
+                if use_kelly
                 else None
             )
 
@@ -1135,9 +1429,7 @@ def main() -> None:
                 kelly_test_history = list(kelly_train_history or [])
                 if not val_trades.empty:
                     kelly_test_history.extend(
-                        val_trades.loc[
-                            val_trades["realized_exit_reason"] != "evaluation_end_liquidation"
-                        ].to_dict("records")
+                        completed_trade_history_before(val_trades, test_start)
                     )
 
             print(f"\n  [Frozen-policy test sim — {benchmark}]", flush=True)
@@ -1176,6 +1468,10 @@ def main() -> None:
                 "train_windows": use_wf,
                 "kelly": use_kelly,
                 "cem_objective": round(objective, 6),
+                "cem_objective_scope": "walk_forward_oof" if use_wf else "train_fit",
+                "wf_folds": len(fold_audits),
+                "train_fit_label_cutoff": str(val_start.date()),
+                "train_fit_candidates": len(train_df),
                 "train_return_pct": train_stats["total_return"],
                 "train_benchmark_return_pct": train_stats["benchmark_return"],
                 "train_excess_return_pct": train_stats["excess_return"],
@@ -1238,8 +1534,13 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(all_results)
 
+    if fold_audit_rows:
+        pd.DataFrame(fold_audit_rows).to_csv(WF_FOLD_AUDIT_CSV, index=False)
+
     elapsed = time.time() - started
     print(f"\n  Clean results saved to: {RESULTS_CSV}")
+    if fold_audit_rows:
+        print(f"  Walk-forward fold audit saved to: {WF_FOLD_AUDIT_CSV}")
     print(f"  Validation/test trade logs saved to: {TRADE_LOG_DIR}")
     print(f"  Validation/test equity logs saved to: {EQUITY_LOG_DIR}")
     print(f"  Total elapsed: {elapsed / 60.0:.1f} min")
