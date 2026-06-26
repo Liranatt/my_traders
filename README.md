@@ -1,7 +1,7 @@
 # Arbitraging the Information Diffusion Lag
 ### A Prediction-Market-Anchored Framework for Cross-Sectional Equity Mispricings
 
-> **Status: Backtesting Phase** — Core pipeline architecture is implemented. Active backtesting of ML engine and momentum strategy is underway.
+> **Status: Backtesting Phase** — Core pipeline architecture is implemented. Active backtesting of ML engine and momentum strategy is underway using a leakage-safe RF experiment runner.
 
 ---
 
@@ -11,122 +11,50 @@ This system exploits the structural lag between **prediction market probability 
 
 When a macro shock occurs (e.g., a Fed rate cut), HFT algorithms and ETF arbitrageurs instantly reprice broad indices — forcing all S&P 500 constituents to move in lockstep regardless of their individual fundamentals. This non-fundamental comovement creates a temporary mispricing window that corrects slowly as firm-specific capital flows in. We use [Polymarket](https://polymarket.com) as a real-time oracle to detect when this gap is opening — **before** the cross-sectional correction begins.
 
-Full strategy is described in [`algotrading_strategy.pdf`](./algotrading_strategy.pdf).
+---
+
+## Evaluation Architecture
+
+Our backtesting architecture now relies on a leakage-safe Random Forest (RF) experiment runner (`run_experiments_rf.py`) with a rigorous evaluation structure separated into four distinct roles:
+
+1. **CEM Training Diagnostic**: Cross-Entropy Method (CEM) search only sees causally available training labels and train-period paths.
+2. **Static OOS Validation**: One RF + one CEM policy are frozen at the start of the pre-terminal test period and evaluated without any retraining.
+3. **Expanding Online Walk-Forward Diagnostic**: At each evaluation window, RF and CEM are re-fit using only labels that were available before that window.
+4. **Final Terminal Holdout**: A final chronological segment of the original test split is never used by RF fitting, CEM, policy selection, or online walk-forward refitting.
 
 ---
 
-## Pipeline Architecture
+## Core Modeling & Simulation Assumptions
 
-```
-+--------------------------------------------------------+
-|             Stage I: Polymarket Signal Intake          |
-|      Per-minute ingestion -> tag ontology filter ->    |
-|              duration gate [D_lo, D_hi]                |
-+------------------------------+-------------------------+
-                               | theta crossed?
-                               v
-+--------------------------------------------------------+
-|             Stage II: LLM Semantic Router              |
-|   f_LLM(event) -> {Ticker1, Ticker2, ..., TickerN}    |
-|       RL feedback loop improves routing over time      |
-+----------+----------------------------+----------------+
-           | Sufficient historical data?| Novel event?
-           v                            v
-+---------------------+      +----------------------------+
-|  Stage III-A        |      |  Stage III-B               |
-|  ML Execution       |      |  Sentiment-Gated           |
-|  Engine             |      |  Momentum Strategy         |
-|  - SBC: direction   |      |  - Sentiment gate (news)   |
-|  - Ridge: magnitude |      |  - ROC momentum            |
-|  - Arbitrage gap Gi |      |  - Trailing ATR stop       |
-+----------+----------+      +--------------+-------------+
-           +------------------+--------------+
-                              v
-+--------------------------------------------------------+
-|             Stage IV: Portfolio Risk Layer             |
-|   Approve / Reduce / Reject / Paper-Trade / Review    |
-+--------------------------+-----------------------------+
-                           v
-                   Execution via IB API
-```
+(Derived from `run_experiments.py` and `run_experiments_rf.py`)
+
+* **No Lookahead Bias**: Every fit/evaluation simulation is valuated at its own cutoff date; it cannot use prices after that cutoff. Finite-horizon simulations truncate price/probability paths before trade generation, so entry/exit decisions cannot inspect later observations.
+* **Causal Purging**: We use causal expanding, purged OOF RF predictions without standard KFold cross-validation to prevent leakage. The label-availability timestamp controls training eligibility.
+* **Strict OOS Metrics**: OOS metrics come from a separate, frozen-policy portfolio simulation on test candidates only, with one fixed OOS end date across all ablations. They are actual portfolio returns, not summed trade P&L.
+* **Fully Net P&L**: Trade P&L is fully net of all modeled rotation costs: `benchmark sell + asset buy + asset sell + benchmark rebuy`.
+* **Objective Function**: The CEM objective uses daily portfolio-equity Sharpe, not a small sample of trade returns.
+* **Deterministic Seeds**: Each experiment starts CEM from the same benchmark-specific random seed, so an ablation is not confounded by a different initial population.
+
+## Ablations and Enhancements
+We systematically evaluate three major ablations to ensure the edge is genuine:
+* **T1 (Friction Hurdle):** An entry-only ex-ante friction hurdle. The trade must have predicted gross edge >= HURDLE_MULT * estimated all-in benchmark rotation costs.
+* **T2 (Train Windows):** Internal train-only rolling CEM evaluation windows.
+* **T3 (Kelly):** Half-Kelly implementation using fully net realised returns and reporting actual realised sizing.
 
 ---
 
 ## Repository Structure
 
-```
+```text
 my_traders/
-├── main.py                    # Entry point / orchestrator
 ├── main_backtesting/          # Backtesting framework (active)
-├── strategies/                # Strategy implementations (III-A & III-B)
-├── LLM/                       # LLM semantic router + RL feedback loop
-├── Clustering_snp/            # S&P 500 sector/asset clustering
+├── pipeline/                  # Strategy implementations and execution
 ├── database/                  # PostgreSQL schema + ORM layer
-├── Connection/                # IB API + Polymarket feed connectors
-├── docs/                      # Architecture diagrams and notes
-├── testing/                   # Unit + integration tests
-├── theory_testing/            # Feasibility studies and POC scripts
-├── second_phase_testing/      # Phase II validation scripts
 ├── general_testing/           # Misc experiments
-└── algotrading_strategy.pdf   # Full strategy paper
+├── run_experiments.py         # Baseline CEM optimization & simulation runner
+├── run_experiments_rf.py      # Leakage-safe RF experiment runner (Working Model)
+└── README.md                  # This file
 ```
-
----
-
-## Key Components
-
-### Stage I — Signal Intake
-Polls the Polymarket API per minute. Filters the raw event universe by a curated tag ontology (`macro-indicators`, `equities`, `geopolitics`) and enforces a bounded duration window `D_lo <= D_e <= D_hi` to eliminate noise from ultra-short or long-horizon events.
-
-### Stage II — LLM Semantic Router
-A locally-hosted LLM maps triggered events to economically exposed tickers. Zero conversational text — pure clustering function `f_LLM(M) -> {T1, ..., Tn}`. A reinforcement learning loop rewards the router when mapped assets subsequently exhibit event-driven realized volatility.
-
-### Stage III-A — ML Engine (Known Events)
-- **Model I (SBC):** Predicts directional bias `Y_hat in {-1, +1}`
-- **Model II (Ridge):** Forecasts drift magnitude `y_mag`
-- **Entry logic:** Computes arbitrage gap `Gi = y_mag - |r_current|`. Trade forwarded only if `Gi > 0`
-
-All models use **Asset-Event Specific Weights** (`W_{i,c}`) to prevent cross-contamination between event categories.
-
-### Stage III-B — Sentiment-Gated Momentum (Novel Events)
-- Sentiment gate requires corroborating signal from trusted financial news sources
-- Entry on positive ROC momentum `Mt = (Pt - Pt-n) / Pt-n`
-- Exit on trailing ATR stop `St = Hn - k * ATRn` or momentum reversal `Mt <= 0`
-
-### Stage IV — Portfolio Risk Layer
-Final checkpoint before execution. Integrates live portfolio state (PostgreSQL), Polymarket feeds, and IB market data. Enforces exposure caps at asset, sector, event-type, and strategy-channel levels. Includes a kill switch on daily loss / drawdown / consecutive loss thresholds.
-
----
-
-## Current Status
-
-| Component | Status |
-|-----------|--------|
-| Polymarket signal intake | Implemented |
-| Tag ontology + duration filter | Implemented |
-| LLM semantic router | Implemented |
-| RL feedback loop | In progress |
-| ML Engine (SBC + Ridge) | Backtesting |
-| Sentiment-gated momentum | Backtesting |
-| Portfolio risk layer | Implemented |
-| IB API execution | Implemented |
-| Full backtest evaluation | Active |
-
----
-
-## Hyperparameters
-
-All parameters are optimized via walk-forward cross-validation to prevent look-ahead bias.
-
-| Parameter | Description |
-|-----------|-------------|
-| `S` | Target tag ontology — filters events by category |
-| `D_lo`, `D_hi` | Event duration bounds |
-| `T_s` | Observation window for asset price trajectory |
-| `theta` | Oracle trigger threshold (Polymarket probability) |
-| `sigma_min` | LLM RL reward threshold (minimum realized volatility) |
-| `n` | Momentum lookback window (ROC + ATR) |
-| `k` | ATR multiplier for trailing stop |
 
 ---
 
@@ -136,29 +64,6 @@ All parameters are optimized via walk-forward cross-validation to prevent look-a
 - **Sharpe Ratio** — vs. buy-and-hold, momentum baseline, and no-signal ML baseline
 - **Maximum Drawdown** — worst peak-to-trough loss
 - **Hit Rate** — share of trades with correct direction and positive P&L
-- **Classification Precision/Recall** — direction accuracy from Model I
-- **Regression MAE/RMSE** — magnitude accuracy from Model II
-
----
-
-## Theoretical Basis
-
-- Wolfers & Zitzewitz (2004) — prediction markets as efficient information aggregators
-- Da & Shive (2018) — ETF arbitrage induces non-fundamental comovement
-- Boguth et al. (2023) — noisy FOMC returns and post-announcement reversals
-- Ai, Han, Pan & Xu (2021) — heterogeneous monetary policy announcement premiums
-- Duffie (2010) — asset price dynamics with slow-moving capital
-- Diercks, Katz & Wright (2026) — Kalshi-implied densities outperform institutional forecasts
-
----
-
-## Tech Stack
-
-- **Python** — core pipeline and ML models
-- **PostgreSQL** — position, trade history, and portfolio state
-- **Interactive Brokers (IBKR TWS/Gateway)** — live execution
-- **Polymarket API** — prediction market signal source
-- **Local LLM** — semantic routing
 
 ---
 
