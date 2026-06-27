@@ -39,6 +39,8 @@ NUM_FEATURES_LEAN = [
 CAT_FEATURES_LEAN: list[str] = []
 TARGET = "asset_return"
 THETA_THRESHOLD = 0.55
+TRAIN_FRACTION = 0.60
+VAL_FRACTION = 0.10
 
 SECTOR_ETFS = {
     "Basic Materials": "XLB", "Communication Services": "XLC",
@@ -267,19 +269,38 @@ def add_rank_features(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def assign_split(t_theta: pd.Timestamp) -> str:
-    """Chronological train/val/test split."""
-    train_end = pd.Timestamp("2025-12-31 23:59:59", tz="UTC")
-    val_start = pd.Timestamp("2026-01-10", tz="UTC")
-    val_end = pd.Timestamp("2026-03-31 23:59:59", tz="UTC")
-    test_start = pd.Timestamp("2026-04-10", tz="UTC")
-    if t_theta <= train_end:
-        return "train"
-    elif val_start <= t_theta <= val_end:
-        return "val"
-    elif t_theta >= test_start:
-        return "test"
-    return "embargo"
+def assign_chronological_splits(
+    df: pd.DataFrame,
+    *,
+    train_fraction: float = TRAIN_FRACTION,
+    val_fraction: float = VAL_FRACTION,
+) -> pd.DataFrame:
+    """Assign deterministic 60/10/30 train/val/test labels by candidate order."""
+    if df.empty:
+        return df.copy()
+    if not (0.0 < train_fraction < 1.0 and 0.0 < val_fraction < 1.0):
+        raise ValueError("train_fraction and val_fraction must be between 0 and 1.")
+    if train_fraction + val_fraction >= 1.0:
+        raise ValueError("train_fraction + val_fraction must leave a positive test fraction.")
+
+    out = df.copy()
+    order_cols = ["t_theta", "t_e", "event_id", "market_id", "symbol"]
+    order_cols = [col for col in order_cols if col in out.columns]
+    ordered_idx = out.sort_values(order_cols, kind="mergesort").index
+    n = len(out)
+    n_train = int(n * train_fraction)
+    n_val = int(n * val_fraction)
+    n_test = n - n_train - n_val
+    if min(n_train, n_val, n_test) <= 0:
+        raise ValueError(
+            f"Not enough candidates for 60/10/30 split: "
+            f"train={n_train}, val={n_val}, test={n_test}."
+        )
+
+    out["split"] = "test"
+    out.loc[ordered_idx[:n_train], "split"] = "train"
+    out.loc[ordered_idx[n_train:n_train + n_val], "split"] = "val"
+    return out
 
 
 async def build_dataset_from_db(
@@ -382,12 +403,12 @@ async def build_dataset_from_db(
         )
         if rec is None:
             continue
-        rec["split"] = assign_split(t_theta)
         records.append(rec)
 
     df = pd.DataFrame(records)
     if not df.empty:
         df = add_rank_features(df)
+        df = assign_chronological_splits(df)
     print(f"[data_loader] built {len(df)} candidates from DB")
 
     if output_path and not df.empty:

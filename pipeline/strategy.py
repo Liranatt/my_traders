@@ -5,10 +5,18 @@ profit locks, probability-based entry/exit, long-unfavorable filter.
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+
+from pipeline.sim_kernel import HAVE_NUMBA, clear_caches as clear_kernel_caches, scan_candidate
+
+# The numba kernel is used automatically when numba is importable. It produces
+# output identical to the pure-Python reference (_simulate_one_py); set
+# SIM_KERNEL=0 to force the reference path (used by the parity test).
+_USE_KERNEL = HAVE_NUMBA and os.environ.get("SIM_KERNEL", "1") != "0"
 
 DEFAULT_POLICY = dict(
     atr_mult=2.5,
@@ -84,13 +92,18 @@ def long_unfavorable(question: str) -> bool:
     ))
 
 
-def simulate_one(
+def _simulate_one_py(
     row: dict | pd.Series,
     prices: dict[str, list[tuple]],
     probs: dict[str, list[tuple]],
     policy: dict,
 ) -> dict | None:
-    """Simulate a single trade. Returns trade result dict or None."""
+    """Reference pure-Python trade simulation. Returns trade dict or None.
+
+    This is the authoritative definition of the trade semantics. The numba
+    kernel in ``pipeline.sim_kernel`` reproduces it exactly; ``simulate_one``
+    dispatches to whichever is active.
+    """
     sym, mkt = row["symbol"], row["market_id"]
     t_theta = pd.Timestamp(row["t_theta"]).tz_convert("UTC")
     t_e = pd.Timestamp(row["t_e"]).tz_convert("UTC")
@@ -202,6 +215,85 @@ def simulate_one(
         exit_date=str(t.date()), exit_price=round(c, 2),
         exit_reason="end_of_window",
         peak_pct=round(peak * 100, 2), trough_pct=round(lo * 100, 2),
+        return_pct=round(ret_c * 100, 2),
+    )
+
+
+def simulate_one(
+    row: dict | pd.Series,
+    prices: dict[str, list[tuple]],
+    probs: dict[str, list[tuple]],
+    policy: dict,
+) -> dict | None:
+    """Simulate a single trade. Returns trade result dict or None.
+
+    Dispatches to the numba kernel in ``pipeline.sim_kernel`` when available
+    (``_USE_KERNEL``), otherwise to the pure-Python reference
+    ``_simulate_one_py``. Both return identical dicts; the kernel only removes
+    the per-call pandas/list overhead so the CEM search runs faster. The
+    timestamp and string formatting below stays in Python so the fast path is
+    timezone-correct and byte-for-byte compatible with the reference.
+    """
+    if not _USE_KERNEL:
+        return _simulate_one_py(row, prices, probs, policy)
+
+    sym, mkt = row["symbol"], row["market_id"]
+    if long_unfavorable(str(row.get("question", ""))):
+        return None
+
+    t_theta = pd.Timestamp(row["t_theta"]).tz_convert("UTC")
+    t_e = pd.Timestamp(row["t_e"]).tz_convert("UTC")
+    is_earnings = "earnings" in str(row.get("feat_archetype", "")).lower()
+
+    scanned = scan_candidate(
+        prices,
+        probs,
+        sym,
+        mkt,
+        t_theta,
+        t_e,
+        is_earnings,
+        row.get("feat_prob_surge_since_t0"),
+        row.get("feat_runup_since_t0"),
+        policy,
+    )
+    if scanned is None:
+        return None
+
+    (
+        entry_ts,
+        entry_prob,
+        entry_price,
+        exit_ts,
+        exit_price,
+        reason_code,
+        hard_floor_pct,
+        peak,
+        trough,
+        ret_c,
+    ) = scanned
+
+    if reason_code == 1:
+        reason = f"trailing_{policy['atr_mult']:.1f}ATR"
+    elif reason_code == 2:
+        reason = f"profit_lock_{hard_floor_pct}%"
+    elif reason_code == 3:
+        reason = f"poly<{policy['theta_out']}"
+    elif reason_code == 4:
+        reason = "resolution-1d"
+    else:
+        reason = "end_of_window"
+
+    return dict(
+        market_id=mkt, symbol=sym,
+        archetype=row.get("feat_archetype", ""),
+        relevance=round(float(row.get(RELEVANCE_COL, 0)), 3),
+        split=row.get("split", ""),
+        entry_date=str(entry_ts.date()), entry_prob=round(entry_prob, 3),
+        entry_price=round(entry_price, 2),
+        exit_date=str(exit_ts.date()), exit_price=round(exit_price, 2),
+        exit_reason=reason,
+        peak_pct=round(peak * 100, 2), trough_pct=round(trough * 100, 2),
         return_pct=round(ret_c * 100, 2),
     )
 

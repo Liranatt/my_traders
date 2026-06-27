@@ -9,8 +9,14 @@ This runner separates four different evaluation roles:
    One RF + one CEM policy are frozen at the start of the pre-terminal test
    period and evaluated without any retraining.
 3. Expanding online walk-forward diagnostic (T2 family by default):
-   At each evaluation window, RF and CEM are re-fit using only labels that
-   were available before that window.
+   Fold by fold, RF and CEM are re-fit on everything whose outcome/label had
+   completed before the fold starts, then evaluated on the next block of
+   candidates. Training eligibility is decided by t_e (label_available_ts),
+   NOT by the candidate/entry time t_theta, so the training pool expands
+   fold over fold:
+     Fold 1: train on earlier completed trades            -> evaluate next block
+     Fold 2: train on everything completed before fold 2  -> evaluate next block
+     Fold 3: train on everything completed before fold 3  -> evaluate next block
 4. Final terminal holdout:
    A final chronological segment of the original test split is never used by
    RF fitting, CEM, policy selection, or online walk-forward refitting.
@@ -65,7 +71,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 from database.db_connection import connect
 from database.backtesting.schema import SCHEMA
 from pipeline.data_loader import NUM_FEATURES_LEAN, TARGET
-from pipeline.strategy import DEFAULT_POLICY, simulate_one
+from pipeline.strategy import DEFAULT_POLICY, clear_kernel_caches, simulate_one
 
 
 # ── Paths ────────────────────────────────────────────────────────────────────
@@ -88,12 +94,8 @@ EQUITY_LOG_DIR = RESULT_DIR / "rf_experiment_equity_logs"
 REL_COL = "feat_connection_strength"
 LABEL_AVAILABLE_COL = "t_e"
 
-# The final terminal block is removed from the original split=='test' data
-# before ANY validation read, WFO refit, RF fit, or CEM search.
-FINAL_HOLDOUT_MONTHS = 6
-FINAL_HOLDOUT_FRACTION_FALLBACK = 0.30
-MIN_PRETERMINAL_TEST_CANDIDATES = 30
-MIN_TERMINAL_TEST_CANDIDATES = 30
+# candidates.parquet owns the split contract: chronological candidate-order
+# 60% train, 10% validation, 30% terminal test. Do not re-split test here.
 
 # A small temporal gap protects train labels / candidate outcomes from leaking
 # across a train-evaluation or WFO boundary.
@@ -193,8 +195,10 @@ EXPERIMENTS = [
 
 # ── Time / price helpers ─────────────────────────────────────────────────────
 
-_CLOSE_CACHE: dict[tuple[int, str], tuple[pd.DatetimeIndex, np.ndarray]] = {}
+_CLOSE_CACHE: dict[tuple[int, str], tuple[np.ndarray, np.ndarray]] = {}
 _PATH_CUTOFF_CACHE: dict[tuple[int, int, str], tuple[dict, dict]] = {}
+
+_DAY_NS = 86_400_000_000_000
 
 
 def as_utc_day(value: Any) -> pd.Timestamp:
@@ -222,20 +226,29 @@ def ib_cost(shares: int, price: float, is_sell: bool) -> float:
 
 
 def _close_on(prices: dict, symbol: str, date: Any) -> float | None:
-    """Most recent daily close at or before date, cached by price object."""
+    """Most recent daily close at or before date, cached by price object.
+
+    The cache holds int64 day-ns and float closes so the per-call lookup is a
+    plain ``np.searchsorted`` with no pandas object overhead. Already-normalized
+    UTC timestamps (every call site in the daily loop) skip ``as_utc_day``.
+    """
     key = (id(prices), symbol)
     cached = _CLOSE_CACHE.get(key)
     if cached is None:
         bars = prices.get(symbol, [])
         if not bars:
             return None
-        dates = pd.DatetimeIndex([as_utc_day(t) for t, *_ in bars])
+        days = np.array([as_utc_day(t).value for t, *_ in bars], dtype=np.int64)
         values = np.asarray([float(close) for _t, _h, _l, close in bars], dtype=float)
-        cached = (dates, values)
+        cached = (days, values)
         _CLOSE_CACHE[key] = cached
 
-    dates, values = cached
-    loc = int(dates.searchsorted(as_utc_day(date), side="right") - 1)
+    days, values = cached
+    if type(date) is pd.Timestamp and date.tzinfo is not None and (date.value % _DAY_NS) == 0:
+        date_ns = date.value
+    else:
+        date_ns = as_utc_day(date).value
+    loc = int(np.searchsorted(days, date_ns, side="right")) - 1
     if loc < 0:
         return None
     return float(values[loc])
@@ -1038,55 +1051,46 @@ async def load_paths(df: pd.DataFrame) -> tuple[dict, dict]:
     for collection in (prices, probs):
         for key in collection:
             collection[key].sort(key=lambda value: value[0])
+
+    _CLOSE_CACHE.clear()
+    _PATH_CUTOFF_CACHE.clear()
+    clear_kernel_caches()
     return prices, probs
 
 
 def partition_data(df: pd.DataFrame) -> dict[str, Any]:
-    """Create dev, pre-terminal validation, and never-touched terminal slices."""
+    """Use the precomputed 60/10/30 train/val/test split without fallbacks."""
     split = df["split"].astype(str).str.lower()
     development = df.loc[split == "train"].copy()
-    original_test = df.loc[split == "test"].copy()
-    if development.empty or original_test.empty:
-        raise ValueError("candidates.parquet must contain non-empty split=='train' and split=='test' rows.")
-
-    original_test = original_test.sort_values("t_theta").copy()
-    test_times = original_test["t_theta"].map(as_utc_day)
-    proposed_start = as_utc_day(test_times.max() - pd.DateOffset(months=FINAL_HOLDOUT_MONTHS))
-
-    preterminal = original_test.loc[test_times < proposed_start].copy()
-    terminal = original_test.loc[test_times >= proposed_start].copy()
-
-    # Time duration is preferred. If it creates an undersized block, use the
-    # final chronological fraction rather than silently mixing terminal rows.
-    if len(preterminal) < MIN_PRETERMINAL_TEST_CANDIDATES or len(terminal) < MIN_TERMINAL_TEST_CANDIDATES:
-        cut_idx = int(math.floor(len(original_test) * (1.0 - FINAL_HOLDOUT_FRACTION_FALLBACK)))
-        cut_idx = min(max(cut_idx, MIN_PRETERMINAL_TEST_CANDIDATES), len(original_test) - MIN_TERMINAL_TEST_CANDIDATES)
-        if cut_idx <= 0 or cut_idx >= len(original_test):
-            raise ValueError(
-                "Original test split is too small to form both a pre-terminal validation segment and a terminal holdout. "
-                "Reduce MIN_*_TEST_CANDIDATES or collect more test candidates."
-            )
-        proposed_start = as_utc_day(original_test.iloc[cut_idx]["t_theta"])
-        preterminal = original_test.iloc[:cut_idx].copy()
-        terminal = original_test.iloc[cut_idx:].copy()
-
-    if len(preterminal) < MIN_PRETERMINAL_TEST_CANDIDATES or len(terminal) < MIN_TERMINAL_TEST_CANDIDATES:
+    preterminal = df.loc[split == "val"].copy()
+    terminal = df.loc[split == "test"].copy()
+    if development.empty or preterminal.empty or terminal.empty:
         raise ValueError(
-            f"Insufficient test candidates after partition: pre-terminal={len(preterminal)}, terminal={len(terminal)}."
+            "candidates.parquet must contain non-empty 60/10/30 splits; got "
+            f"train={len(development)}, val={len(preterminal)}, test={len(terminal)}."
         )
 
+    development = development.sort_values(["t_theta", "t_e", "market_id", "symbol"]).copy()
+    preterminal = preterminal.sort_values(["t_theta", "t_e", "market_id", "symbol"]).copy()
+    terminal = terminal.sort_values(["t_theta", "t_e", "market_id", "symbol"]).copy()
     static_start = as_utc_day(preterminal["t_theta"].min())
     terminal_start = as_utc_day(terminal["t_theta"].min())
     static_end = terminal_start - pd.Timedelta(days=1)
 
-    # Do not open a new trade so late in pre-terminal validation that its OOS
-    # result requires terminal prices. Open positions are also force-liquidated
-    # at static_end as a separate safety measure.
-    static_eval = preterminal.loc[
-        preterminal["t_theta"] < static_end - pd.Timedelta(days=SETTLEMENT_BUFFER_DAYS)
-    ].copy()
+    latest_train = as_utc_day(development["t_theta"].max())
+    latest_val = as_utc_day(preterminal["t_theta"].max())
+    if latest_train > static_start or latest_val > terminal_start:
+        raise ValueError(
+            "candidates.parquet split is not chronological by candidate order: "
+            f"train max={latest_train.date()}, val start={static_start.date()}, "
+            f"val max={latest_val.date()}, test start={terminal_start.date()}."
+        )
+    static_eval = preterminal.loc[preterminal["t_theta"].map(as_utc_day) <= static_end].copy()
     if static_eval.empty:
-        raise ValueError("No pre-terminal candidates remain after the settlement buffer.")
+        raise ValueError(
+            "No validation candidates begin before the terminal holdout starts. "
+            "The 60/10/30 split is valid by row count, but cannot produce a leakage-safe validation window."
+        )
 
     return {
         "development": development,
@@ -1116,6 +1120,39 @@ def build_online_windows(preterminal: pd.DataFrame, static_start: pd.Timestamp, 
         cur = as_utc_day(cur + pd.DateOffset(months=ONLINE_WFO_STEP_MON))
 
     return windows
+
+
+def _print_online_wfo_folds(windows: list[dict[str, Any]], all_data: pd.DataFrame) -> None:
+    """Walk through the expanding, label-complete online walk-forward folds.
+
+    Each fold trains only on rows whose outcome/label had completed before the
+    fold starts, then evaluates the next block of candidates. Fit eligibility is
+    decided by t_e (``label_available_ts``), NOT by the entry time t_theta, so
+    the training pool expands fold over fold. This preview is what actually runs
+    inside ``evaluate_online_wfo`` for the T2 (train-windows) experiments.
+    """
+    print(
+        f"\n  Expanding online walk-forward folds (used by T2 experiments): {len(windows)}",
+        flush=True,
+    )
+    print(
+        f"  Rule: a row may train a fold only if its label completed first — "
+        f"t_e < fold start − {PURGE_DAYS}d purge (t_e, not t_theta).",
+        flush=True,
+    )
+    for i, window in enumerate(windows, start=1):
+        start = as_utc_day(window["start"])
+        end = as_utc_day(window["end"])
+        train_pool = all_data.loc[
+            (all_data["t_theta"] < start)
+            & (all_data["label_available_ts"] < start - pd.Timedelta(days=PURGE_DAYS))
+        ]
+        print(
+            f"    F{i}: train on everything completed before {start.date()} "
+            f"(fit_pool={len(train_pool)})  →  evaluate next block "
+            f"{start.date()} — {end.date()} (cands={len(window['df'])})",
+            flush=True,
+        )
 
 
 # ── Evaluation stages ────────────────────────────────────────────────────────
@@ -1364,7 +1401,11 @@ def evaluate_online_wfo(
         window_start = as_utc_day(window["start"])
         window_end = as_utc_day(window["end"])
 
-        # Strictly prior candidate timestamps AND fully observed labels only.
+        # Expanding walk-forward training set: a row may train this fold only if
+        # its outcome/label completed before the fold starts. Eligibility is
+        # decided by t_e (label_available_ts), NOT by the entry time t_theta, so
+        # this pool grows fold over fold ("train on everything completed before
+        # the fold, evaluate the next block").
         train_pool = all_data.loc[
             (all_data["t_theta"] < window_start)
             & (all_data["label_available_ts"] < window_start - pd.Timedelta(days=PURGE_DAYS))
@@ -1423,6 +1464,14 @@ def evaluate_online_wfo(
                 "internal_train_windows": len(internal_windows),
                 "policy_json": json.dumps(policy, sort_keys=True),
             }
+        )
+
+        print(
+            f"      {benchmark}|WFO-F{window_number}  train on labels complete "
+            f"before {window_start.date()} (t_e rule): pool={len(train_pool)}  →  "
+            f"eval {window_start.date()}—{window_end.date()}  "
+            f"cem_cands={len(cem_train)} selected={len(selected)}  oof={objective:+.3f}",
+            flush=True,
         )
 
     policy_df = pd.DataFrame(policy_rows)
@@ -1673,6 +1722,12 @@ def main() -> None:
             )
 
     all_preterminal = pd.concat([development, preterminal], axis=0).sort_values("t_theta").copy()
+
+    # Walk through the expanding, label-complete online walk-forward folds (the
+    # T2 structure) before running anything: each fold trains only on outcomes
+    # complete before it starts (t_e rule) and is scored on the next block.
+    preview_online_windows = build_online_windows(preterminal, static_start, static_end)
+    _print_online_wfo_folds(preview_online_windows, df)
 
     static_rows: list[dict[str, Any]] = []
     wfo_rows: list[dict[str, Any]] = []

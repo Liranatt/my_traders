@@ -62,7 +62,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from database.db_connection import connect
 from database.backtesting.schema import SCHEMA
-from pipeline.strategy import DEFAULT_POLICY, simulate_one
+from pipeline.strategy import DEFAULT_POLICY, clear_kernel_caches, simulate_one
 
 
 PROJECT = Path(__file__).resolve().parent
@@ -140,11 +140,13 @@ EXPERIMENTS = [
 
 # ── Time / price helpers ─────────────────────────────────────────────────────
 
-_CLOSE_CACHE: dict[tuple[int, str], tuple[pd.DatetimeIndex, np.ndarray]] = {}
+_CLOSE_CACHE: dict[tuple[int, str], tuple[np.ndarray, np.ndarray]] = {}
 _PATH_CUTOFF_CACHE: dict[
     tuple[int, int, str],
     tuple[dict[str, list[tuple]], dict[str, list[tuple]]],
 ] = {}
+
+_DAY_NS = 86_400_000_000_000
 
 
 def as_utc_day(value: Any) -> pd.Timestamp:
@@ -168,20 +170,29 @@ def ib_cost(shares: int, price: float, is_sell: bool) -> float:
 
 
 def _close_on(prices: dict, symbol: str, date: Any) -> float | None:
-    """Latest known daily close on or before date, cached for CEM speed."""
+    """Latest known daily close on or before date, cached for CEM speed.
+
+    The cache holds int64 day-ns and float closes so the per-call lookup is a
+    plain ``np.searchsorted`` with no pandas object overhead. Already-normalized
+    UTC timestamps (every call site in the daily loop) skip ``as_utc_day``.
+    """
     key = (id(prices), symbol)
     cached = _CLOSE_CACHE.get(key)
     if cached is None:
         bars = prices.get(symbol, [])
         if not bars:
             return None
-        idx = pd.DatetimeIndex([as_utc_day(t) for t, *_ in bars])
+        days = np.array([as_utc_day(t).value for t, *_ in bars], dtype=np.int64)
         values = np.asarray([float(close) for *_rest, close in bars], dtype=float)
-        cached = (idx, values)
+        cached = (days, values)
         _CLOSE_CACHE[key] = cached
 
-    idx, values = cached
-    loc = idx.searchsorted(as_utc_day(date), side="right") - 1
+    days, values = cached
+    if type(date) is pd.Timestamp and date.tzinfo is not None and (date.value % _DAY_NS) == 0:
+        date_ns = date.value
+    else:
+        date_ns = as_utc_day(date).value
+    loc = int(np.searchsorted(days, date_ns, side="right")) - 1
     if loc < 0:
         return None
     return float(values[loc])
@@ -1093,6 +1104,7 @@ async def load_paths(df: pd.DataFrame) -> tuple[dict, dict]:
 
     _CLOSE_CACHE.clear()
     _PATH_CUTOFF_CACHE.clear()
+    clear_kernel_caches()
     return prices, probs
 
 
@@ -1115,18 +1127,32 @@ def split_train_val_test(
             f"train={len(train_df)}, val={len(val_df)}, test={len(test_df)}."
         )
 
+    order_cols = [col for col in ("t_theta", "t_e", "market_id", "symbol") if col in df.columns]
+    ordered_splits = df.sort_values(order_cols, kind="mergesort")["split"].astype(str).str.lower().tolist()
+    seen_val = seen_test = False
+    for sp in ordered_splits:
+        if sp == "train":
+            if seen_val or seen_test:
+                raise ValueError("The split is not chronological by candidate order: train row appears after val/test.")
+        elif sp == "val":
+            seen_val = True
+            if seen_test:
+                raise ValueError("The split is not chronological by candidate order: val row appears after test.")
+        elif sp == "test":
+            seen_test = True
+
     val_start = as_utc_day(pd.to_datetime(val_df["t_theta"], utc=True).min())
     test_start = as_utc_day(pd.to_datetime(test_df["t_theta"], utc=True).min())
-    overlapping_train = train_df[pd.to_datetime(train_df["t_theta"], utc=True) >= val_start]
-    overlapping_val = val_df[pd.to_datetime(val_df["t_theta"], utc=True) >= test_start]
+    overlapping_train = train_df[pd.to_datetime(train_df["t_theta"], utc=True) > val_start]
+    overlapping_val = val_df[pd.to_datetime(val_df["t_theta"], utc=True) > test_start]
     if not overlapping_train.empty:
         raise ValueError(
-            "The split is not chronological: some train candidates start on/after "
+            "The split is not chronological: some train candidates start after "
             "the first validation candidate. Rebuild candidates.parquet before trusting results."
         )
     if not overlapping_val.empty:
         raise ValueError(
-            "The split is not chronological: some validation candidates start on/after "
+            "The split is not chronological: some validation candidates start after "
             "the first test candidate. Rebuild candidates.parquet before trusting results."
         )
 
