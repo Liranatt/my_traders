@@ -237,8 +237,18 @@ class TradingEnv:
             reward = float(base_reward + relative_perf)
             reward = float(np.clip(reward, -10.0, 10.0))
         else:
-            reward = 0.0
+            # We are holding. Give a tiny bonus if we are currently beating the benchmark
+            if self.state == "LONG" and asset_price and bench_price and self.entry_price and self.bench_entry_price:
+                current_asset_ret = asset_price / self.entry_price - 1.0
+                current_bench_ret = bench_price / self.bench_entry_price - 1.0
+                current_excess = current_asset_ret - current_bench_ret
 
+                if current_excess > 0:
+                    reward = 0.02  # Tiny "holding bonus" (equivalent to +0.02% PnL per day)
+                else:
+                    reward = 0.0
+            else:
+                reward = 0.0
         self.current_step += 1
         obs = self._get_obs()
         info = {"R_t": R_t}

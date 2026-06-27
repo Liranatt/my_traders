@@ -107,11 +107,11 @@ class RLConfig:
     """Configuration for the PPO agent and the training/eval protocol."""
 
     # --- PPO hyperparameters ---
-    actor_lr: float = 2e-4  # Slightly lower than 3e-4 to stop wild swings
+    actor_lr: float = 5e-5  # Lowered significantly to stop wild swings
     critic_lr: float = 3e-4  # Keep at 3e-4 so it accurately predicts drawdowns fast
     gamma: float = 1.0
     gae_lambda: float = 0.95
-    clip_epsilon: float = 0.2  # Middle ground (allows decent sized updates)
+    clip_epsilon: float = 0.15  # Middle ground (allows decent sized updates)
     entropy_beta: float = 0.02  # Encourage exploration without relying on architectural noise.
     weight_decay: float = 1e-4
     n_epochs: int = 10

@@ -104,7 +104,7 @@ def evaluate_hard_exit(
             cushion = max(0.02, peak_ret * 0.25)
             drawdown = peak_ret - current_ret
             
-            if drawdown >= cushion:
+            if drawdown >= cushion and current_ret > 0:
                 return HardExitSignal("profit_lock_llm", float(bar.close))
         
     current_prob = prob_on_day(probs, market_id, day)
