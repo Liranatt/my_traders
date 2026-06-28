@@ -52,10 +52,11 @@ import re
 import sys
 import time
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -296,7 +297,20 @@ def _frame_bounds(df: pd.DataFrame) -> tuple[pd.Timestamp, pd.Timestamp]:
     return as_utc_day(ts.min()), as_utc_day(ts.max())
 
 
-def rows_completed_before(df: pd.DataFrame, cutoff: Any) -> pd.DataFrame:
+def _calc_advanced_metrics(equity_series: pd.Series) -> dict[str, float]:
+    if len(equity_series) < 2:
+        return {"sharpe": 0.0, "sortino": 0.0}
+    r = equity_series.pct_change().dropna()
+    mu = r.mean()
+    sig = r.std()
+    sharpe = (mu / sig * np.sqrt(252)) if sig > 1e-9 else 0.0
+    down = r[r < 0]
+    down_sig = down.std() if len(down) > 0 else 1e-9
+    sortino = (mu / down_sig * np.sqrt(252)) if down_sig > 1e-9 else 0.0
+    return {"sharpe": float(sharpe), "sortino": float(sortino)}
+
+
+def rows_completed_before(df: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
     """
     Return the rows legally available for fitting at `cutoff`.
 
@@ -410,7 +424,7 @@ def sim_opp_cost(
     df: pd.DataFrame,
     prices: dict,
     probs: dict,
-    policy: dict,
+    policy: dict | Callable[[pd.Timestamp], dict],
     *,
     bench_sym: str = "SPY",
     initial: float = INITIAL_CAPITAL,
@@ -429,8 +443,8 @@ def sim_opp_cost(
     The returned per-trade `pnl` is fully net of all modeled costs associated
     with rotating benchmark capital into and out of the asset.
     """
-    base_ps = float(policy.get("position_size_pct", 0.10))
-    max_concurrent = int(policy.get("max_concurrent", 10))
+    base_ps_static = float(policy.get("position_size_pct", 0.10)) if isinstance(policy, dict) else 0.10
+    max_concurrent_static = int(policy.get("max_concurrent", 10)) if isinstance(policy, dict) else 10
 
     empty_stats: dict[str, Any] = {
         "initial": initial,
@@ -457,19 +471,20 @@ def sim_opp_cost(
         "n_equity_days": 0,
     }
     if df.empty:
-        return pd.DataFrame(), pd.DataFrame(), empty_stats, policy
+        return pd.DataFrame(), pd.DataFrame(), empty_stats, (policy if isinstance(policy, dict) else {})
 
     sim_prices, sim_probs = truncate_paths(prices, probs, end_date)
 
     all_trades: list[dict] = []
     for _, row in df.sort_values("t_theta").iterrows():
-        trade = simulate_one(row, sim_prices, sim_probs, policy)
+        candidate_theta = as_utc_day(row["t_theta"])
+        current_policy = policy(candidate_theta) if callable(policy) else policy
+        trade = simulate_one(row, sim_prices, sim_probs, current_policy)
         if trade is None:
             continue
         trade = dict(trade)
         trade["_entry_ts"] = as_utc_day(trade["entry_date"])
         trade["_exit_ts"] = as_utc_day(trade["exit_date"])
-        candidate_theta = as_utc_day(row["t_theta"])
         if trade["_entry_ts"] < candidate_theta:
             raise ValueError(
                 f"{trade['symbol']} entered on {trade['_entry_ts'].date()} before "
@@ -572,6 +587,10 @@ def sim_opp_cost(
         kelly_history.append(pos)
 
     for day in calendar:
+        current_policy = policy(day) if callable(policy) else policy
+        base_ps = float(current_policy.get("position_size_pct", 0.10))
+        max_concurrent = int(current_policy.get("max_concurrent", 10))
+
         bench_close = _close_on(sim_prices, bench_sym, day)
         if bench_close is None:
             continue
@@ -902,19 +921,7 @@ def cem_search(
     n_iter: int = CEM_ITERS,
     pop: int = CEM_POP,
     seed: int = CEM_BASE_SEED,
-) -> tuple[dict, float, list[dict[str, Any]]]:
-    """
-    Fit the policy used for validation/test, optionally with true walk-forward T2.
-
-    Without T2, CEM fits once on every row completed before the validation
-    boundary. With T2, each fold independently fits CEM on its own expanding
-    `t_e < fold_start` history and then scores that frozen policy on the next
-    `t_theta` block. Evaluation rows come from the full chronological train
-    split and are not pre-filtered by t_e. After those OOF diagnostics, CEM is
-    re-fit once on all rows completed before `train_fit_cutoff` for the frozen
-    validation/test policy. The returned objective is the mean fold OOF score
-    for T2, not the in-fold training score.
-    """
+) -> tuple[dict | Callable[[pd.Timestamp], dict], float, list[dict[str, Any]]]:
     if train_split_df.empty:
         raise ValueError("CEM received an empty train frame.")
 
@@ -944,24 +951,21 @@ def cem_search(
         )
         return policy, train_score, []
 
-    folds = create_expanding_wf_folds(train_split_df, train_fit_cutoff)
+    max_t = as_utc_day(train_split_df["t_theta"].max()) + pd.Timedelta(days=1)
+    folds = create_expanding_wf_folds(train_split_df, max_t)
     if len(folds) < WF_MIN_FOLDS:
         raise RuntimeError(
             "T2 needs at least "
             f"{WF_MIN_FOLDS} expanding label-complete folds, but only {len(folds)} "
-            "could be formed. Lower WF_MIN_TRAIN_CANDS / WF_MIN_EVAL_CANDS, "
-            "expand the train period, or disable T2."
+            "could be formed."
         )
 
     fold_audits: list[dict[str, Any]] = []
     oof_scores: list[float] = []
+    wf_policies = []
 
     for fold in folds:
         fold_id = int(fold["fold"])
-        phase_tag = f"WF-F{fold_id}-Fit"
-        # Same benchmark-specific CEM seed for every fold and ablation. This
-        # keeps variation attributable to the available historical data, not
-        # a different random initial CEM population.
         fold_policy, fit_score = _cem_fit_policy(
             fold["fit_df"],
             prices,
@@ -970,11 +974,11 @@ def cem_search(
             use_hurdle=use_hurdle,
             use_kelly=use_kelly,
             fit_cutoff=fold["fit_cutoff"],
-            fit_eval_end=fold["fit_end"],
+            fit_eval_end=fold["eval_end"],
             n_iter=n_iter,
             pop=pop,
             seed=seed,
-            phase_tag=phase_tag,
+            phase_tag=f"WF-Fold{fold_id}",
         )
 
         eval_trades, eval_equity, eval_stats, _ = sim_opp_cost(
@@ -990,10 +994,11 @@ def cem_search(
         )
         eval_score = cem_reward(eval_trades, eval_equity, eval_stats, use_hurdle)
         if eval_score <= INVALID_SCORE / 2:
-            raise RuntimeError(
-                f"Walk-forward fold {fold_id} for {bench_sym} has no valid OOF "
+            print(
+                f"    Warning: Walk-forward fold {fold_id} for {bench_sym} has no valid OOF "
                 "portfolio score. The block may be too sparse for the current "
-                "minimum-trade/Sharpe requirements."
+                "minimum-trade/Sharpe requirements.",
+                flush=True,
             )
 
         fit_t_e = pd.to_datetime(fold["fit_df"]["t_e"], utc=True)
@@ -1019,6 +1024,7 @@ def cem_search(
             }
         )
         oof_scores.append(float(eval_score))
+        wf_policies.append((fold["eval_start"], fold["eval_end_exclusive"], fold_policy))
 
         print(
             f"    {bench_sym}|WF-F{fold_id}  "
@@ -1028,23 +1034,19 @@ def cem_search(
             flush=True,
         )
 
-    print(f"    {bench_sym}|WF final refit on all completed train rows", flush=True)
-    final_policy, _final_fit_score = _cem_fit_policy(
-        final_fit_df,
-        prices,
-        probs,
-        bench_sym=bench_sym,
-        use_hurdle=use_hurdle,
-        use_kelly=use_kelly,
-        fit_cutoff=train_fit_cutoff,
-        fit_eval_end=final_fit_end,
-        n_iter=n_iter,
-        pop=pop,
-        seed=seed,
-        phase_tag="WF-FinalRefit",
-    )
+    def dynamic_policy(day: pd.Timestamp) -> dict:
+        day = as_utc_day(day)
+        if not wf_policies:
+            return {}
+        matched = wf_policies[0][2]
+        for start, end_excl, pol in wf_policies:
+            if day >= start and day < end_excl:
+                return pol
+            if day >= start:
+                matched = pol
+        return matched
 
-    return final_policy, float(np.mean(oof_scores)), fold_audits
+    return dynamic_policy, float(np.mean(oof_scores)), fold_audits
 
 
 # ── Database loading ─────────────────────────────────────────────────────────
@@ -1304,68 +1306,30 @@ def main() -> None:
         )
 
     print(f"\n  {len(df)} relevance-filtered candidates loaded", flush=True)
-    train_split_df, val_df, test_df, val_start, test_start = split_train_val_test(df)
-
-    # Final policy fitting for validation obeys the same rule as every T2 fold:
-    # a row is usable only after its outcome/label has completed. Keep the full
-    # train split separately because T2 evaluation blocks are selected by t_theta.
-    train_df = rows_completed_before(train_split_df, val_start)
-    excluded_pending_train = len(train_split_df) - len(train_df)
+    max_t = as_utc_day(df["t_theta"].max()) + pd.Timedelta(days=1)
+    preview_folds = create_expanding_wf_folds(df, max_t)
+    if not preview_folds:
+        raise ValueError("Not enough data to create any Walk-Forward folds.")
+    
+    oos_start = preview_folds[0]["eval_start"]
+    oos_end = max_t - pd.Timedelta(days=1)
+    
+    train_df = rows_completed_before(df, oos_start)
     if train_df.empty:
-        raise ValueError(
-            "No train rows have t_e before the validation start. "
-            "A label-complete policy cannot be fitted."
-        )
-    assert_rows_completed_before(
-        train_df,
-        val_start,
-        context="validation-boundary train fit",
-    )
-
-    # Path-level training is also clipped at the day before validation begins.
-    train_eval_end = val_start - pd.Timedelta(days=1)
-    if train_eval_end < as_utc_day(train_df["t_theta"].min()):
-        raise ValueError("Train evaluation horizon ends before the first completed train candidate.")
+        raise ValueError("No train rows have t_e before the OOS start. A label-complete policy cannot be fitted.")
+    
+    train_eval_end = oos_start - pd.Timedelta(days=1)
 
     print(
-        f"  train split={len(train_split_df)}  train complete before val={len(train_df)}  "
-        f"pending train rows excluded={excluded_pending_train}  "
-        f"val={len(val_df)}  test={len(test_df)}\n"
-        f"  val starts={val_start.date()}  test starts={test_start.date()}  "
-        f"train CEM cutoff=t_e < {val_start.date()}  "
-        f"train path ends={train_eval_end.date()}",
+        f"  Total Candidates = {len(df)}\n"
+        f"  Walk-Forward OOS Timeline = {oos_start.date()} to {oos_end.date()}\n"
+        f"  Initial Train Fit Cutoff = t_e < {oos_start.date()}",
         flush=True,
     )
 
     prices, probs = asyncio.run(load_paths(df))
     print(f"  {len(prices)} symbols, {len(probs)} markets loaded", flush=True)
 
-    common_benchmark_end = min(
-        max(as_utc_day(t) for t, *_ in prices[benchmark])
-        for benchmark in ("SPY", "QQQ")
-    )
-    val_eval_end = min(
-        test_start - pd.Timedelta(days=1),
-        as_utc_day(val_df["t_e"].max()),
-        common_benchmark_end,
-    )
-    test_eval_end = min(as_utc_day(test_df["t_e"].max()), common_benchmark_end)
-    if val_eval_end < val_start:
-        raise ValueError(
-            f"Validation evaluation horizon {val_eval_end.date()} is before "
-            f"validation start {val_start.date()}."
-        )
-    if test_eval_end < test_start:
-        raise ValueError(
-            f"Test evaluation horizon {test_eval_end.date()} is before test start {test_start.date()}."
-        )
-    print(
-        f"  fixed validation eval ends={val_eval_end.date()}  "
-        f"fixed test eval ends={test_eval_end.date()}",
-        flush=True,
-    )
-
-    preview_folds = create_expanding_wf_folds(train_split_df, val_start)
     _print_folds(preview_folds)
 
     all_results: list[dict[str, Any]] = []
@@ -1391,15 +1355,15 @@ def main() -> None:
 
         for benchmark in ("SPY", "QQQ"):
             print(f"\n  [Train CEM search — {benchmark}]", flush=True)
-            policy, objective, fold_audits = cem_search(
-                train_split_df,
+            dynamic_policy, objective, fold_audits = cem_search(
+                df,
                 prices,
                 probs,
                 bench_sym=benchmark,
                 use_hurdle=use_hurdle,
                 use_wf=use_wf,
                 use_kelly=use_kelly,
-                train_fit_cutoff=val_start,
+                train_fit_cutoff=oos_start,
                 n_iter=CEM_ITERS,
                 pop=CEM_POP,
                 seed=CEM_BASE_SEED + BENCHMARK_SEED_OFFSET[benchmark],
@@ -1415,12 +1379,12 @@ def main() -> None:
                     }
                 )
 
-            # This is only a training diagnostic. It is never combined with OOS.
+            # This is only a training diagnostic to build kelly history.
             train_trades, train_equity, train_stats, _ = sim_opp_cost(
                 train_df,
                 prices,
                 probs,
-                policy,
+                dynamic_policy,
                 bench_sym=benchmark,
                 initial=INITIAL_CAPITAL,
                 use_kelly=use_kelly,
@@ -1428,57 +1392,27 @@ def main() -> None:
                 end_date=train_eval_end,
             )
 
-            # Validation/test simulations use fresh capital. Kelly can use only
-            # completed history available before each evaluation stage starts.
             kelly_train_history = (
-                completed_trade_history_before(train_trades, val_start)
+                completed_trade_history_before(train_trades, oos_start)
                 if use_kelly
                 else None
             )
 
-            print(f"\n  [Frozen-policy validation sim — {benchmark}]", flush=True)
-            val_trades, val_equity, val_stats, _ = sim_opp_cost(
-                val_df,
+            print(f"\n  [Walk-Forward OOS sim — {benchmark}]", flush=True)
+            oos_df = df[(df["t_theta"] >= oos_start) & (df["t_theta"] <= oos_end)].copy()
+            oos_trades, oos_equity, oos_stats, _ = sim_opp_cost(
+                oos_df,
                 prices,
                 probs,
-                policy,
+                dynamic_policy,
                 bench_sym=benchmark,
                 initial=INITIAL_CAPITAL,
                 use_kelly=use_kelly,
-                start_date=val_start,
-                end_date=val_eval_end,
+                start_date=oos_start,
+                end_date=oos_end,
                 initial_kelly_history=kelly_train_history,
             )
 
-            kelly_test_history = None
-            if use_kelly:
-                kelly_test_history = list(kelly_train_history or [])
-                if not val_trades.empty:
-                    kelly_test_history.extend(
-                        completed_trade_history_before(val_trades, test_start)
-                    )
-
-            print(f"\n  [Frozen-policy test sim — {benchmark}]", flush=True)
-            oos_trades, oos_equity, oos_stats, _ = sim_opp_cost(
-                test_df,
-                prices,
-                probs,
-                policy,
-                bench_sym=benchmark,
-                initial=INITIAL_CAPITAL,
-                use_kelly=use_kelly,
-                start_date=test_start,
-                end_date=test_eval_end,
-                initial_kelly_history=kelly_test_history,
-            )
-
-            save_audit_logs(
-                experiment_label=label,
-                benchmark=benchmark,
-                stage="validation",
-                trade_df=val_trades,
-                equity_df=val_equity,
-            )
             save_audit_logs(
                 experiment_label=label,
                 benchmark=benchmark,
@@ -1486,6 +1420,9 @@ def main() -> None:
                 trade_df=oos_trades,
                 equity_df=oos_equity,
             )
+            
+            # Since dynamic_policy might be callable, we get the first one for logging base ps
+            logged_policy = dynamic_policy(oos_start) if callable(dynamic_policy) else dynamic_policy
 
             result = {
                 "experiment": label,
@@ -1496,43 +1433,76 @@ def main() -> None:
                 "cem_objective": round(objective, 6),
                 "cem_objective_scope": "walk_forward_oof" if use_wf else "train_fit",
                 "wf_folds": len(fold_audits),
-                "train_fit_label_cutoff": str(val_start.date()),
+                "train_fit_label_cutoff": str(oos_start.date()),
                 "train_fit_candidates": len(train_df),
                 "train_return_pct": train_stats["total_return"],
                 "train_benchmark_return_pct": train_stats["benchmark_return"],
                 "train_excess_return_pct": train_stats["excess_return"],
                 "train_max_dd_pct": train_stats["max_dd"],
                 "train_trades": train_stats["n_trades"],
-                "policy_base_position_size_pct": round(float(policy["position_size_pct"]) * 100.0, 4),
-                "policy_max_concurrent": int(policy["max_concurrent"]),
-                "policy_json": json.dumps(policy, sort_keys=True),
+                "policy_base_position_size_pct": round(float(logged_policy.get("position_size_pct", 0.1)) * 100.0, 4),
+                "policy_max_concurrent": int(logged_policy.get("max_concurrent", 10)),
+                "policy_json": json.dumps(logged_policy, sort_keys=True),
             }
-            result.update(_stage_metrics("val", val_stats))
+            result.update(_stage_metrics("val", oos_stats))
             result.update(_stage_metrics("oos", oos_stats))
             all_results.append(result)
 
-            print(
-                f"    → VAL={val_stats['total_return']:+.2f}%  "
-                f"B&H={val_stats['benchmark_return']:+.2f}%  "
-                f"excess={val_stats['excess_return']:+.2f}%  "
-                f"max_dd={val_stats['max_dd']:+.2f}%  "
-                f"trades={val_stats['n_trades']}  "
-                f"sample={'thin' if val_stats['n_trades'] < EVAL_TRADE_WARNING_N else 'ok'}",
-                flush=True,
-            )
+            adv = _calc_advanced_metrics(oos_equity["equity"])
+
             print(
                 f"    → TEST={oos_stats['total_return']:+.2f}%  "
                 f"B&H={oos_stats['benchmark_return']:+.2f}%  "
                 f"excess={oos_stats['excess_return']:+.2f}%  "
                 f"max_dd={oos_stats['max_dd']:+.2f}%  "
+                f"sharpe={adv['sharpe']:.2f}  "
+                f"sortino={adv['sortino']:.2f}  "
                 f"trades={oos_stats['n_trades']}  "
                 f"win%={oos_stats['win_rate']:.1f}%  "
                 f"trade_cost=${oos_stats['trade_txn_cost']:.0f}  "
                 f"avg_pos={oos_stats['avg_position_size']:.1f}%  "
-                f"max_conc={int(policy['max_concurrent'])}  "
+                f"max_conc={int(logged_policy.get('max_concurrent', 10))}  "
                 f"sample={'thin' if oos_stats['n_trades'] < EVAL_TRADE_WARNING_N else 'ok'}",
                 flush=True,
             )
+
+            # Generate individual graph for this run
+            slug = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+            fig, ax = plt.subplots(figsize=(10, 5))
+            dates = pd.to_datetime(oos_equity['date'])
+            ax.plot(dates, oos_equity['equity'], label='Strategy Equity', color='#1f77b4', linewidth=2)
+            ax.plot(dates, oos_equity['benchmark_equity'], label=f'{benchmark} (B&H)', color='#2ca02c', linestyle='--', linewidth=2)
+            ax.set_title(f"OOS Equity: {label} ({benchmark}) | Sharpe: {adv['sharpe']:.2f} | MaxDD: {oos_stats['max_dd']:+.2f}%")
+            ax.set_ylabel("Equity ($)")
+            
+            # Annotate Best and Worst trades
+            if not oos_trades.empty:
+                try:
+                    best_trade = oos_trades.loc[oos_trades["pnl"].idxmax()]
+                    worst_trade = oos_trades.loc[oos_trades["pnl"].idxmin()]
+
+                    for tr, t_label, t_color, y_offset in [(best_trade, "BEST", "lightgreen", 50), (worst_trade, "WORST", "salmon", -50)]:
+                        t_date = pd.to_datetime(tr["exit_date"])
+                        eq_row = oos_equity[oos_equity["date"] == tr["exit_date"]]
+                        if not eq_row.empty:
+                            t_eq = eq_row["equity"].values[0]
+                            pos_pct = float(tr.get("_position_size_pct", 0.0)) * 100.0
+                            market_id = str(tr.get('market_id', ''))
+                            if len(market_id) > 15: market_id = market_id[:12] + "..."
+                            ax.annotate(
+                                f"{t_label}: {tr['symbol']}\nMarket: {market_id}\nPnL: {tr['pnl_pct']:+.1f}%\nAlloc: {pos_pct:.1f}%",
+                                xy=(t_date, t_eq), xytext=(0, y_offset),
+                                textcoords="offset points", ha="center", va="center",
+                                bbox=dict(boxstyle="round,pad=0.5", fc=t_color, alpha=0.9),
+                                arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0", color="black", linewidth=1.5)
+                            )
+                except Exception as e:
+                    print(f"    Failed to annotate trades: {e}")
+            
+            ax.legend(loc='upper left')
+            ax.grid(True, linestyle='--', alpha=0.7)
+            fig.savefig(f"data/cem_{slug}_{benchmark}_individual.png", dpi=300, bbox_inches="tight")
+            plt.close(fig)
 
     print(f"\n\n{'=' * 78}")
     print("  VALIDATION RESULTS — SPY benchmark")

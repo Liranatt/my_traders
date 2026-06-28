@@ -1158,18 +1158,15 @@ tr.clickable:hover td {{ background:rgba(59,130,246,.08); }}
 </div>
 <nav class="nav">
   <button class="active" onclick="showTab('overview')">Overview</button>
-  <button onclick="showTab('strategies')">Strategies</button>
+  <button onclick="showTab('explog')">Strategies</button>
   <button onclick="showTab('earnings')">Earnings & Archetypes</button>
-  <button onclick="showTab('portfolio')">Portfolio $100K</button>
   <button onclick="showTab('risk')">Risk Metrics</button>
   <button onclick="showTab('rf')">RF Model</button>
   <button onclick="showTab('trades')">Trade Explorer</button>
 </nav>
 
 <div id="overview" class="page active"></div>
-<div id="strategies" class="page"></div>
 <div id="earnings" class="page"></div>
-<div id="portfolio" class="page"></div>
 <div id="risk" class="page"></div>
 <div id="rf" class="page"></div>
 <div id="trades" class="page"></div>
@@ -1333,132 +1330,20 @@ render.overview = function() {{
   const oc = D.opp_cost || [];
   if(oc.length > 0) {{
     html += `<h2>Strategy Alpha vs Index Buy-and-Hold <span class="badge">Opportunity Cost</span></h2>
-      <div style="margin-bottom:8px;display:flex;gap:8px">
-        <button class="oc-toggle" onclick="renderOC('SPY')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:inherit">SPY Base</button>
-        <button class="oc-toggle" onclick="renderOC('QQQ')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:inherit">QQQ Base</button>
+      <div style="margin-bottom: 24px;">
+        <img src="cem_best_strategy_equity.png" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
       </div>
-      <div class="chart-box" id="ov-opp-cost"></div>
-      <div class="grid g4" id="ov-oc-cards" style="margin-top:12px"></div>`;
-  }}
-
-  // Comparison tables — front page experiments only
-  for(const [label, spKey] of [['Validation Set', 'val'], ['Test Set (OOS)', 'test']]) {{
-    html += `<h2>${{label}}</h2>
-    <div class="card"><table><thead><tr>
-      <th>Experiment</th><th>N</th><th>Mean Return</th><th>Win%</th><th>Sharpe</th>
-      <th>Sortino</th><th>Max DD</th><th>vs SPY</th><th>vs QQQ</th><th>Hold</th><th>PF</th>
-    </tr></thead><tbody>`;
-    for(const e of front) {{
-      const v = e.splits[spKey];
-      if(!v || !v.n) continue;
-      html += `<tr>
-        <td><span class="pill" style="border-color:${{e.color}};color:${{e.color}}">${{e.name}}</span></td>
-        <td>${{v.n}}</td><td>${{fmtPct(v.mean_ret)}}</td><td>${{v.win_pct}}%</td>
-        <td class="${{riskColor('sharpe',v.sharpe)}}">${{fmtVal(v.sharpe)}}</td>
-        <td class="${{riskColor('sortino',v.sortino)}}">${{fmtVal(v.sortino)}}</td>
-        <td>${{fmtPct(v.max_dd)}}</td><td>${{fmtPct(v.excess_spy)}}</td><td>${{fmtPct(v.excess_qqq)}}</td>
-        <td>${{v.avg_hold}}d</td><td>${{v.profit_factor}}</td></tr>`;
-    }}
-    html += `</tbody></table></div>`;
-  }}
-
-  html += `<div class="grid g2" style="margin-top:20px">
-    <div class="chart-box" id="ov-bar-ret"></div>
-    <div class="chart-box" id="ov-bar-sharpe"></div>
-  </div>`;
-
-  // Experiment timeline (moved from separate tab)
-  const lg = D.experiment_log || [];
-  if(lg.length > 0) {{
-    html += `<h2 style="cursor:pointer" onclick="document.getElementById('exp-timeline').style.display=document.getElementById('exp-timeline').style.display==='none'?'block':'none'">Experiment History <span class="badge">${{lg.reduce((a,p)=>a+p.experiments.length,0)}} experiments</span> <span style="font-size:11px;color:var(--text3);margin-left:8px">click to toggle</span></h2>`;
-    html += `<div id="exp-timeline" style="display:none"><div class="timeline">`;
-    for(const phase of lg) {{
-      html += `<div class="timeline-phase"><h3>${{phase.name}}</h3>`;
-      for(const exp of phase.experiments) {{
-        html += `<div class="timeline-exp" onclick="this.classList.toggle('open')">
-          <h4><span class="eid">${{exp.id}}</span> ${{exp.title}}</h4>
-          <div class="exp-body">`;
-        for(const f of ['what','why','data','changed_from','result','converged_policy','why_it_failed','why_it_worked','learned']) {{
-          if(exp[f]) html += `<div class="exp-field"><strong style="text-transform:capitalize">${{f.replace(/_/g,' ')}}:</strong> ${{exp[f]}}</div>`;
-        }}
-        if(!exp.what && exp.body_text) html += `<div style="white-space:pre-wrap;font-size:11px;color:var(--text3)">${{exp.body_text}}</div>`;
-        html += `</div></div>`;
-      }}
-      html += `</div>`;
-    }}
-    html += `</div></div>`;
-  }}
-
-  el.innerHTML = html;
-
-  // Render opp-cost chart
-  window.renderOC = function(bench) {{
-    const filtered = oc.filter(r => r.benchmark === bench);
-    if(!filtered.length) return;
-    const traces = filtered.map(r => ({{
-      x:r.equity.map(e=>e.date), y:r.equity.map(e=>e.equity),
-      name:r.name, mode:'lines', line:{{color:r.color, width:2}},
-    }}));
-    // Pure benchmark buy-and-hold
-    const benchEq = filtered[0].equity;
-    if(benchEq.length > 0) {{
-      const startDate = benchEq[0].date;
-      const endDate = benchEq[benchEq.length-1].date;
-      traces.push({{
-        x:benchEq.map(e=>e.date), y:benchEq.map((_,i)=>100000),
-        name:'Starting Capital', mode:'lines',
-        line:{{color:'#5a6b7f', width:1, dash:'dash'}},
-      }});
-    }}
-    Plotly.newPlot('ov-opp-cost', traces, {{...LAYOUT,
-      title:`Strategy Over ${{bench}} vs Pure ${{bench}} Hold`,
-      height:450, yaxis:{{...LAYOUT.yaxis, title:'Equity ($)', tickformat:'$,.0f'}},
-    }}, CFG);
-    // Summary cards
-    let cards = '';
-    for(const r of filtered) {{
-      const s = r.stats;
-      const cls = s.total_return > 0 ? 'pos' : 'neg';
-      cards += `<div class="card">
-        <h3>${{r.name.replace(bench+' — ','')}}</h3>
-        <div class="val ${{cls}}">${{s.total_return > 0 ? '+' : ''}}${{s.total_return.toFixed(2)}}%</div>
-        <div class="sub">Final: $$${{s.final.toLocaleString()}} · DD: ${{s.max_dd.toFixed(1)}}% · Trades: ${{s.n_trades}} · Txn: $$${{s.total_txn_cost.toFixed(0)}}</div>
+      <div style="margin-bottom: 24px;">
+        <img src="cem_mean_strategy_equity.png" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+      </div>
+      <h3 style="margin-top:32px; margin-bottom:16px;">Performance Metrics Comparison (8-Experiment Comparison)</h3>
+      <div class="grid g2" style="gap: 24px;">
+        <img src="cem_metrics_pnl.png" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <img src="cem_metrics_sharpe.png" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <img src="cem_metrics_maxdd.png" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <img src="cem_metrics_sortino.png" style="width: 100%; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
       </div>`;
-    }}
-    document.getElementById('ov-oc-cards').innerHTML = cards;
-  }};
-  if(oc.length > 0) renderOC('SPY');
-
-  // Overview bar charts — front page experiments only
-  const names = front.map(e=>e.name);
-  const colors = front.map(e=>e.color);
-  Plotly.newPlot('ov-bar-ret', [
-    {{x:names, y:front.map(e=>e.splits.val?.mean_ret||0), type:'bar', name:'Val', marker:{{color:colors, opacity:.85}}}},
-    {{x:names, y:front.map(e=>e.splits.test?.mean_ret||0), type:'bar', name:'Test', marker:{{color:colors, opacity:.4}}}},
-  ], {{...LAYOUT, title:'Mean Return by Experiment', barmode:'group', height:380,
-    xaxis:{{...LAYOUT.xaxis, type:'category', tickangle:-25, tickfont:{{size:9}}}}}}, CFG);
-
-  Plotly.newPlot('ov-bar-sharpe', [
-    {{x:names, y:front.map(e=>e.splits.val?.sharpe||0), type:'bar', name:'Val', marker:{{color:colors, opacity:.85}}}},
-    {{x:names, y:front.map(e=>e.splits.test?.sharpe||0), type:'bar', name:'Test', marker:{{color:colors, opacity:.4}}}},
-  ], {{...LAYOUT, title:'Sharpe Ratio by Experiment', barmode:'group', height:380,
-    xaxis:{{...LAYOUT.xaxis, type:'category', tickangle:-25, tickfont:{{size:9}}}}}}, CFG);
-}};
-
-// ═══════════════════════════════════════════
-// STRATEGIES
-// ═══════════════════════════════════════════
-render.strategies = function() {{
-  const el = document.getElementById('strategies');
-  const exps = D.experiments;
-
-  // Strategy explanations
-  let html = `<h2>Strategy Explanations</h2><div class="grid g2" style="margin-bottom:24px">`;
-  const seen = new Set();
-  for(const e of exps) {{
-    const key = e.policy_name;
-    if(seen.has(key)) continue; seen.add(key);
-    const sd = STRAT_DESC[key] || {{title:key, desc:'No description available.', opt:'-', color:e.color}};
+  }}
     html += `<div class="strat-card" style="border-left:3px solid ${{sd.color}}">
       <h4 style="color:${{sd.color}}">${{sd.title}}</h4>
       <p>${{sd.desc}}</p>
@@ -1640,40 +1525,6 @@ render.earnings = function() {{
 // ═══════════════════════════════════════════
 // PORTFOLIO $100K
 // ═══════════════════════════════════════════
-render.portfolio = function() {{
-  const el = document.getElementById('portfolio');
-  const ports = D.portfolio;
-  const bench = D.port_benchmark || [];
-
-  let html = `<h2>Portfolio Simulation — $100,000 Starting Capital</h2>
-  <div class="grid g4" style="margin-bottom:20px">`;
-  for(const p of ports) {{
-    const s = p.stats;
-    const rc = s.total_return > 0 ? 'pos' : 'neg';
-    html += `<div class="card">
-      <h3>${{p.name}}</h3>
-      <div class="val ${{rc}}">${{s.total_return > 0 ? '+' : ''}}${{s.total_return.toFixed(2)}}%</div>
-      <div class="sub">${{fmtMoney(s.final)}} final &nbsp;|&nbsp; MaxDD: ${{s.max_dd.toFixed(1)}}%</div>
-      <div class="sub">${{s.n_trades}} trades &nbsp;|&nbsp; Win: ${{s.win_rate}}% &nbsp;|&nbsp; Avg P&L: ${{fmtMoney(s.avg_pnl)}}</div>
-    </div>`;
-  }}
-  html += `</div>`;
-
-  html += `<div class="chart-box" id="port-equity"></div>`;
-  html += `<div class="grid g2">
-    <div class="chart-box" id="port-drawdown"></div>
-    <div class="chart-box" id="port-pnl-dist"></div>
-  </div>`;
-
-  // Policy table
-  html += `<h2>Portfolio Policy Parameters</h2>
-  <div class="card"><table><thead><tr>
-    <th>Portfolio</th><th>Pos Size</th><th>Max Conc</th><th>ATR Mult</th>
-    <th>θ Out</th><th>Enter Strong</th><th>Hold Days</th>
-  </tr></thead><tbody>`;
-  for(const p of ports) {{
-    const pol = p.policy;
-    html += `<tr><td style="color:${{p.color}};font-weight:600">${{p.name}}</td>
       <td>${{(pol.position_size_pct*100).toFixed(1)}}%</td><td>${{pol.max_concurrent}}</td>
       <td>${{pol.atr_mult?.toFixed(2)||'-'}}</td><td>${{pol.theta_out?.toFixed(3)||'-'}}</td>
       <td>${{pol.enter_strong?.toFixed(3)||'-'}}</td><td>${{pol.hold_days||'-'}}</td></tr>`;
