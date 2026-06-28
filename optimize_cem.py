@@ -310,6 +310,54 @@ def _calc_advanced_metrics(equity_series: pd.Series) -> dict[str, float]:
     return {"sharpe": float(sharpe), "sortino": float(sortino)}
 
 
+def _calc_max_dd(equity_series: pd.Series) -> float:
+    vals = equity_series.astype(float).to_numpy()
+    if len(vals) == 0:
+        return 0.0
+    peaks = np.maximum.accumulate(vals)
+    drawdowns = np.where(peaks > 0, vals / peaks - 1.0, 0.0)
+    return float(np.min(drawdowns) * 100.0)
+
+
+def _print_monthly_metrics(equity_df: pd.DataFrame, label: str, benchmark: str) -> None:
+    if equity_df.empty:
+        return
+    
+    df = equity_df.copy()
+    df["date"] = pd.to_datetime(df["date"])
+    df["year_month"] = df["date"].dt.to_period("M")
+    
+    months = df["year_month"].unique()
+    
+    print("\n    [Monthly Progress]", flush=True)
+    for m in months:
+        m_df = df[df["year_month"] == m]
+        c_df = df[df["year_month"] <= m]
+        
+        m_strat_ret = (m_df["equity"].iloc[-1] / m_df["equity"].iloc[0] - 1.0) * 100.0 if not m_df.empty and m_df["equity"].iloc[0] > 0 else 0.0
+        m_strat_adv = _calc_advanced_metrics(m_df["equity"])
+        m_strat_dd = _calc_max_dd(m_df["equity"])
+        
+        m_bench_ret = (m_df["benchmark_equity"].iloc[-1] / m_df["benchmark_equity"].iloc[0] - 1.0) * 100.0 if not m_df.empty and m_df["benchmark_equity"].iloc[0] > 0 else 0.0
+        m_bench_adv = _calc_advanced_metrics(m_df["benchmark_equity"])
+        m_bench_dd = _calc_max_dd(m_df["benchmark_equity"])
+        
+        c_strat_ret = (c_df["equity"].iloc[-1] / c_df["equity"].iloc[0] - 1.0) * 100.0 if not c_df.empty and c_df["equity"].iloc[0] > 0 else 0.0
+        c_strat_adv = _calc_advanced_metrics(c_df["equity"])
+        c_strat_dd = _calc_max_dd(c_df["equity"])
+        
+        c_bench_ret = (c_df["benchmark_equity"].iloc[-1] / c_df["benchmark_equity"].iloc[0] - 1.0) * 100.0 if not c_df.empty and c_df["benchmark_equity"].iloc[0] > 0 else 0.0
+        c_bench_adv = _calc_advanced_metrics(c_df["benchmark_equity"])
+        c_bench_dd = _calc_max_dd(c_df["benchmark_equity"])
+
+        month_str = m.strftime("%B %Y")
+        
+        print(f"      In {month_str}: {label} [Ret: {m_strat_ret:+.2f}%, DD: {m_strat_dd:+.2f}%, Shp: {m_strat_adv['sharpe']:.2f}]  |  "
+              f"{benchmark} B&H [Ret: {m_bench_ret:+.2f}%, DD: {m_bench_dd:+.2f}%, Shp: {m_bench_adv['sharpe']:.2f}]", flush=True)
+        print(f"      Total Start->{m.strftime('%b')}: {label} [Ret: {c_strat_ret:+.2f}%, DD: {c_strat_dd:+.2f}%, Shp: {c_strat_adv['sharpe']:.2f}]  |  "
+              f"{benchmark} B&H [Ret: {c_bench_ret:+.2f}%, DD: {c_bench_dd:+.2f}%, Shp: {c_bench_adv['sharpe']:.2f}]\n", flush=True)
+
+
 def rows_completed_before(df: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
     """
     Return the rows legally available for fitting at `cutoff`.
@@ -737,6 +785,16 @@ def sim_opp_cost(
     drawdowns = np.where(peaks > 0, equity_values / peaks - 1.0, 0.0)
     max_dd = float(np.min(drawdowns) * 100.0) if len(drawdowns) else 0.0
 
+    if not equity_df.empty:
+        adv = _calc_advanced_metrics(equity_df["equity"])
+        bench_adv = _calc_advanced_metrics(equity_df["benchmark_equity"])
+        strat_sharpe = adv["sharpe"]
+        strat_sortino = adv["sortino"]
+        bench_sharpe = bench_adv["sharpe"]
+        bench_sortino = bench_adv["sortino"]
+    else:
+        strat_sharpe = strat_sortino = bench_sharpe = bench_sortino = 0.0
+
     if trade_df.empty:
         gross_trade_pnl = net_trade_pnl = trade_txn_cost = 0.0
         win_rate = avg_pnl = avg_gross_pnl = friction_fail_rate = 0.0
@@ -760,6 +818,10 @@ def sim_opp_cost(
         "benchmark_return": round((final_passive_equity / initial - 1.0) * 100.0, 4),
         "excess_return": round((final_equity - final_passive_equity) / initial * 100.0, 4),
         "max_dd": round(max_dd, 4),
+        "sharpe": round(strat_sharpe, 4),
+        "sortino": round(strat_sortino, 4),
+        "benchmark_sharpe": round(bench_sharpe, 4),
+        "benchmark_sortino": round(bench_sortino, 4),
         "n_trades": int(len(trade_df)),
         "win_rate": round(win_rate, 4),
         "avg_pnl": round(avg_pnl, 4),
@@ -974,7 +1036,7 @@ def cem_search(
             use_hurdle=use_hurdle,
             use_kelly=use_kelly,
             fit_cutoff=fold["fit_cutoff"],
-            fit_eval_end=fold["eval_end"],
+            fit_eval_end=fold["fit_end"],
             n_iter=n_iter,
             pop=pop,
             seed=seed,
@@ -1224,11 +1286,12 @@ def completed_trade_history_before(
 def _print_table(results: list[dict[str, Any]], *, prefix: str, label: str) -> None:
     header = (
         f"  {'Experiment':<20} {label + ' Ret':>9} {'B&H':>9} {'Excess':>9} {label + ' DD':>9} "
+        f"{'Sharpe':>7} {'B&H Shp':>7} "
         f"{'Trades':>7} {'Win%':>7} {'AvgNet$':>10} {'TradeCost$':>12} "
         f"{'AvgPos':>8} {'MaxConc':>8} {'Sample':>8}"
     )
     print(header)
-    print(f"  {'-' * 137}")
+    print(f"  {'-' * 153}")
 
     for row in results:
         sample = "thin" if row[f"{prefix}_trades"] < EVAL_TRADE_WARNING_N else "ok"
@@ -1238,6 +1301,8 @@ def _print_table(results: list[dict[str, Any]], *, prefix: str, label: str) -> N
             f"{row[f'{prefix}_benchmark_return_pct']:>+8.2f}% "
             f"{row[f'{prefix}_excess_return_pct']:>+8.2f}% "
             f"{row[f'{prefix}_max_dd_pct']:>+8.2f}% "
+            f"{row[f'{prefix}_sharpe']:>7.2f} "
+            f"{row[f'{prefix}_benchmark_sharpe']:>7.2f} "
             f"{row[f'{prefix}_trades']:>6} "
             f"{row[f'{prefix}_win_rate_pct']:>6.1f}% "
             f"${row[f'{prefix}_avg_net_pnl']:>9.2f} "
@@ -1255,6 +1320,8 @@ def _stage_metrics(prefix: str, stats: dict[str, Any]) -> dict[str, Any]:
         f"{prefix}_benchmark_return_pct": stats["benchmark_return"],
         f"{prefix}_excess_return_pct": stats["excess_return"],
         f"{prefix}_max_dd_pct": stats["max_dd"],
+        f"{prefix}_sharpe": stats.get("sharpe", 0.0),
+        f"{prefix}_benchmark_sharpe": stats.get("benchmark_sharpe", 0.0),
         f"{prefix}_start_date": stats["start_date"],
         f"{prefix}_end_date": stats["end_date"],
         f"{prefix}_equity_days": stats["n_equity_days"],
@@ -1449,13 +1516,16 @@ def main() -> None:
             all_results.append(result)
 
             adv = _calc_advanced_metrics(oos_equity["equity"])
+            bench_adv = _calc_advanced_metrics(oos_equity["benchmark_equity"])
+
+            _print_monthly_metrics(oos_equity, label, benchmark)
 
             print(
                 f"    → TEST={oos_stats['total_return']:+.2f}%  "
                 f"B&H={oos_stats['benchmark_return']:+.2f}%  "
                 f"excess={oos_stats['excess_return']:+.2f}%  "
                 f"max_dd={oos_stats['max_dd']:+.2f}%  "
-                f"sharpe={adv['sharpe']:.2f}  "
+                f"sharpe={adv['sharpe']:.2f} (B&H {bench_adv['sharpe']:.2f})  "
                 f"sortino={adv['sortino']:.2f}  "
                 f"trades={oos_stats['n_trades']}  "
                 f"win%={oos_stats['win_rate']:.1f}%  "
