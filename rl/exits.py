@@ -96,20 +96,14 @@ def evaluate_hard_exit(
     if bar is None or entry_price <= 0:
         return None
 
-    if expected_return is not None and expected_return > 0 and peak_ret is not None:
-        if peak_ret >= expected_return:
-            current_ret = bar.close / entry_price - 1.0
-            
-            # Dynamic cushion: give the runner 25% of its peak as breathing room (minimum 2% pullback)
-            cushion = max(0.02, peak_ret * 0.25)
-            drawdown = peak_ret - current_ret
-            
-            if drawdown >= cushion and current_ret > 0:
-                return HardExitSignal("profit_lock_llm", float(bar.close))
-        
     current_prob = prob_on_day(probs, market_id, day)
-    if current_prob is not None and current_prob < poly_exit_threshold:
-        return HardExitSignal(f"poly<{poly_exit_threshold:g}", float(bar.close))
+    if current_prob is not None:
+        if current_prob < 0.50:
+            return HardExitSignal("poly<0.5", float(bar.close))
+        prev_prob = prob_on_day(probs, market_id, day - _DAY)
+        prob_not_improving = prev_prob is None or current_prob <= prev_prob
+        if current_prob < poly_exit_threshold and prob_not_improving:
+            return HardExitSignal(f"poly<{poly_exit_threshold:g}", float(bar.close))
 
     resolution_cap = as_utc_day(resolution_exit_day) if resolution_exit_day is not None else as_utc_day(t_e) - _DAY
     if day >= resolution_cap:

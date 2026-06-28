@@ -12,7 +12,6 @@ Why long-only (do not change without re-reading EXPERIMENTS_LOG.md E4.7):
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from itertools import product
 from typing import NamedTuple
 
 
@@ -21,6 +20,8 @@ from typing import NamedTuple
 # sizing can come back later once entry/exit behavior is stable.
 POSITION_SIZE_CHOICES: tuple[float, ...] = (0.10,)
 POLY_EXIT_THRESHOLD: float = 0.55
+BENCHMARKS: tuple[str, ...] = ("SPY", "QQQ")
+EXIT_THRESHOLD_GRID: tuple[float, ...] = (0.50, 0.55, 0.60, 0.65, 0.70)
 
 
 class EntryActionParams(NamedTuple):
@@ -83,13 +84,17 @@ OBSERVATION_COLS: list[str] = [
     "feat_crossing_latency_days",
     "archetype_is_earnings",
     "feat_llm_expected_return",
+    "expected_return_pct",
+    "confidence_score",
+    "feat_llm_confidence",
+    "llm_target",
+    "llm_confidence_norm",
     # live position state
     "window_fraction_elapsed",
     "unrealized_ret",
     "peak_ret",
     "drawdown_from_peak",
     "position_size_pct",
-    "cem_recommends_exit",
     "convergence_residual",
     "profit_vs_expectation",
     "time_decay_conviction",
@@ -118,6 +123,9 @@ class RLConfig:
     n_minibatches: int = 6  # Middle ground (smoother than 4, faster than 8)
     max_train_epochs: int = 60
     patience: int = 25  # early-stopping patience on validation Sharpe
+    teacher_warmup_epochs: int = 10
+    teacher_bc_epochs: int = 2
+    teacher_batch_size: int = 512
 
     # --- network ---
     actor_hidden_dims: list[int] = field(default_factory=lambda: [16, 16])
@@ -132,6 +140,9 @@ class RLConfig:
 
     # --- training protocol ---
     outer_seeds: tuple[int, ...] = (42, 43, 44)
+    benchmarks: tuple[str, ...] = BENCHMARKS
+    exit_threshold_grid: tuple[float, ...] = EXIT_THRESHOLD_GRID
+    default_exit_threshold: float = 0.60
 
     # --- RF skill gate (drop the RF signal if it cannot beat a coin flip) ---
     min_rf_skill_hit_rate: float = 0.52

@@ -3,29 +3,52 @@
 Replay the exact trade simulate_one produces (same entry/exit day + price)
 through both simulators on one candidate and assert identical final equity.
 """
+import math
+
 import pandas as pd
 import torch
 
 import run_experiments as RE
 from pipeline.strategy import simulate_one, DEFAULT_POLICY
-from rl.config import ACTION_DIM, ACTION_HOLD, action_for_entry_params
+from rl.config import ACTION_DIM, ACTION_EXIT, ACTION_HOLD, OBSERVATION_COLS, action_for_entry_params
 from rl.sim_with_policy import sim_with_policy
 from rl.tests._synth import make_prices, make_probs, make_candidate, DATES
 
 
 class StaticLogitPolicy:
-    def __init__(self, *, enter_action: int, exit_while_long: bool = False):
+    def __init__(
+        self,
+        *,
+        enter_action: int,
+        exit_while_long: bool = False,
+        hold_logit: float = 5.0,
+        exit_logit: float | None = None,
+    ):
         self.enter_action = enter_action
         self.exit_while_long = exit_while_long
+        self.hold_logit = hold_logit
+        self.exit_logit = exit_logit
 
     def forward(self, obs):
         logits = torch.zeros((obs.shape[0], ACTION_DIM), dtype=torch.float32)
-        logits[:, ACTION_HOLD] = 5.0
+        logits[:, ACTION_HOLD] = self.hold_logit
         logits[:, self.enter_action] = 10.0
-        if self.exit_while_long:
+        if self.exit_logit is not None:
+            logits[:, ACTION_EXIT] = self.exit_logit
+        elif self.exit_while_long:
             logits[:, -1] = 12.0
         value = torch.zeros((obs.shape[0], 1), dtype=torch.float32)
         return logits, value
+
+
+class RecordingPolicy(StaticLogitPolicy):
+    def __init__(self, *, enter_action: int):
+        super().__init__(enter_action=enter_action, hold_logit=5.0, exit_logit=-5.0)
+        self.obs_seen = []
+
+    def forward(self, obs):
+        self.obs_seen.append(obs.detach().clone())
+        return super().forward(obs)
 
 
 def test_accounting_matches_sim_opp_cost():
@@ -64,12 +87,12 @@ def test_accounting_matches_sim_opp_cost():
     )
 
 
-def test_policy_enter_action_controls_position_size_and_profit_lock():
+def test_policy_enter_action_controls_position_size():
     prices = make_prices({"AAA": (100.0, 0.008), "SPY": (400.0, 0.001)})
     probs = make_probs("M", level=0.85, start_idx=20)
     row = make_candidate("AAA", "M", t_theta_idx=20, t_e_idx=60)
     df = pd.DataFrame([row])
-    enter_action = action_for_entry_params(0.20, 0.08)
+    enter_action = action_for_entry_params(0.10)
 
     trades, _, stats = sim_with_policy(
         df, prices, probs, policy=StaticLogitPolicy(enter_action=enter_action), bench_sym="SPY",
@@ -78,8 +101,7 @@ def test_policy_enter_action_controls_position_size_and_profit_lock():
     )
 
     assert stats["n_trades"] == 1
-    assert trades["_position_size_pct"].iloc[0] == 0.20
-    assert trades["_lock_activate"].iloc[0] == 0.08
+    assert trades["_position_size_pct"].iloc[0] == 0.10
 
 
 def test_poly_exit_fires_before_policy_hold():
@@ -90,7 +112,7 @@ def test_poly_exit_fires_before_policy_hold():
     df = pd.DataFrame([row])
 
     trades, _, stats = sim_with_policy(
-        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10, 0.03)),
+        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10)),
         bench_sym="SPY", initial=RE.INITIAL_CAPITAL, use_kelly=False,
         start_date=DATES[20], end_date=DATES[35],
     )
@@ -108,7 +130,7 @@ def test_resolution_exit_is_one_day_before_resolution():
     df = pd.DataFrame([row])
 
     trades, _, stats = sim_with_policy(
-        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10, 0.03)),
+        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10)),
         bench_sym="SPY", initial=RE.INITIAL_CAPITAL, use_kelly=False,
         start_date=DATES[20], end_date=DATES[25],
     )
@@ -127,7 +149,7 @@ def test_resolution_exit_uses_previous_tradable_day_when_cut_is_weekend():
     df = pd.DataFrame([row])
 
     trades, _, stats = sim_with_policy(
-        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10, 0.03)),
+        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10)),
         bench_sym="SPY", initial=RE.INITIAL_CAPITAL, use_kelly=False,
         start_date=DATES[monday_idx - 4], end_date=DATES[monday_idx],
     )
@@ -146,7 +168,7 @@ def test_no_entry_when_no_tradable_day_remains_before_resolution_cap():
     df = pd.DataFrame([row])
 
     trades, _, stats = sim_with_policy(
-        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10, 0.03)),
+        df, prices, probs, policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10)),
         bench_sym="SPY", initial=RE.INITIAL_CAPITAL, use_kelly=False,
         start_date=DATES[monday_idx], end_date=DATES[monday_idx],
     )
@@ -164,10 +186,50 @@ def test_policy_exit_only_when_no_hard_exit_fired():
 
     trades, _, stats = sim_with_policy(
         df, prices, probs,
-        policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10, 0.03), exit_while_long=True),
+        policy=StaticLogitPolicy(enter_action=action_for_entry_params(0.10), exit_while_long=True),
         bench_sym="SPY", initial=RE.INITIAL_CAPITAL, use_kelly=False,
         start_date=DATES[20], end_date=DATES[40],
     )
 
     assert stats["n_trades"] == 1
     assert trades["realized_exit_reason"].iloc[0] == "policy_exit"
+
+
+def test_weak_exit_probability_does_not_cross_threshold():
+    prices = make_prices({"AAA": (100.0, 0.0), "SPY": (400.0, 0.0)})
+    probs = make_probs("M", level=0.85, start_idx=20)
+    row = make_candidate("AAA", "M", t_theta_idx=20, t_e_idx=30)
+    df = pd.DataFrame([row])
+    weak_exit_logit = math.log(0.51 / 0.49)
+
+    trades, _, stats = sim_with_policy(
+        df, prices, probs,
+        policy=StaticLogitPolicy(
+            enter_action=action_for_entry_params(0.10),
+            hold_logit=0.0,
+            exit_logit=weak_exit_logit,
+        ),
+        bench_sym="SPY", initial=RE.INITIAL_CAPITAL, use_kelly=False,
+        start_date=DATES[20], end_date=DATES[30], exit_threshold=0.65,
+    )
+
+    assert stats["n_trades"] == 1
+    assert trades["realized_exit_reason"].iloc[0] == "resolution-1d"
+
+
+def test_exit_observation_has_benchmark_convergence_residual():
+    prices = make_prices({"AAA": (100.0, 0.0), "SPY": (400.0, 0.01)})
+    probs = make_probs("M", level=0.85, start_idx=20)
+    row = make_candidate("AAA", "M", t_theta_idx=20, t_e_idx=30)
+    df = pd.DataFrame([row])
+    policy = RecordingPolicy(enter_action=action_for_entry_params(0.10))
+
+    sim_with_policy(
+        df, prices, probs, policy=policy, bench_sym="SPY",
+        initial=RE.INITIAL_CAPITAL, use_kelly=False,
+        start_date=DATES[20], end_date=DATES[30], exit_threshold=0.65,
+    )
+
+    residual_idx = OBSERVATION_COLS.index("convergence_residual")
+    seen = torch.cat(policy.obs_seen, dim=0)
+    assert float(seen[:, residual_idx].max()) > 0.005

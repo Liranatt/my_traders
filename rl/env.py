@@ -98,7 +98,7 @@ class TradingEnv:
         self.prev_bench = None
         self.equity_curve = [1.0]
         self.steps_in_drawdown = 0
-        self.baseline_pnl = self._compute_baseline_pnl()
+        self.baseline_pnl = 0.0  # Skipped to save computation time
         return self._get_obs()
 
     def can_enter(self, day) -> bool:
@@ -206,49 +206,11 @@ class TradingEnv:
 
         self.equity_curve.append(self.equity_curve[-1] * (1.0 + R_t))
 
-        if done:
-            if self.traded and self.entry_price > 0:
-                exit_price_val = asset_price
-                if 'hard_exit' in locals() and hard_exit is not None and hard_exit.exit_price:
-                    exit_price_val = hard_exit.exit_price
-                if not exit_price_val:
-                    exit_price_val = self.prev_asset or self.entry_price
-                bench_exit_val = bench_price if bench_price else self.prev_bench
-                
-                asset_ret = float(exit_price_val / self.entry_price - 1.0) if self.entry_price else 0.0
-                bench_ret = float(bench_exit_val / self.bench_entry_price - 1.0) if self.bench_entry_price else 0.0
-                excess = asset_ret - bench_ret
-                
-                entry_cost = ib_cost(1, self.entry_price, False) / self.entry_price + ib_cost(1, self.bench_entry_price, True) / self.bench_entry_price
-                exit_cost = 0.0
-                if exit_price_val and bench_exit_val:
-                    exit_cost = ib_cost(1, exit_price_val, True) / exit_price_val + ib_cost(1, bench_exit_val, False) / bench_exit_val
-                    
-                agent_pnl = (excess - entry_cost - exit_cost) * self.position_size_pct
-            else:
-                agent_pnl = 0.0
-                
-            # 1. Base Reward: Absolute PnL (10% profit -> +10.0 reward)
-            base_reward = float(agent_pnl * 100.0)
-            
+        # Step-wise Dense Reward:
+        # R_t represents the daily excess return over the benchmark (accounting for costs).
+        # We multiply by 100 so that a 1% daily excess return gives a reward of 1.0.
+        reward = float(np.clip(R_t * 100.0, -10.0, 10.0))
 
-            relative_perf = float((agent_pnl - self.baseline_pnl) * 100.0)
-
-            reward = float(base_reward + relative_perf)
-            reward = float(np.clip(reward, -10.0, 10.0))
-        else:
-            # We are holding. Give a tiny bonus if we are currently beating the benchmark
-            if self.state == "LONG" and asset_price and bench_price and self.entry_price and self.bench_entry_price:
-                current_asset_ret = asset_price / self.entry_price - 1.0
-                current_bench_ret = bench_price / self.bench_entry_price - 1.0
-                current_excess = current_asset_ret - current_bench_ret
-
-                if current_excess > 0:
-                    reward = 0.02  # Tiny "holding bonus" (equivalent to +0.02% PnL per day)
-                else:
-                    reward = 0.0
-            else:
-                reward = 0.0
         self.current_step += 1
         obs = self._get_obs()
         info = {"R_t": R_t}

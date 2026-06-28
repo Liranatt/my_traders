@@ -45,7 +45,37 @@ STATIC_FEATURE_COLS: tuple[str, ...] = (
     "feat_prob_surge_since_t0",
     "feat_crossing_latency_days",
     "feat_llm_expected_return",
+    "expected_return_pct",
+    "confidence_score",
+    "feat_llm_confidence",
+    "llm_target",
+    "llm_confidence_norm",
 )
+
+
+def _finite_float(value, default: float = 0.0) -> float:
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return default
+    return out if np.isfinite(out) else default
+
+
+def llm_target_from_row(row: pd.Series | dict) -> float:
+    """Expected move in decimal units, bounded to a useful swing-trade target."""
+    direct = _finite_float(row.get("feat_llm_expected_return", 0.0))
+    fallback = _finite_float(row.get("expected_return_pct", 0.0)) / 100.0
+    target = abs(direct if abs(direct) > 1e-12 else fallback)
+    return float(np.clip(target, 0.03, 0.20))
+
+
+def llm_confidence_from_row(row: pd.Series | dict) -> float:
+    """Normalize the stronger available LLM confidence score onto 0..1."""
+    confidence = max(
+        _finite_float(row.get("confidence_score", 0.0)),
+        _finite_float(row.get("feat_llm_confidence", 0.0)),
+    )
+    return float(np.clip(confidence / 8.0, 0.0, 1.0))
 
 
 # ── RF predictions + skill gate ──────────────────────────────────────────────
@@ -206,7 +236,6 @@ def compute_position_state(
             "peak_ret": 0.0,
             "drawdown_from_peak": 0.0,
             "position_size_pct": 0.0,
-            "cem_recommends_exit": 0.0,
             "convergence_residual": 0.0,
         }
     unrealized = asset_price / entry_price - 1.0
@@ -216,28 +245,19 @@ def compute_position_state(
     bench_ret = (bench_price / bench_entry_price - 1.0) if bench_entry_price and bench_price else 0.0
     convergence_residual = bench_ret - unrealized
 
-    # EXACT logic from the best CEM SPY policy (atr_mult=3.128, lock_activate=0.02)
-    # Stop loss ~6.2%. Profit lock triggers at 2% and tightens allowable drawdown to 1%.
-    cem_recommends_exit = 1.0 if (drawdown >= 0.062) or (peak >= 0.02 and drawdown >= 0.01) else 0.0
     return {
         "window_fraction_elapsed": float(window_fraction),
         "unrealized_ret": float(unrealized),
         "peak_ret": float(peak),
         "drawdown_from_peak": float(drawdown),
         "position_size_pct": float(position_size_pct),
-        "cem_recommends_exit": cem_recommends_exit,
         "convergence_residual": float(convergence_residual),
     }
 
 
 def static_features_from_row(row: pd.Series | dict) -> dict:
     def g(key):
-        v = row.get(key, 0.0)
-        try:
-            v = float(v)
-        except (TypeError, ValueError):
-            v = 0.0
-        return 0.0 if (v != v) else v  # NaN -> 0
+        return _finite_float(row.get(key, 0.0), 0.0)
     return {
         "rf_pred_decimal": g("rf_pred_decimal"),
         "rf_pred_rank": g("rf_pred_rank"),
@@ -255,6 +275,11 @@ def static_features_from_row(row: pd.Series | dict) -> dict:
         "feat_prob_surge_since_t0": g("feat_prob_surge_since_t0"),
         "feat_crossing_latency_days": g("feat_crossing_latency_days"),
         "feat_llm_expected_return": g("feat_llm_expected_return"),
+        "expected_return_pct": g("expected_return_pct"),
+        "confidence_score": g("confidence_score"),
+        "feat_llm_confidence": g("feat_llm_confidence"),
+        "llm_target": llm_target_from_row(row),
+        "llm_confidence_norm": llm_confidence_from_row(row),
         "archetype_is_earnings": 1.0
         if "earnings" in str(row.get("feat_archetype", "")).lower()
         else 0.0,
@@ -271,10 +296,8 @@ def build_observation(
     merged = {**static, **position, **market}
     
     # Compute derived dynamic context features
-    expected_ret = max(0.001, abs(float(merged.get("feat_llm_expected_return", 0.01))))
+    expected_ret = max(0.001, abs(float(merged.get("llm_target", 0.03))))
     unrealized_ret = float(merged.get("unrealized_ret", 0.0))
-    peak_ret = float(merged.get("peak_ret", 0.0))
-    window_frac = max(0.01, float(merged.get("window_fraction_elapsed", 0.01)))
     
     # 1. Momentum: Are we feeding on the news and surging?
     merged["profit_vs_expectation"] = unrealized_ret / expected_ret

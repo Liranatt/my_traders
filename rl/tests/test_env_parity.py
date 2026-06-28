@@ -20,7 +20,7 @@ def test_long_only_and_single_entry_and_profit():
     # First eligible FLAT day: ENTER + HOLD allowed, EXIT (short) is NOT.
     mask = env.get_action_mask()
     assert mask[env.HOLD] and mask[env.ENTER] and not mask[env.EXIT]
-    assert sum(mask[action] for action in ENTER_ACTIONS) == 60
+    assert sum(mask[action] for action in ENTER_ACTIONS) == len(ENTER_ACTIONS)
 
     entries = 0
     done = False

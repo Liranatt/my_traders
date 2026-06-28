@@ -63,6 +63,16 @@ def _greedy_action(policy, obs: np.ndarray, mask: np.ndarray) -> int:
         return int(torch.argmax(logits, dim=-1).item())
 
 
+def _masked_action_probs(policy, obs: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, torch.Tensor]:
+    obs_t = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
+    mask_t = torch.as_tensor(mask, dtype=torch.bool).unsqueeze(0)
+    with torch.no_grad():
+        logits, value = policy.forward(obs_t)
+        logits = logits.masked_fill(~mask_t, float("-inf"))
+        probs = torch.softmax(logits, dim=-1)[0].cpu().numpy()
+    return probs, value
+
+
 def _frac(cal_values: list[int], day) -> float:
     if len(cal_values) <= 1:
         return 0.0
@@ -89,6 +99,7 @@ def sim_with_policy(
     is_baseline_long_only: bool = False,
     fixed_trades: dict | None = None,
     entry_policy: dict | None = None,
+    exit_threshold: float = 0.50,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Any]]:
     """Returns (trade_df, equity_df, stats) — same order as sim_opp_cost."""
     entry_policy = entry_policy or DEFAULT_POLICY
@@ -250,6 +261,8 @@ def sim_with_policy(
                     market = compute_market_state(sim_prices, sim_probs, pos["symbol"], info["row"]["market_id"], bench_sym, day)
                     position = compute_position_state(
                         is_long=True, entry_price=pos["entry_price"], asset_price=asset_price,
+                        bench_entry_price=float(pos.get("bench_entry_price", 0.0)),
+                        bench_price=bench_close,
                         peak_ret=pos["peak_ret"], window_fraction=frac,
                         position_size_pct=float(pos["position_size_pct"]),
                     )
@@ -258,23 +271,18 @@ def sim_with_policy(
                     mask[ACTION_HOLD] = True
                     mask[ACTION_EXIT] = True
 
-                    # --- BRAIN DUMP PRINTS ---
-                    with torch.no_grad():
-                        obs_t = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)
-                        logits, value = policy.forward(obs_t)
-                        
-                        # Apply the exact same mask the policy uses
-                        logits_masked = logits.clone()
-                        logits_masked[0, ~mask] = -1e8
-                        probs = torch.softmax(logits_masked, dim=-1)[0].numpy()
-                        
-                        p_hold = probs[ACTION_HOLD]
-                        p_exit = probs[ACTION_EXIT]
-                        with open("rl_brain_dump.log", "a") as log_f:
-                            log_f.write(f"[{day.date()}] {pos['symbol']} | Peak: {pos['peak_ret']:.3f} Unr: {position['unrealized_ret']:.3f} | V(s): {value.item():.2f} | P(HOLD): {p_hold:.1%} P(EXIT): {p_exit:.1%}\n")
-                    # -------------------------
+                    action_probs, value = _masked_action_probs(policy, obs, mask)
+                    p_hold = float(action_probs[ACTION_HOLD])
+                    p_exit = float(action_probs[ACTION_EXIT])
+                    with open("rl_brain_dump.log", "a") as log_f:
+                        log_f.write(
+                            f"[{day.date()}] {pos['symbol']} | Peak: {pos['peak_ret']:.3f} "
+                            f"Unr: {position['unrealized_ret']:.3f} | V(s): {value.item():.2f} | "
+                            f"P(HOLD): {p_hold:.1%} P(EXIT): {p_exit:.1%} "
+                            f"exit_th={exit_threshold:.2f}\n"
+                        )
 
-                    do_exit = _greedy_action(policy, obs, mask) == ACTION_EXIT
+                    do_exit = p_exit >= float(exit_threshold)
                     reason = "policy_exit"
 
             if do_exit:
@@ -386,6 +394,7 @@ def sim_with_policy(
                 "symbol": info["symbol"],
                 "qty": asset_qty,
                 "entry_price": float(entry_price),
+                "bench_entry_price": float(bench_close),
                 "entry_day": day,
                 "entry_notional": asset_qty * entry_price,
                 "bench_sell_cost": bench_sell_cost,
