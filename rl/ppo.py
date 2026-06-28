@@ -31,8 +31,10 @@ class PPO:
         self.policy = policy
         self.config = config
         self.optimizer = optim.AdamW(
-            self.policy.parameters(),
-            lr=config.actor_lr,
+            [
+                {"params": self.policy.actor.parameters(), "lr": config.actor_lr},
+                {"params": self.policy.critic.parameters(), "lr": config.critic_lr},
+            ],
             weight_decay=config.weight_decay,
         )
         self.buffer = RolloutBuffer()

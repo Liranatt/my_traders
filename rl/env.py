@@ -211,6 +211,24 @@ class TradingEnv:
         # We multiply by 100 so that a 1% daily excess return gives a reward of 1.0.
         reward = float(np.clip(R_t * 100.0, -10.0, 10.0))
 
+        # Shaping bonus 1 — idle penalty: discourage staying flat after the entry
+        # signal has fired. Each day flat after signal costs a small fixed amount,
+        # teaching the agent that delaying entry has a price.
+        if self.state == "FLAT" and not self.traded and self.entry_sig is not None:
+            day = self.dates[min(self.current_step - 1, self.n_steps - 1)]
+            if day >= self.entry_sig:
+                reward -= 0.01
+
+        # Shaping bonus 2 — holding bonus: reward staying long in a winning trade.
+        # Counteracts the agent's tendency to exit on day 1 to avoid noise.
+        if self.state == "LONG" and action == self.HOLD:
+            unrealized = (
+                (float(_close_on(self.prices, self.symbol, day)) / self.entry_price - 1.0)
+                if self.entry_price > 0 else 0.0
+            )
+            if unrealized > 0.02:  # only bonus when at least 0.5% in the green
+                reward += 0.05
+
         self.current_step += 1
         obs = self._get_obs()
         info = {"R_t": R_t}

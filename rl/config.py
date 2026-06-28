@@ -18,7 +18,7 @@ from typing import NamedTuple
 # Portfolio action space. The agent can stay in the benchmark, enter a trade,
 # or exit an open trade back into the benchmark. Learn entry timing first;
 # sizing can come back later once entry/exit behavior is stable.
-POSITION_SIZE_CHOICES: tuple[float, ...] = (0.10,)
+POSITION_SIZE_CHOICES: tuple[float, ...] = (0.10, 0.15)
 POLY_EXIT_THRESHOLD: float = 0.55
 BENCHMARKS: tuple[str, ...] = ("SPY", "QQQ")
 EXIT_THRESHOLD_GRID: tuple[float, ...] = (0.50, 0.55, 0.60, 0.65, 0.70)
@@ -114,7 +114,7 @@ class RLConfig:
     # --- PPO hyperparameters ---
     actor_lr: float = 5e-5  # Lowered significantly to stop wild swings
     critic_lr: float = 3e-4  # Keep at 3e-4 so it accurately predicts drawdowns fast
-    gamma: float = 1.0
+    gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_epsilon: float = 0.15  # Middle ground (allows decent sized updates)
     entropy_beta: float = 0.02  # Encourage exploration without relying on architectural noise.
@@ -123,7 +123,7 @@ class RLConfig:
     n_minibatches: int = 6  # Middle ground (smoother than 4, faster than 8)
     max_train_epochs: int = 60
     patience: int = 25  # early-stopping patience on validation Sharpe
-    teacher_warmup_epochs: int = 10
+    teacher_warmup_epochs: int = 20
     teacher_bc_epochs: int = 2
     teacher_batch_size: int = 512
 

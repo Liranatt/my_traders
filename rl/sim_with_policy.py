@@ -355,12 +355,17 @@ def sim_with_policy(
                 next_pending.append(cid)  # reconsider next day
                 continue
 
+            currently_deployed = sum(p["position_size_pct"] for p in open_positions)
+            max_allowed = min(
+                base_ps,
+                max(0.0, 1.0 - currently_deployed)  # never let total exceed 100%
+            )
             position_size = (
                 chosen_position_size
                 if chosen_position_size is not None
-                else kelly_size(kelly_history, base_ps) if use_kelly else base_ps
+                else min(kelly_size(kelly_history, base_ps), max_allowed) if use_kelly else base_ps
             )
-            if position_size <= 0:
+            if position_size <= 0.0:
                 next_pending.append(cid)
                 continue
             open_value = sum(int(p["qty"]) * float(_close_on(sim_prices, p["symbol"], day) or p["entry_price"]) for p in open_positions)

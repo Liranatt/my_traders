@@ -126,16 +126,19 @@ def _active_path_for_candidate(
     return np.asarray(out, dtype=float)
 
 
-def _mask_for(action: int) -> np.ndarray:
+def _flat_mask() -> np.ndarray:
+    """Mask for flat-state decisions: HOLD or ENTER."""
     mask = np.zeros(ACTION_DIM, dtype=bool)
-    if action == ACTION_ENTER_OFFSET:
-        mask[ACTION_HOLD] = True
-        mask[ACTION_ENTER_OFFSET] = True
-    elif action in (ACTION_HOLD, ACTION_EXIT):
-        mask[ACTION_HOLD] = True
-        mask[ACTION_EXIT] = True
-    else:
-        raise ValueError(f"Unsupported teacher action {action}")
+    mask[ACTION_HOLD] = True
+    mask[ACTION_ENTER_OFFSET] = True
+    return mask
+
+
+def _long_mask() -> np.ndarray:
+    """Mask for open-position decisions: HOLD or EXIT."""
+    mask = np.zeros(ACTION_DIM, dtype=bool)
+    mask[ACTION_HOLD] = True
+    mask[ACTION_EXIT] = True
     return mask
 
 
@@ -195,7 +198,7 @@ def build_teacher_examples(
             )
             obs_rows.append(build_observation(static, position, market, scaler))
             actions.append(entry_label)
-            masks.append(_mask_for(ACTION_ENTER_OFFSET))
+            masks.append(_flat_mask())
             counts["entry_enter" if entry_label == ACTION_ENTER_OFFSET else "entry_skip"] += 1
 
         entry_price = _close_on(prices, row["symbol"], dates[0])
@@ -243,7 +246,7 @@ def build_teacher_examples(
             )
             obs_rows.append(build_observation(static, position, market, scaler))
             actions.append(label)
-            masks.append(_mask_for(ACTION_EXIT))
+            masks.append(_long_mask())
             counts["exit_hold" if label == ACTION_HOLD else "exit_exit"] += 1
 
     if not obs_rows:

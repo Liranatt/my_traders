@@ -252,7 +252,8 @@ async def async_main():
                     f"exit_th {threshold:.2f}"
                 )
 
-                if checkpoint_score > best_val + 1e-9:
+                can_checkpoint = not is_teacher_phase
+                if can_checkpoint and checkpoint_score > best_val + 1e-9:
                     best_val = val_excess
                     best_threshold = threshold
                     patience = 0
@@ -278,7 +279,8 @@ async def async_main():
                     }
                     meta_path.write_text(json.dumps(meta, indent=2))
                 else:
-                    patience += 1
+                    if not is_teacher_phase:
+                        patience += 1
                 if patience >= config.patience:
                     print(f"  early stop at epoch {epoch} (best val score {best_val:+.3f})")
                     break
