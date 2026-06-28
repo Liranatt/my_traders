@@ -276,14 +276,19 @@ def _verdict(summary: pd.DataFrame) -> None:
     print("\n=== Success check (beat QQQ or SPY buy-and-hold) ===")
     beats_any = False
     for bench in ("SPY", "QQQ"):
+        cem = summary[(summary.benchmark == bench) & (summary.strategy == "CEM")]
+        if not cem.empty:
+            cem_e = float(cem.excess_mean.iloc[0])
+            print(f"  {bench}: CEM excess {cem_e:+.2f}% vs holding -> {'beats' if cem_e > 0 else 'loses'}")
+
         rl = summary[(summary.benchmark == bench) & (summary.strategy == "RL")]
         if rl.empty:
             continue
         rl_e = float(rl.excess_mean.iloc[0])
         beat_index = rl_e > 0
         beats_any = beats_any or beat_index
-        print(f"  {bench}: RL excess {rl_e:+.2f}% vs holding -> {'beats' if beat_index else 'loses'}")
-    print(f"\n  VERDICT: {'SUCCESS' if beats_any else 'not yet'}")
+        print(f"  {bench}: RL  excess {rl_e:+.2f}% vs holding -> {'beats' if beat_index else 'loses'}")
+    print(f"\n  RL VERDICT: {'SUCCESS' if beats_any else 'not yet'}")
 
 
 def main():
