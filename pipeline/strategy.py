@@ -19,7 +19,7 @@ from pipeline.sim_kernel import HAVE_NUMBA, clear_caches as clear_kernel_caches,
 _USE_KERNEL = HAVE_NUMBA and os.environ.get("SIM_KERNEL", "1") != "0"
 
 DEFAULT_POLICY = dict(
-    atr_mult=2.5,
+    atr_mult=3.65,
     lock_activate=0.03,
     theta_out=0.55,
     enter_strong=0.75,
@@ -29,7 +29,7 @@ DEFAULT_POLICY = dict(
     max_price_runup=0.10,
 )
 
-RL_BOUNDS = dict(
+CEM_BOUNDS = dict(
     atr_mult=(1.5, 4.0),
     lock_activate=(0.02, 0.10),
     theta_out=(0.45, 0.60),
@@ -316,10 +316,10 @@ def run_backtest(
 
 def policy_from_vector(vec: np.ndarray) -> dict:
     """Convert CEM sample vector to clipped policy dict."""
-    names = list(RL_BOUNDS.keys())
+    names = list(CEM_BOUNDS.keys())
     p = {}
     for i, name in enumerate(names):
-        lo, hi = RL_BOUNDS[name]
+        lo, hi = CEM_BOUNDS[name]
         p[name] = float(np.clip(vec[i], lo, hi))
     p["hold_days"] = int(round(p["hold_days"]))
     if p["enter_strong"] < p["enter_floor"]:

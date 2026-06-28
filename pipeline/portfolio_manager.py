@@ -13,7 +13,7 @@ import pandas as pd
 
 from pipeline.strategy import (
     DEFAULT_POLICY,
-    RL_BOUNDS,
+    CEM_BOUNDS,
     policy_from_vector,
     run_backtest,
     score_sharpe_per_day,
@@ -55,18 +55,20 @@ def cem_search(
     Trains on 'train' split only. Returns the best policy dict.
     """
     rng = np.random.default_rng(seed)
-    names = list(RL_BOUNDS.keys())
+    names = list(CEM_BOUNDS.keys())
     dim = len(names)
     elite_k = max(2, int(pop_size * elite_frac))
 
+    # Initialise population means: use DEFAULT_POLICY
     mean = np.array([DEFAULT_POLICY[n] for n in names], dtype=float)
-    std = np.array([(RL_BOUNDS[n][1] - RL_BOUNDS[n][0]) / 4.0 for n in names], dtype=float)
+    # Initialise standard deviations: (max - min) / 4
+    std = np.array([(CEM_BOUNDS[n][1] - CEM_BOUNDS[n][0]) / 4.0 for n in names], dtype=float)
 
     best_score = -999.0
     best_policy = None
 
     for it in range(n_iter):
-        samples = rng.normal(mean, std, size=(pop_size, dim))
+        samples = rng.normal(mean, std, size=(pop_size, len(names)))
         policies = [policy_from_vector(s) for s in samples]
 
         scores = []

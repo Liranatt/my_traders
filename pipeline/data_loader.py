@@ -415,3 +415,45 @@ async def build_dataset_from_db(
         df.to_parquet(output_path, engine="pyarrow", compression="snappy")
         print(f"[data_loader] saved to {output_path}")
     return df
+
+async def load_price_prob_paths(df: pd.DataFrame):
+    """Load daily bars and probability paths from DB."""
+    c = await connect()
+    try:
+        syms = sorted(df["symbol"].unique())
+        mkts = sorted(df["market_id"].unique())
+        bars = await c.fetch(
+            f"SELECT symbol, ts, high, low, close FROM {SCHEMA}.historical_price_bars "
+            f"WHERE resolution='1d' AND symbol=ANY($1::text[]) ORDER BY symbol, ts",
+            syms,
+        )
+        prob_rows = await c.fetch(
+            f"""SELECT DISTINCT ON (market_id, (hour_ts AT TIME ZONE 'UTC')::date)
+                market_id, (hour_ts AT TIME ZONE 'UTC')::date AS d, probability
+                FROM {SCHEMA}.historical_probability_points
+                WHERE market_id=ANY($1::text[])
+                  AND EXTRACT(HOUR FROM hour_ts AT TIME ZONE 'UTC') <= 20
+                ORDER BY market_id, (hour_ts AT TIME ZONE 'UTC')::date, hour_ts DESC""",
+            mkts,
+        )
+    finally:
+        await c.close()
+
+    prices: dict[str, list[tuple]] = {}
+    for b in bars:
+        prices.setdefault(b["symbol"], []).append((
+            pd.Timestamp(b["ts"]).tz_convert("UTC").normalize(),
+            float(b["high"]), float(b["low"]), float(b["close"]),
+        ))
+
+    probs: dict[str, list[tuple]] = {}
+    for p in prob_rows:
+        probs.setdefault(p["market_id"], []).append((
+            pd.Timestamp(p["d"]).tz_localize("UTC"),
+            float(p["probability"]),
+        ))
+
+    for d in (prices, probs):
+        for k in d:
+            d[k].sort()
+    return prices, probs

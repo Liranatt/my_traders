@@ -2,11 +2,10 @@
 
 Usage:
     python main.py scan                     # Scan Polymarket + Gemini evaluate
-    python main.py backtest                 # Backtest on candidates.parquet
+    python main.py backtest                 # Backtest with CEM default policy
+    python main.py optimize                 # Run CEM policy search
+    python main.py walkforward              # Run expanding walk-forward optimization
     python main.py backtest --from-db       # Build dataset from DB, then backtest
-    python main.py backtest --rl            # Backtest with CEM policy search
-    python main.py backtest --rf            # Backtest with RF model comparison
-    python main.py backtest --rf --rl       # Both RF and CEM
     python main.py live --paper             # Live scan + paper trading
 """
 from __future__ import annotations
@@ -25,9 +24,9 @@ def cmd_scan():
         print(f"    rel={r.question_relevance:.2f}  {syms:30s}  {r.market.question[:60]}")
 
 
-def cmd_backtest(args: list[str]):
+def cmd_pipeline(action: str, args: list[str]):
     from pipeline.backtest import main as bt_main
-    sys.argv = ["backtest"] + args
+    sys.argv = ["backtest", action] + args
     bt_main()
 
 
@@ -46,7 +45,7 @@ async def cmd_live_paper():
 
     print(f"[live] {len(relevant)} relevant markets found")
 
-    # TODO: build features for live candidates, run RF, run strategy, submit orders
+    # TODO: build features for live candidates, run strategy, submit orders
     # For now, just report what was found
     executor = IBExecutor()
     try:
@@ -72,8 +71,8 @@ def main():
 
     if cmd == "scan":
         cmd_scan()
-    elif cmd == "backtest":
-        cmd_backtest(rest)
+    elif cmd in ("backtest", "optimize", "walkforward"):
+        cmd_pipeline(cmd, rest)
     elif cmd == "live" and "--paper" in rest:
         asyncio.run(cmd_live_paper())
     else:
