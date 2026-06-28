@@ -41,40 +41,7 @@ class PPO:
         self.mse_loss = nn.MSELoss()
         self.bc_loss = nn.CrossEntropyLoss()
 
-    def update_teacher(
-        self,
-        obs: np.ndarray,
-        actions: np.ndarray,
-        masks: np.ndarray,
-        *,
-        n_epochs: int = 1,
-        batch_size: int = 512,
-    ) -> float:
-        """Behavior-cloning warm-start on clear teacher states only."""
-        if len(actions) == 0:
-            return 0.0
 
-        obs_t = torch.as_tensor(obs, dtype=torch.float32)
-        actions_t = torch.as_tensor(actions, dtype=torch.long)
-        masks_t = torch.as_tensor(masks, dtype=torch.bool)
-        total = 0.0
-        updates = 0
-
-        for _ in range(max(1, int(n_epochs))):
-            indices = np.arange(len(actions))
-            np.random.shuffle(indices)
-            for start in range(0, len(indices), max(1, int(batch_size))):
-                idx = indices[start:start + max(1, int(batch_size))]
-                logits, _ = self.policy.forward(obs_t[idx])
-                masked_logits = logits.masked_fill(~masks_t[idx], -float("inf"))
-                loss = self.bc_loss(masked_logits, actions_t[idx])
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
-                total += float(loss.item())
-                updates += 1
-
-        return total / max(1, updates)
 
     def update(self, *, entropy_coef: float = 0.02) -> float:
         if not self.buffer.obs:

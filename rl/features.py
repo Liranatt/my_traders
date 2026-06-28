@@ -252,6 +252,8 @@ def compute_position_state(
         "drawdown_from_peak": float(drawdown),
         "position_size_pct": float(position_size_pct),
         "convergence_residual": float(convergence_residual),
+        "asset_price": float(asset_price) if asset_price else 0.0,
+        "bench_price": float(bench_price) if bench_price else 0.0,
     }
 
 
@@ -306,6 +308,9 @@ def build_observation(
     # If we crossed the target, how much buffer do we have? If negative, it's 0.
     cushion_above_target = max(0.0, unrealized_ret - expected_ret)
     merged["time_decay_conviction"] = cushion_above_target / max(0.001, expected_ret)
+
+    # --- Opportunity Cost Features ---
+    bench_trend = float(merged.get("bench_trend_5d", 0.0))
 
     vec = np.empty(len(OBSERVATION_COLS), dtype=np.float32)
     for i, col in enumerate(OBSERVATION_COLS):

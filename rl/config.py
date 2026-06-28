@@ -15,53 +15,21 @@ from dataclasses import dataclass, field
 from typing import NamedTuple
 
 
-# Portfolio action space. The agent can stay in the benchmark, enter a trade,
-# or exit an open trade back into the benchmark. Learn entry timing first;
-# sizing can come back later once entry/exit behavior is stable.
-POSITION_SIZE_CHOICES: tuple[float, ...] = (0.10, 0.15)
-POLY_EXIT_THRESHOLD: float = 0.55
+# Portfolio action space for MDP.
+# ACTION_INDEX: Stay in cash / hold index / sell asset.
+# ACTION_ASSET: Enter trade / hold asset.
+ACTION_INDEX = 0
+ACTION_ASSET = 1
+ACTION_DIM = 2
+
 BENCHMARKS: tuple[str, ...] = ("SPY", "QQQ")
-EXIT_THRESHOLD_GRID: tuple[float, ...] = (0.50, 0.55, 0.60, 0.65, 0.70)
 
-
-class EntryActionParams(NamedTuple):
-    position_size_pct: float
-
-
-ENTRY_ACTION_PARAMS: tuple[EntryActionParams, ...] = tuple(
-    EntryActionParams(size) for size in POSITION_SIZE_CHOICES
-)
-
-
-ACTION_HOLD = 0
-ACTION_ENTER_OFFSET = 1
-ACTION_EXIT = ACTION_ENTER_OFFSET + len(ENTRY_ACTION_PARAMS)
-ACTION_DIM = ACTION_EXIT + 1
-ENTER_ACTIONS: tuple[int, ...] = tuple(
-    range(ACTION_ENTER_OFFSET, ACTION_ENTER_OFFSET + len(ENTRY_ACTION_PARAMS))
-)
-
+HARD_STOP_LOSS_PCT = 0.07  # hard 7% stop loss
+POSITION_SIZE_PCT = 0.10  # fixed 10% position size
 
 def is_enter_action(action: int) -> bool:
-    return action in ENTER_ACTIONS
+    return action == ACTION_ASSET
 
-
-def position_size_for_action(action: int) -> float:
-    return entry_params_for_action(action).position_size_pct
-
-
-def entry_params_for_action(action: int) -> EntryActionParams:
-    if not is_enter_action(action):
-        raise ValueError(f"Action {action} is not an ENTER action.")
-    return ENTRY_ACTION_PARAMS[action - ACTION_ENTER_OFFSET]
-
-
-def action_for_entry_params(position_size_pct: float) -> int:
-    params = EntryActionParams(position_size_pct)
-    try:
-        return ACTION_ENTER_OFFSET + ENTRY_ACTION_PARAMS.index(params)
-    except ValueError as exc:
-        raise ValueError(f"Unsupported entry action parameters: {params}") from exc
 
 
 # Fixed observation layout (order matters; the scaler and network depend on it).
@@ -117,32 +85,29 @@ class RLConfig:
     gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_epsilon: float = 0.15  # Middle ground (allows decent sized updates)
-    entropy_beta: float = 0.02  # Encourage exploration without relying on architectural noise.
+    entropy_beta: float = 0.10  # Encourage exploration without relying on architectural noise.
     weight_decay: float = 1e-4
     n_epochs: int = 10
     n_minibatches: int = 6  # Middle ground (smoother than 4, faster than 8)
     max_train_epochs: int = 60
     patience: int = 25  # early-stopping patience on validation Sharpe
-    teacher_warmup_epochs: int = 20
-    teacher_bc_epochs: int = 2
-    teacher_batch_size: int = 512
 
     # --- network ---
     actor_hidden_dims: list[int] = field(default_factory=lambda: [16, 16])
     critic_hidden_dims: list[int] = field(default_factory=lambda: [16, 16])
 
     # --- environment / portfolio ---
-    base_position_size: float = 0.10
-    position_size_choices: tuple[float, ...] = POSITION_SIZE_CHOICES
-    poly_exit_threshold: float = POLY_EXIT_THRESHOLD
+    base_position_size: float = POSITION_SIZE_PCT
+    position_size_choices: tuple[float, ...] = (POSITION_SIZE_PCT,)
+    poly_exit_threshold: float = 0.55
     max_concurrent: int = 10
     annualization: float = 252.0  # trading days (matches daily_equity_sharpe)
 
     # --- training protocol ---
     outer_seeds: tuple[int, ...] = (42, 43, 44)
     benchmarks: tuple[str, ...] = BENCHMARKS
-    exit_threshold_grid: tuple[float, ...] = EXIT_THRESHOLD_GRID
-    default_exit_threshold: float = 0.60
+    exit_threshold_grid: tuple[float, ...] = (0.50,)
+    default_exit_threshold: float = 0.50
 
     # --- RF skill gate (drop the RF signal if it cannot beat a coin flip) ---
     min_rf_skill_hit_rate: float = 0.52

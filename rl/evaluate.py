@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from rl.config import ACTION_HOLD, RLConfig
+from rl.config import RLConfig, OBSERVATION_COLS
 from rl.features import attach_static_features, get_rf_predictions
 from rl.policy import PolicyNetwork
 from rl.sim_with_policy import sim_with_policy
@@ -73,35 +73,6 @@ def load_cem_policy(benchmark: str) -> dict:
         return fallback
 
 
-class EvalPolicyAdapter:
-    def __init__(self, policy: PolicyNetwork, *, saved_action_dim: int, current_action_dim: int):
-        self.policy = policy
-        self.saved_action_dim = int(saved_action_dim)
-        self.current_action_dim = int(current_action_dim)
-
-    def forward(self, obs: torch.Tensor):
-        logits, value = self.policy.forward(obs)
-        if self.saved_action_dim == self.current_action_dim:
-            return logits, value
-        return self._adapt_logits(logits), value
-
-    def _adapt_logits(self, logits: torch.Tensor) -> torch.Tensor:
-        if self.saved_action_dim > self.current_action_dim or self.saved_action_dim < 3:
-            raise ValueError(
-                f"Unsupported checkpoint action_dim={self.saved_action_dim} "
-                f"for current action_dim={self.current_action_dim}."
-            )
-        adapted = logits.new_full((logits.shape[0], self.current_action_dim), -1e9)
-        old_exit_idx = self.saved_action_dim - 1
-        new_exit_idx = self.current_action_dim - 1
-        old_enter_count = self.saved_action_dim - 2
-        adapted[:, ACTION_HOLD] = logits[:, ACTION_HOLD]
-        if old_enter_count > 0:
-            adapted[:, 1:1 + old_enter_count] = logits[:, 1:1 + old_enter_count]
-        adapted[:, new_exit_idx] = logits[:, old_exit_idx]
-        return adapted
-
-
 async def async_main():
     config = RLConfig()
     if BRAIN_DUMP_PATH.exists():
@@ -126,13 +97,10 @@ async def async_main():
                 continue
             meta = json.loads(meta_path.read_text()) if meta_path.exists() else {"use_rf": False, "scaler": {}}
             use_rf, scaler = bool(meta["use_rf"]), meta.get("scaler", {})
-            exit_threshold = float(meta.get("exit_threshold", config.default_exit_threshold))
-
             saved_obs_cols = meta.get("obs_cols")
-            if saved_obs_cols is not None and len(saved_obs_cols) != config.obs_dim:
+            if saved_obs_cols is not None and saved_obs_cols != OBSERVATION_COLS:
                 print(
-                    f"{bench} seed {seed}: checkpoint obs_dim={len(saved_obs_cols)}, "
-                    f"current obs_dim={config.obs_dim}; rerun rl.train."
+                    f"{bench} seed {seed}: checkpoint obs schema mismatch, rerun rl.train."
                 )
                 continue
             saved_action_dim = int(meta.get("action_dim", config.action_dim))
@@ -148,11 +116,9 @@ async def async_main():
                 print(f"{bench} seed {seed}: checkpoint incompatible with current policy; rerun rl.train.")
                 continue
             policy.eval()
-            eval_policy = EvalPolicyAdapter(
-                policy,
-                saved_action_dim=saved_action_dim,
-                current_action_dim=config.action_dim,
-            )
+            if saved_action_dim != config.action_dim:
+                print(f"{bench} seed {seed}: action space changed, rerun rl.train.")
+                continue
 
             term_preds, unit = get_rf_predictions(
                 all_preterminal,
@@ -167,7 +133,7 @@ async def async_main():
                 terminal_feat,
                 prices,
                 probs,
-                eval_policy,
+                policy,
                 scaler=scaler,
                 bench_sym=bench,
                 use_kelly=True,
@@ -175,13 +141,12 @@ async def async_main():
                 max_concurrent=config.max_concurrent,
                 start_date=terminal_start,
                 end_date=None,
-                exit_threshold=exit_threshold,
             )
             base_trades, base_eq, base = sim_with_policy(
                 terminal_feat,
                 prices,
                 probs,
-                eval_policy,
+                policy,
                 scaler=scaler,
                 bench_sym=bench,
                 use_kelly=True,
@@ -234,14 +199,14 @@ async def async_main():
                     "n_trades": int(st["n_trades"]),
                     "win_rate": round(float(st.get("win_rate", 0.0)), 2),
                     "avg_position_size": round(float(st.get("avg_position_size", 0.0)), 4),
-                    "exit_threshold": exit_threshold if strat == "RL" else np.nan,
+                    "exit_threshold": config.poly_exit_threshold if strat == "RL" else np.nan,
                     "excess_vs_longonly": round(rl_lo_excess, 4) if strat == "RL" else np.nan,
                     "sharpe_vs_longonly": round(rl_lo_sharpe, 4) if strat == "RL" else np.nan,
                 })
             print(
                 f"  {bench} seed {seed}: RL total {rl['total_return']:+.2f}% "
                 f"vs B&H {rl['benchmark_return']:+.2f}% -> excess {rl['excess_return']:+.2f}% "
-                f"(exit_th {exit_threshold:.2f}, trades {int(rl['n_trades'])})"
+                f"(exit_th {config.poly_exit_threshold:.2f}, trades {int(rl['n_trades'])})"
             )
 
     res = pd.DataFrame(rows)

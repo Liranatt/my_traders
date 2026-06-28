@@ -1,16 +1,9 @@
 """
 Portfolio simulator driven by the RL policy.
 
-This mirrors run_experiments.sim_opp_cost's benchmark-rotation accounting (cash
-sits in SPY/QQQ; opening a trade sells benchmark to fund the asset buy, closing
-rebuys benchmark) but takes per-day HOLD/ENTER/EXIT decisions from a policy
-instead of pre-computing trades. It also provides:
-  * a long-only-to-resolution baseline (is_baseline_long_only),
-  * a fixed-replay mode (fixed_trades) used by the parity test to reproduce
-    sim_opp_cost exactly for a fixed policy.
-
-stats are computed with the same formulas as sim_opp_cost, so excess return vs
-the passive SPY/QQQ benchmark, Sharpe, and max drawdown are directly comparable.
+This mirrors run_experiments.sim_opp_cost's benchmark-rotation accounting, but
+uses the Entry Strategy Selector policy to pick targets at entry, and auto-executes
+trailing stops and take-profits.
 """
 from __future__ import annotations
 
@@ -24,19 +17,19 @@ import torch
 
 from rl.config import (
     ACTION_DIM,
-    ACTION_EXIT,
-    ACTION_HOLD,
-    ENTER_ACTIONS,
-    is_enter_action,
-    entry_params_for_action,
+    ACTION_INDEX,
+    ACTION_ASSET,
+    HARD_STOP_LOSS_PCT,
+    POSITION_SIZE_PCT,
 )
-from rl.exits import bar_on, evaluate_hard_exit, update_peak_ret
+from rl.exits import bar_on
 from rl.features import (
     build_observation,
     compute_market_state,
     compute_position_state,
     entry_signal_day,
     static_features_from_row,
+    llm_target_from_row,
 )
 from rl.shared import (
     DEFAULT_POLICY,
@@ -63,16 +56,6 @@ def _greedy_action(policy, obs: np.ndarray, mask: np.ndarray) -> int:
         return int(torch.argmax(logits, dim=-1).item())
 
 
-def _masked_action_probs(policy, obs: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, torch.Tensor]:
-    obs_t = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
-    mask_t = torch.as_tensor(mask, dtype=torch.bool).unsqueeze(0)
-    with torch.no_grad():
-        logits, value = policy.forward(obs_t)
-        logits = logits.masked_fill(~mask_t, float("-inf"))
-        probs = torch.softmax(logits, dim=-1)[0].cpu().numpy()
-    return probs, value
-
-
 def _frac(cal_values: list[int], day) -> float:
     if len(cal_values) <= 1:
         return 0.0
@@ -91,7 +74,7 @@ def sim_with_policy(
     bench_sym: str = "SPY",
     initial: float = INITIAL_CAPITAL,
     use_kelly: bool = False,
-    base_ps: float = 0.10,
+    base_ps: float = POSITION_SIZE_PCT,
     max_concurrent: int = 10,
     start_date: Any | None = None,
     end_date: Any | None = None,
@@ -99,9 +82,9 @@ def sim_with_policy(
     is_baseline_long_only: bool = False,
     fixed_trades: dict | None = None,
     entry_policy: dict | None = None,
-    exit_threshold: float = 0.50,
+    exit_threshold: float = 0.50, # Unused now, keeping for API compatibility
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Any]]:
-    """Returns (trade_df, equity_df, stats) — same order as sim_opp_cost."""
+    """Returns (trade_df, equity_df, stats)."""
     entry_policy = entry_policy or DEFAULT_POLICY
     empty_stats = _empty_stats(initial)
     if df.empty:
@@ -109,7 +92,6 @@ def sim_with_policy(
 
     sim_prices, sim_probs = truncate_paths(prices, probs, end_date)
 
-    # Per-candidate point-in-time metadata (entry-band day + own trading calendar).
     cand_info: dict[Any, dict] = {}
     for cid, row in df.iterrows():
         sig = (
@@ -131,6 +113,7 @@ def sim_with_policy(
             "resolution_exit_day": cap_days[-1] if cap_days else None,
             "cal_values": [d.value for d in cal],
             "fixed": (fixed_trades or {}).get(cid),
+            "llm_target": llm_target_from_row(row),
         }
 
     candidate_start = as_utc_day(df["t_theta"].min())
@@ -164,7 +147,7 @@ def sim_with_policy(
     ordered = sorted(df.index, key=lambda cid: cand_info[cid]["row"]["t_theta"])
     cand_idx = 0
     opened_ids: set = set()
-    pending: list = []  # eligible-but-not-yet-entered candidates (kept until entered/expired)
+    pending: list = []
 
     def close_position(pos: dict, day, exit_price: float, reason: str) -> None:
         nonlocal cash, bench_shares, total_txn_cost
@@ -215,7 +198,7 @@ def sim_with_policy(
         if bench_close is None:
             continue
 
-        # 1. Exits first.
+        # 1. Algorithmic Exits first
         still_open = []
         for pos in open_positions:
             info = cand_info[pos["cid"]]
@@ -225,7 +208,7 @@ def sim_with_policy(
             resolution = resolution_day is not None and day >= resolution_day
             do_exit = False
             exit_price = float(asset_price if asset_price else pos["entry_price"])
-            reason = "policy_exit"
+            reason = "algorithmic_exit"
 
             if info["fixed"] is not None:
                 do_exit = as_utc_day(info["fixed"]["exit_date"]) <= day
@@ -236,65 +219,40 @@ def sim_with_policy(
                 do_exit = resolution or day >= last_day or asset_price is None
                 reason = "resolution-1d" if resolution else ("end_liquidation" if day >= last_day else "missing_price")
             else:
-                hard_exit = evaluate_hard_exit(
-                    prices=sim_prices,
-                    probs=sim_probs,
-                    symbol=pos["symbol"],
-                    market_id=info["row"]["market_id"],
-                    day=day,
-                    entry_day=pos["entry_day"],
-                    entry_price=pos["entry_price"],
-                    t_e=info["t_e"],
-                    resolution_exit_day=info["resolution_exit_day"],
-                    expected_return=max(0.001, abs(float(info["row"].get("feat_llm_expected_return", 0.01)))),
-                    peak_ret=pos["peak_ret"],
-                )
-                if hard_exit is not None:
+                if day >= last_day or asset_price is None or resolution:
                     do_exit = True
-                    exit_price = float(hard_exit.exit_price)
-                    reason = hard_exit.reason
-                elif day >= last_day or asset_price is None:
-                    do_exit = True
-                    reason = "end_liquidation" if day >= last_day else "missing_price"
+                    reason = "resolution" if resolution else "end_liquidation" if day >= last_day else "missing_price"
                 else:
-                    frac = _frac(info["cal_values"], day)
-                    market = compute_market_state(sim_prices, sim_probs, pos["symbol"], info["row"]["market_id"], bench_sym, day)
-                    position = compute_position_state(
-                        is_long=True, entry_price=pos["entry_price"], asset_price=asset_price,
-                        bench_entry_price=float(pos.get("bench_entry_price", 0.0)),
-                        bench_price=bench_close,
-                        peak_ret=pos["peak_ret"], window_fraction=frac,
-                        position_size_pct=float(pos["position_size_pct"]),
-                    )
-                    obs = build_observation(info["static"], position, market, scaler)
-                    mask = np.zeros(ACTION_DIM, dtype=bool)
-                    mask[ACTION_HOLD] = True
-                    mask[ACTION_EXIT] = True
-
-                    action_probs, value = _masked_action_probs(policy, obs, mask)
-                    p_hold = float(action_probs[ACTION_HOLD])
-                    p_exit = float(action_probs[ACTION_EXIT])
-                    with open("rl_brain_dump.log", "a") as log_f:
-                        log_f.write(
-                            f"[{day.date()}] {pos['symbol']} | Peak: {pos['peak_ret']:.3f} "
-                            f"Unr: {position['unrealized_ret']:.3f} | V(s): {value.item():.2f} | "
-                            f"P(HOLD): {p_hold:.1%} P(EXIT): {p_exit:.1%} "
-                            f"exit_th={exit_threshold:.2f}\n"
-                        )
-
-                    do_exit = p_exit >= float(exit_threshold)
-                    reason = "policy_exit"
+                    ret = float(asset_price) / pos["entry_price"] - 1.0
+                    pos["peak_ret"] = max(pos["peak_ret"], ret)
+                    
+                    if ret <= -HARD_STOP_LOSS_PCT:
+                        do_exit = True
+                        reason = "hard_stop_loss"
+                    else:
+                        is_decision_day = day.dayofweek == 4
+                        if is_decision_day:
+                            frac = _frac(info["cal_values"], day)
+                            market = compute_market_state(sim_prices, sim_probs, info["symbol"], info["row"]["market_id"], bench_sym, day)
+                            position = compute_position_state(
+                                is_long=True, entry_price=pos["entry_price"], asset_price=float(asset_price), peak_ret=pos["peak_ret"],
+                                window_fraction=frac,
+                                position_size_pct=pos["position_size_pct"],
+                            )
+                            obs = build_observation(info["static"], position, market, scaler)
+                            mask = np.ones(ACTION_DIM, dtype=bool)
+                            action = _greedy_action(policy, obs, mask)
+                            if action == ACTION_INDEX:
+                                do_exit = True
+                                reason = "policy_sell"
 
             if do_exit:
                 close_position(pos, day, exit_price, reason)
             else:
-                pos["peak_ret"] = update_peak_ret(sim_prices, pos["symbol"], day, pos["entry_price"], pos["peak_ret"])
                 still_open.append(pos)
         open_positions = still_open
 
-        # 2. Entries. Move newly-eligible candidates into `pending`, then let the
-        # policy decide each pending candidate every day until it enters/expires
-        # (so HOLD-now-enter-later is possible; nothing is skipped permanently).
+        # 2. Entries
         while cand_idx < len(ordered) and as_utc_day(cand_info[ordered[cand_idx]]["row"]["t_theta"]) <= day:
             pending.append(ordered[cand_idx])
             cand_idx += 1
@@ -302,18 +260,19 @@ def sim_with_policy(
         next_pending: list = []
         for cid in pending:
             info = cand_info[cid]
-            if cid in opened_ids:
-                continue
             if day > info["t_e"]:
-                continue  # window passed; drop
+                continue
             resolution_day = info["resolution_exit_day"]
             if info["fixed"] is None and (resolution_day is None or day >= resolution_day):
-                continue  # no tradable day remains before the hard resolution cap
+                continue
             if info["entry_sig"] is None and info["fixed"] is None:
-                continue  # band never fires; drop
+                continue
 
             entry_price = _close_on(sim_prices, info["symbol"], day)
             chosen_position_size: float | None = None
+            active_target = 0.0
+            want_enter = False
+            
             if info["fixed"] is not None:
                 fixed_entry = as_utc_day(info["fixed"]["entry_date"])
                 if day < fixed_entry:
@@ -325,40 +284,44 @@ def sim_with_policy(
                     chosen_position_size = float(info["fixed"]["_position_size_pct"])
             else:
                 if day < info["entry_sig"] or not entry_price:
-                    next_pending.append(cid)  # not eligible yet
+                    next_pending.append(cid)
                     continue
                 if is_baseline_long_only:
                     want_enter = True
                 else:
-                    frac = _frac(info["cal_values"], day)
-                    market = compute_market_state(sim_prices, sim_probs, info["symbol"], info["row"]["market_id"], bench_sym, day)
-                    position = compute_position_state(
-                        is_long=False, entry_price=0.0, asset_price=None, peak_ret=0.0,
-                        window_fraction=frac,
-                        position_size_pct=0.0,
-                    )
-                    obs = build_observation(info["static"], position, market, scaler)
-                    mask = np.zeros(ACTION_DIM, dtype=bool)
-                    mask[ACTION_HOLD] = True
-                    mask[list(ENTER_ACTIONS)] = True
-                    action = _greedy_action(policy, obs, mask)
-                    want_enter = is_enter_action(action)
-                    if want_enter:
-                        params = entry_params_for_action(action)
-                        chosen_position_size = params.position_size_pct
+                    is_decision_day = day == info["entry_sig"] or day.dayofweek == 4
+                    if is_decision_day:
+                        frac = _frac(info["cal_values"], day)
+                        market = compute_market_state(sim_prices, sim_probs, info["symbol"], info["row"]["market_id"], bench_sym, day)
+                        position = compute_position_state(
+                            is_long=False, entry_price=0.0, asset_price=None, peak_ret=0.0,
+                            window_fraction=frac,
+                            position_size_pct=0.0,
+                        )
+                        obs = build_observation(info["static"], position, market, scaler)
+                        mask = np.ones(ACTION_DIM, dtype=bool)
+                        action = _greedy_action(policy, obs, mask)
+                        
+                        if action == ACTION_ASSET:
+                            want_enter = True
+                            chosen_position_size = base_ps
+                        else:
+                            want_enter = False
+                    else:
+                        want_enter = False
 
             blocked = (
                 len(open_positions) >= max_concurrent
                 or any(p["symbol"] == info["symbol"] for p in open_positions)
             )
             if not want_enter or blocked or not entry_price or entry_price <= 0:
-                next_pending.append(cid)  # reconsider next day
+                next_pending.append(cid)
                 continue
 
             currently_deployed = sum(p["position_size_pct"] for p in open_positions)
             max_allowed = min(
                 base_ps,
-                max(0.0, 1.0 - currently_deployed)  # never let total exceed 100%
+                max(0.0, 1.0 - currently_deployed)
             )
             position_size = (
                 chosen_position_size
@@ -393,7 +356,7 @@ def sim_with_policy(
             bench_shares -= bench_sell_qty
             cash += available - need
             total_txn_cost += bench_sell_cost + asset_buy_cost
-            opened_ids.add(cid)
+            next_pending.append(cid) # Allow re-entry later by keeping it in pending
             open_positions.append({
                 "cid": cid,
                 "symbol": info["symbol"],
@@ -408,6 +371,7 @@ def sim_with_policy(
                 "peak_ret": 0.0,
                 "t_e": info["t_e"],
                 "is_earnings": "earnings" in str(info["row"].get("feat_archetype", "")).lower(),
+                "active_target": 0.0,
             })
         pending = next_pending
 
@@ -423,7 +387,6 @@ def sim_with_policy(
             "open_positions": len(open_positions),
         })
 
-    # Liquidate remaining positions at the last day.
     for pos in list(open_positions):
         px = _close_on(sim_prices, pos["symbol"], last_day) or pos["entry_price"]
         close_position(pos, last_day, float(px), "end_liquidation")

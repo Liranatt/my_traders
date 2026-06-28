@@ -7,7 +7,6 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from rl.config import POLY_EXIT_THRESHOLD
 from rl.shared import as_utc_day
 
 _DAY = pd.Timedelta(days=1)
@@ -84,7 +83,7 @@ def evaluate_hard_exit(
     entry_price: float,
     t_e: Any,
     resolution_exit_day: Any | None = None,
-    poly_exit_threshold: float = POLY_EXIT_THRESHOLD,
+    poly_exit_threshold: float = 0.55,
     expected_return: float | None = None,
     peak_ret: float | None = None,
 ) -> HardExitSignal | None:

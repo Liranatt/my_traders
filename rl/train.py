@@ -27,7 +27,7 @@ from rl.features import (
 from rl.policy import PolicyNetwork
 from rl.ppo import PPO
 from rl.sim_with_policy import sim_with_policy
-from rl.teacher import build_teacher_examples
+
 from rl.shared import (
     RELEVANCE_COL,
     load_paths,
@@ -63,46 +63,7 @@ def _checkpoint_paths(bench_sym: str, seed: int) -> tuple[Path, Path]:
     return CHECKPOINT_DIR / f"{prefix}.pt", CHECKPOINT_DIR / f"{prefix}.meta.json"
 
 
-def _select_exit_threshold(
-    val_feat: pd.DataFrame,
-    prices: dict,
-    probs: dict,
-    policy: PolicyNetwork,
-    scaler: dict,
-    config: RLConfig,
-    bench_sym: str,
-    start_date,
-    end_date,
-) -> tuple[float, dict]:
-    best_threshold = float(config.default_exit_threshold)
-    best_stats: dict | None = None
-    best_score = -float("inf")
-
-    for threshold in config.exit_threshold_grid:
-        _, _, stats = sim_with_policy(
-            val_feat,
-            prices,
-            probs,
-            policy,
-            scaler=scaler,
-            bench_sym=bench_sym,
-            use_kelly=False,
-            base_ps=config.base_position_size,
-            max_concurrent=config.max_concurrent,
-            start_date=start_date,
-            end_date=end_date,
-            exit_threshold=float(threshold),
-        )
-        trades = int(stats.get("n_trades", 0))
-        score = float(stats.get("excess_return", 0.0)) if trades > 0 else -float("inf")
-        if score > best_score:
-            best_score = score
-            best_threshold = float(threshold)
-            best_stats = stats
-
-    if best_stats is None:
-        best_stats = {}
-    return best_threshold, best_stats
+# _select_exit_threshold removed for strategy selector architecture
 
 
 async def async_main():
@@ -157,8 +118,7 @@ async def async_main():
             train_feat = attach_static_features(train_df, train_preds, unit, use_rf=use_rf)
             scaler = fit_static_scaler(train_feat)
             train_envs = build_envs(train_feat, prices, probs, scaler, bench_sym)
-            teacher = build_teacher_examples(train_feat, prices, probs, bench_sym, scaler=scaler)
-            print(f"training episodes: {len(train_envs)}  teacher states: {len(teacher)} {teacher.counts}")
+            print(f"training episodes: {len(train_envs)}")
             if len(train_envs) < 5:
                 print("  too few training episodes; skipping seed.")
                 continue
@@ -180,56 +140,46 @@ async def async_main():
             ppo = PPO(policy, config)
 
             best_val = -float("inf")
-            best_threshold = float(config.default_exit_threshold)
             patience = 0
             for epoch in range(1, config.max_train_epochs + 1):
-                is_teacher_phase = epoch <= config.teacher_warmup_epochs and len(teacher) > 0
-                if is_teacher_phase:
-                    loss = ppo.update_teacher(
-                        teacher.obs,
-                        teacher.actions,
-                        teacher.masks,
-                        n_epochs=config.teacher_bc_epochs,
-                        batch_size=config.teacher_batch_size,
-                    )
-                    phase = "TeacherBC"
-                else:
-                    np.random.shuffle(train_envs)
-                    for env in train_envs:
-                        env.force_entry = False
-                        obs = env.reset()
-                        done = False
-                        while not done:
-                            mask = env.get_action_mask()
-                            ot = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
-                            mt = torch.as_tensor(mask, dtype=torch.bool).unsqueeze(0)
-                            with torch.no_grad():
-                                action, log_prob, _, value = policy.get_action(ot, mt)
-                            next_obs, reward, done, _ = env.step(int(action.item()))
-                            ppo.buffer.obs.append(obs)
-                            ppo.buffer.actions.append(int(action.item()))
-                            ppo.buffer.logprobs.append(float(log_prob.item()))
-                            ppo.buffer.masks.append(mask)
-                            ppo.buffer.values.append(float(value.item()))
-                            ppo.buffer.rewards.append(float(reward))
-                            ppo.buffer.dones.append(bool(done))
-                            obs = next_obs
-                    progress = max(0.0, min(1.0, (epoch - config.teacher_warmup_epochs - 1) / 15.0))
-                    current_entropy = config.entropy_beta * (1.0 - progress)
-                    loss = ppo.update(entropy_coef=current_entropy)
-                    phase = "PPO"
+                np.random.shuffle(train_envs)
+                for env in train_envs:
+                    env.force_entry = False
+                    obs = env.reset()
+                    done = False
+                    while not done:
+                        mask = env.get_action_mask()
+                        ot = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
+                        mt = torch.as_tensor(mask, dtype=torch.bool).unsqueeze(0)
+                        with torch.no_grad():
+                            action, log_prob, _, value = policy.get_action(ot, mt)
+                        next_obs, reward, done, _ = env.step(int(action.item()))
+                        ppo.buffer.obs.append(obs)
+                        ppo.buffer.actions.append(int(action.item()))
+                        ppo.buffer.logprobs.append(float(log_prob.item()))
+                        ppo.buffer.masks.append(mask)
+                        ppo.buffer.values.append(float(value.item()))
+                        ppo.buffer.rewards.append(float(reward))
+                        ppo.buffer.dones.append(bool(done))
+                        obs = next_obs
+                progress = max(0.0, min(1.0, (epoch - 1) / config.max_train_epochs))
+                current_entropy = config.entropy_beta * (1.0 - progress)
+                loss = ppo.update(entropy_coef=current_entropy)
+                phase = "PPO"
 
                 policy.eval()
-                threshold, val_stats = _select_exit_threshold(
+                _, _, val_stats = sim_with_policy(
                     val_feat,
                     prices,
                     probs,
                     policy,
-                    scaler,
-                    config,
-                    bench_sym,
-                    static_start,
-                    static_end,
+                    scaler=scaler,
+                    bench_sym=bench_sym,
+                    use_kelly=False,
+                    base_ps=config.base_position_size,
+                    max_concurrent=config.max_concurrent,
+                    start_date=static_start,
+                    end_date=static_end,
                 )
                 policy.train()
 
@@ -249,13 +199,11 @@ async def async_main():
                     f"  epoch {epoch:3d} | {phase:9s} | loss {loss:8.3f} | "
                     f"val {val_excess:+.2f}% dd {val_dd:.2f}% "
                     f"sharpe {val_sharpe_text} trades {val_trades} "
-                    f"exit_th {threshold:.2f}"
                 )
 
-                can_checkpoint = not is_teacher_phase
+                can_checkpoint = True
                 if can_checkpoint and checkpoint_score > best_val + 1e-9:
                     best_val = val_excess
-                    best_threshold = threshold
                     patience = 0
                     torch.save(policy.state_dict(), ckpt_path)
                     meta = {
@@ -268,19 +216,15 @@ async def async_main():
                         "action_dim": config.action_dim,
                         "actor_hidden_dims": list(config.actor_hidden_dims),
                         "position_size_choices": list(config.position_size_choices),
-                        "exit_threshold": best_threshold,
-                        "exit_threshold_grid": list(config.exit_threshold_grid),
                         "best_val_score": best_val,
                         "best_val_excess": val_excess,
                         "best_val_sharpe": val_sharpe,
                         "best_val_sharpe_is_defined": bool(val_stats.get("sharpe_is_defined", False)),
                         "best_val_sharpe_daily_returns": val_sharpe_returns,
-                        "teacher_counts": teacher.counts,
                     }
                     meta_path.write_text(json.dumps(meta, indent=2))
                 else:
-                    if not is_teacher_phase:
-                        patience += 1
+                    patience += 1
                 if patience >= config.patience:
                     print(f"  early stop at epoch {epoch} (best val score {best_val:+.3f})")
                     break
