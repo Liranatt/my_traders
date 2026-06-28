@@ -184,8 +184,15 @@ def _simulate_one_py(
 
         if reason:
             lo = min(ll / entry_price - 1.0 for _, _, ll, _ in path[:i + 1])
+            mkt_probs = probs.get(mkt, [])
+            converged = "YES" if mkt_probs and mkt_probs[-1][1] >= 0.5 else "NO" if mkt_probs else "UNKNOWN"
             return dict(
                 market_id=mkt, symbol=sym,
+                question=str(row.get("question", "")),
+                pct=round(ent[1], 3),
+                converged=converged,
+                asset_confidence=row.get("confidence_score"),
+                question_confidence=row.get("feat_llm_confidence"),
                 archetype=row.get("feat_archetype", ""),
                 relevance=round(float(row.get(RELEVANCE_COL, 0)), 3),
                 split=row.get("split", ""),
@@ -205,8 +212,15 @@ def _simulate_one_py(
     t, h, l, c = path[-1]
     ret_c = c / entry_price - 1.0
     lo = min(ll / entry_price - 1.0 for _, _, ll, _ in path)
+    mkt_probs = probs.get(mkt, [])
+    converged = "YES" if mkt_probs and mkt_probs[-1][1] >= 0.5 else "NO" if mkt_probs else "UNKNOWN"
     return dict(
         market_id=mkt, symbol=sym,
+        question=str(row.get("question", "")),
+        pct=round(ent[1], 3),
+        converged=converged,
+        asset_confidence=row.get("confidence_score"),
+        question_confidence=row.get("feat_llm_confidence"),
         archetype=row.get("feat_archetype", ""),
         relevance=round(float(row.get(RELEVANCE_COL, 0)), 3),
         split=row.get("split", ""),
@@ -284,8 +298,15 @@ def simulate_one(
     else:
         reason = "end_of_window"
 
+    mkt_probs = probs.get(mkt, [])
+    converged = "YES" if mkt_probs and mkt_probs[-1][1] >= 0.5 else "NO" if mkt_probs else "UNKNOWN"
     return dict(
         market_id=mkt, symbol=sym,
+        question=str(row.get("question", "")),
+        pct=round(entry_prob, 3),
+        converged=converged,
+        asset_confidence=row.get("confidence_score"),
+        question_confidence=row.get("feat_llm_confidence"),
         archetype=row.get("feat_archetype", ""),
         relevance=round(float(row.get(RELEVANCE_COL, 0)), 3),
         split=row.get("split", ""),

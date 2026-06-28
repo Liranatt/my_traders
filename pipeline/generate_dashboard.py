@@ -157,7 +157,8 @@ def exit_counts(tdf):
 def trades_to_list(tdf):
     if tdf.empty:
         return []
-    cols = ["symbol", "market_id", "archetype", "split", "entry_date", "exit_date",
+    cols = ["symbol", "market_id", "question", "pct", "converged",
+            "asset_confidence", "question_confidence", "archetype", "split", "entry_date", "exit_date",
             "entry_price", "exit_price", "return_pct", "exit_reason",
             "holding_days", "spy_return", "qqq_return", "excess_spy", "excess_qqq",
             "relevance", "peak_pct", "trough_pct", "entry_prob"]
